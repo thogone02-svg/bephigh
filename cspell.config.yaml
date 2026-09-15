@@ -24,17 +24,26 @@ words:
   - Decap
   - esbuild
   - GHSA
-  - Gowun
   - Ghsas
-  - regen
+  - Gowun
   - hostnames
   - jsdoc
   - keychip
   - kyoshino
+  - libact
+  - libbar
+  - libcard
+  - libmeta
+  - libtitle
+  - needfix
+  - picklist
+  - picksearch
   - PKCE
+  - regen
+  - setmode
   - singleline
-  - topbar
   - Sveltia
+  - topbar
   - undici
   - unrs
   - vtab

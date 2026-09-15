@@ -758,6 +758,212 @@
     color: var(--ink-3);
   }
 
+  /* ---------- 원고 보관함 ---------- */
+
+  .libbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .libbar input[type='search'] {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-size: 14px;
+  }
+
+  .libbar select {
+    padding: 9px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-size: 13px;
+  }
+
+  .summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+
+  .summary b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .lib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    gap: 10px;
+  }
+
+  .libcard {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 13px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .libcard.picked {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  .libcard h4 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 16.5px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .libcard .libtitle {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .libcard .libmeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .libcard .libact {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 9px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .libcard .learn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+
+  .libcard .learn input {
+    accent-color: var(--accent);
+  }
+
+  .empty {
+    padding: 28px;
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  .needfix {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 210px);
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12.5px;
+  }
+
+  .needfix:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .needfix code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    word-break: break-all;
+  }
+
+  .needfix input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-size: 12.5px;
+  }
+
+  .chosen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: var(--accent-soft);
+    font-size: 12.5px;
+    color: var(--accent-ink);
+  }
+
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .radio input {
+    accent-color: var(--accent);
+  }
+
+  .picksearch {
+    padding: 11px 14px 0;
+  }
+
+  .picksearch input {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-size: 13px;
+  }
+
+  .picklist {
+    max-height: 330px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 860px) {
+    .needfix {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
   /* ---------- reference list ---------- */
 
   .ref {
@@ -1245,13 +1451,21 @@
                 <option>8개</option>
               </select>
             </div>
-            <div class="field">
-              <label for="f-set">댓글 세트</label>
-              <select id="f-set">
-                <option selected>새로 생성</option>
-                <option>보관함에서 가져오기 (브라질리언 모낭염 원고 세트)</option>
-              </select>
-              <span class="hint">가져온 세트는 재생성해도 바뀌지 않습니다.</span>
+            <div class="field wide">
+              <label id="set-label">댓글 세트</label>
+              <div class="row" role="radiogroup" aria-labelledby="set-label">
+                <label class="radio" for="set-new">
+                  <input type="radio" id="set-new" name="setmode" value="new" checked />새로 생성
+                </label>
+                <label class="radio" for="set-load">
+                  <input type="radio" id="set-load" name="setmode" value="load" />기존 댓글세트
+                  불러오기
+                </label>
+                <button class="btn small" type="button" id="btn-choose-set">원고 선택</button>
+              </div>
+              <div class="chosen" id="set-chosen" hidden></div>
+              <div class="picker" id="set-picker" hidden></div>
+              <span class="hint">불러온 세트는 재생성해도 글자 그대로 유지됩니다.</span>
             </div>
             <div class="field wide">
               <label for="f-avoid">쓰지 말 표현</label>
@@ -1260,7 +1474,7 @@
           </div>
           <div class="row" style="margin-top: 16px">
             <button class="btn primary" id="btn-generate" type="button">원고 생성</button>
-            <button class="btn ghost" type="button" data-go="refs">학습자료 먼저 넣기</button>
+            <button class="btn ghost" type="button" data-go="refs">보관함 열기</button>
             <span class="spacer"></span>
             <span class="badge edited">예상 30~60초</span>
           </div>
@@ -1272,22 +1486,100 @@
         </div>
       </section>
 
-      <!-- ② 학습자료 -->
+      <!-- ② 원고 보관함 -->
       <section class="view" id="view-refs" hidden>
         <header>
           <span class="eyebrow">단계 2</span>
-          <h2>원고 보관함 &amp; 카페 글 수집</h2>
+          <h2>원고 보관함</h2>
           <p>
-            여기에 쌓인 원고가 두 가지로 쓰입니다. 하나는 <b>어투 학습</b>, 다른 하나는
-            <b>댓글 세트 재사용</b>입니다.
+            지금까지 작업한 텍스트 파일을 폴더째 올리면, <b>파일명에서 키워드를 뽑아</b> 키워드
+            카드로 정리합니다. 검색·정렬로 찾고, 원하는 원고의 <b>댓글 세트만</b> 바로 가져다
+            씁니다.
           </p>
         </header>
+
+        <div class="panel">
+          <h3 class="tight">폴더 통째로 올리기</h3>
+          <div class="drop">
+            <b style="color: var(--ink-2)">원고 폴더를 여기에 끌어다 놓기</b>
+            <span>.txt · .md · .docx · 하위 폴더까지 한 번에</span>
+            <button
+              class="btn small"
+              type="button"
+              data-toast="시안에서는 업로드가 열리지 않습니다"
+            >
+              폴더 선택
+            </button>
+          </div>
+          <ol class="steps" style="margin-top: 14px">
+            <li>
+              <b>파일명에서 키워드 추출</b>
+              <span
+                >`강남임플란트_원고_최종v2.txt` → 키워드 <b>강남 임플란트</b>.
+                원고·최종·수정·복사본· 날짜·버전 같은 꼬리말은 자동으로 떼어냅니다.</span
+              >
+            </li>
+            <li>
+              <b>내용 나누기</b>
+              <span
+                >제목 · 본문 · 댓글 세트를 구분하고, 댓글의 티키타카 순서까지 살려서
+                저장합니다.</span
+              >
+            </li>
+            <li>
+              <b>못 읽은 파일만 따로</b>
+              <span
+                >형식이 달라 못 나눈 파일은 아래 `확인 필요`에 모아 직접 지정할 수 있습니다.</span
+              >
+            </li>
+          </ol>
+        </div>
+
+        <div class="panel">
+          <div class="summary" id="lib-summary"></div>
+          <div class="libbar">
+            <input
+              type="search"
+              id="lib-search"
+              placeholder="키워드 · 제목 · 파일명 검색 — 예: 임플란트"
+              aria-label="보관함 검색"
+            />
+            <select id="lib-sort" aria-label="정렬 기준">
+              <option value="recent">최근 올린 순</option>
+              <option value="name">키워드 가나다순</option>
+              <option value="comments">댓글 많은 순</option>
+              <option value="used">최근 쓴 순</option>
+            </select>
+          </div>
+          <div class="lib-grid" id="lib-grid"></div>
+          <div class="empty" id="lib-empty" hidden>찾는 키워드가 없습니다.</div>
+        </div>
+
+        <div class="panel">
+          <div class="row" style="margin-bottom: 8px">
+            <h3 style="margin: 0">확인 필요</h3>
+            <span class="spacer"></span>
+            <span class="badge soon">2건</span>
+          </div>
+          <p style="margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3)">
+            파일명에서 키워드를 못 뽑았거나 본문·댓글 구분이 애매한 파일입니다. 키워드만 적어주면
+            보관함에 들어갑니다.
+          </p>
+          <div class="needfix">
+            <span><code>무제-2.txt</code> · 제목 줄을 못 찾음</span>
+            <input type="text" placeholder="키워드 입력" aria-label="무제-2.txt 키워드" />
+          </div>
+          <div class="needfix">
+            <span><code>0912_수정본(1).txt</code> · 댓글 구분선 없음</span>
+            <input type="text" placeholder="키워드 입력" aria-label="0912_수정본 키워드" />
+          </div>
+        </div>
 
         <div class="panel">
           <h3 class="tight">네이버 카페 글 가져오기</h3>
           <p style="margin: 0 0 14px; font-size: 12.5px; color: var(--ink-3)">
             아래 순서대로 자동 시도합니다. 앞 방법이 막히면 다음 방법으로 자동 넘어가므로, 어떤
-            글이든 결국 가져올 수 있습니다.
+            글이든 결국 가져올 수 있습니다. 수집한 글도 보관함에 키워드 카드로 들어갑니다.
           </p>
           <div class="ways">
             <div class="way">
@@ -1341,30 +1633,6 @@
               수집 버튼 설치
             </button>
           </div>
-        </div>
-
-        <div class="panel">
-          <h3>파일 올리기</h3>
-          <div class="drop">
-            <b style="color: var(--ink-2)">기존 작업 원고를 여기에 끌어다 놓기</b>
-            <span>.txt · .md · .docx · 한 번에 여러 개</span>
-            <button
-              class="btn small"
-              type="button"
-              data-toast="시안에서는 업로드가 열리지 않습니다"
-            >
-              파일 선택
-            </button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="row" style="margin-bottom: 6px">
-            <h3 style="margin: 0">보관된 원고</h3>
-            <span class="spacer"></span>
-            <span class="badge edited">어투 학습 3건 선택됨</span>
-          </div>
-          <div id="ref-list"></div>
         </div>
       </section>
 
@@ -1590,7 +1858,7 @@
 <script>
   const VIEWS = [
     { id: 'write', no: '1', label: '원고 생성', short: '생성' },
-    { id: 'refs', no: '2', label: '학습자료', short: '보관함' },
+    { id: 'refs', no: '2', label: '원고 보관함', short: '보관함' },
     { id: 'result', no: '3', label: '결과 · 버전', short: '결과' },
     { id: 'export', no: '4', label: '내보내기', short: '내보내기' },
     { id: 'publish', no: '5', label: '네이버 업로드', short: '업로드' },
@@ -1712,38 +1980,181 @@
     ],
   };
 
-  const REFS = [
+  // 파일명에서 뽑은 키워드로 정리된 보관함 (예시 16건)
+  const LIBRARY = [
     {
-      on: true,
-      name: '브라질리언 왁싱 모낭염 원고_최종.docx',
-      meta: '파일 · 댓글 4 · 티키타카 포함',
-      desc: '본문은 업종이 달라 못 쓰지만 댓글 세트는 그대로 재사용 가능.',
-      set: true,
+      id: 'l1',
+      keyword: '강남 임플란트 잘하는곳',
+      file: '강남임플란트_원고_최종v2.txt',
+      title: '강남 임플란트 잘하는곳 세 군데 상담받고 결정하기까지',
+      turns: [4, 2, 2, 1],
+      date: '2026.09.12',
+      used: '3일 전',
+      learn: true,
     },
     {
-      on: true,
-      name: '역삼_치과_후기원고_최종.docx',
-      meta: '파일 · 1,420자',
-      desc: '문단이 짧고 "~더라고요" 어미가 자주 쓰임. 어투 학습용.',
-      set: true,
+      id: 'l2',
+      keyword: '브라질리언 왁싱 모낭염',
+      file: '브라질리언왁싱_모낭염_원고.txt',
+      title: '왁싱하고 좁쌀 올라온 거, 저는 이렇게 가라앉혔어요',
+      turns: [4, 2, 2, 1],
+      date: '2026.07.03',
+      used: '오늘',
+      learn: false,
     },
     {
-      on: true,
-      name: 'cafe.naver.com/example/1234567',
-      meta: '카페 수집 · 댓글 12개',
-      desc: '조회수 높은 지역 카페 후기 글. 수집 버튼으로 가져옴.',
-      set: true,
+      id: 'l3',
+      keyword: '분당 치아교정 비용',
+      file: '분당치아교정비용_수정.txt',
+      title: '분당에서 치아교정 상담 두 번 받아본 후기',
+      turns: [2, 1, 1],
+      date: '2026.08.28',
+      used: '2주 전',
+      learn: true,
     },
     {
-      on: false,
-      name: '인테리어_비교견적_원고.md',
-      meta: '파일 · 1,960자',
-      desc: '업종이 달라 이번 생성에서는 제외해 둔 자료.',
-      set: true,
+      id: 'l4',
+      keyword: '역삼 피부과 리쥬란',
+      file: '역삼피부과_리쥬란_원고_최종.txt',
+      title: '리쥬란 3회 마치고 남기는 솔직 후기',
+      turns: [3, 2, 1, 1, 1],
+      date: '2026.08.15',
+      used: '한 달 전',
+      learn: true,
+    },
+    {
+      id: 'l5',
+      keyword: '수원 인테리어 견적',
+      file: '수원인테리어_견적비교_v3.txt',
+      title: '수원 30평 아파트 인테리어 견적 3곳 비교',
+      turns: [2, 2, 1, 1],
+      date: '2026.08.02',
+      used: '한 달 전',
+      learn: false,
+    },
+    {
+      id: 'l6',
+      keyword: '일산 필라테스 등록',
+      file: '일산필라테스_등록후기.txt',
+      title: '일산 필라테스 3개월 끊어보고 느낀 점',
+      turns: [3, 1, 1, 2],
+      date: '2026.07.21',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l7',
+      keyword: '송파 소아과 야간진료',
+      file: '송파소아과_야간진료_원고.txt',
+      title: '밤에 아이 열났을 때 갈 곳 미리 정해두세요',
+      turns: [2, 2, 1],
+      date: '2026.07.11',
+      used: '3주 전',
+      learn: false,
+    },
+    {
+      id: 'l8',
+      keyword: '부산 이사업체 추천',
+      file: '부산이사업체_추천_최종.txt',
+      title: '부산 포장이사 견적 네 군데 받아본 기록',
+      turns: [3, 2, 2, 1, 1, 1],
+      date: '2026.06.30',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l9',
+      keyword: '대구 탈모병원 후기',
+      file: '대구탈모병원_후기원고.txt',
+      title: '대구에서 탈모 치료 6개월 다녀본 얘기',
+      turns: [4, 2, 1, 1],
+      date: '2026.06.18',
+      used: '두 달 전',
+      learn: false,
+    },
+    {
+      id: 'l10',
+      keyword: '강아지 슬개골 수술 비용',
+      file: '강아지슬개골_수술비용_복사본.txt',
+      title: '슬개골 탈구 2기, 수술 결정하기까지',
+      turns: [3, 2, 2, 1, 1],
+      date: '2026.06.05',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l11',
+      keyword: '제주 웨딩스냅 가격',
+      file: '제주웨딩스냅_가격_원고.txt',
+      title: '제주 웨딩스냅 업체 고르면서 확인한 것들',
+      turns: [2, 2, 1, 1],
+      date: '2026.05.24',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l12',
+      keyword: '청담 눈썹문신 반영구',
+      file: '청담눈썹문신_반영구_최종.txt',
+      title: '반영구 눈썹 재수술까지 하고 배운 것',
+      turns: [3, 2, 1, 1],
+      date: '2026.05.12',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l13',
+      keyword: '노원 영어학원 초등',
+      file: '노원영어학원_초등_원고v2.txt',
+      title: '초등 3학년 영어학원 세 곳 상담 후기',
+      turns: [2, 1, 1],
+      date: '2026.04.28',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l14',
+      keyword: '마포 산후조리원 비용',
+      file: '마포산후조리원_비용_수정본.txt',
+      title: '마포 산후조리원 투어 다녀온 정리',
+      turns: [3, 2, 2, 1],
+      date: '2026.04.16',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l15',
+      keyword: '광교 치과 스케일링',
+      file: '광교치과_스케일링.txt',
+      title: '스케일링 받으러 갔다가 충치 찾은 날',
+      turns: [1, 1],
+      date: '2026.04.02',
+      used: '—',
+      learn: false,
+    },
+    {
+      id: 'l16',
+      keyword: '신림 자취방 원룸',
+      file: '신림자취방_원룸_원고.txt',
+      title: '신림 원룸 다섯 군데 보고 계약한 이야기',
+      turns: [3, 2, 1, 1],
+      date: '2026.03.20',
+      used: '—',
+      learn: false,
     },
   ];
 
-  const state = { view: 'result', version: 2, revising: {}, imported: false, turns: {} };
+  const state = {
+    view: 'result',
+    version: 2,
+    revising: {},
+    imported: false,
+    turns: {},
+    libQuery: '',
+    libSort: 'recent',
+    pickQuery: '',
+    chosenSet: null,
+  };
 
   const el = (id) => document.getElementById(id);
 
@@ -1844,7 +2255,7 @@
     const comments = currentComments();
 
     el('comment-count').textContent = `${comments.length}개 · ${
-      state.imported ? '보관함에서 가져온 세트' : '티키타카 포함'
+      state.imported ? `가져온 세트 · ${state.importedFrom?.keyword ?? '보관함'}` : '티키타카 포함'
     }`;
     el('btn-reset-set').hidden = !state.imported;
     el('btn-import').textContent = state.imported ? '다른 세트로 바꾸기' : '다른 원고에서 가져오기';
@@ -1928,38 +2339,129 @@
       `수정 지시를 적은 카드: <b>${n}개</b>` + (n ? ' — 나머지는 그대로 유지됩니다' : '');
   }
 
-  function renderRefs() {
-    el('ref-list').innerHTML = REFS.map(
-      (r, i) => `<div class="ref">
-        <input type="checkbox" id="ref-${i}" ${r.on ? 'checked' : ''} aria-label="${escapeHtml(r.name)} 어투 학습에 사용" />
-        <span><b>${escapeHtml(r.name)}</b><p>${escapeHtml(r.desc)}</p></span>
-        <span class="side">
-          <span class="meta">${escapeHtml(r.meta)}</span>
-          <button class="btn small" type="button" data-import-ref="${i}">댓글 세트 가져오기</button>
-        </span>
-      </div>`,
-    ).join('');
+  function turnLabel(turns) {
+    return `댓글 ${turns.length}개 · 티키타카 ${turns.join('·')}턴`;
   }
 
-  function renderPicker() {
-    el('picker').innerHTML = `
-      <header>보관함에서 댓글 세트 그대로 가져오기</header>
-      <div class="pick">
-        <span>
-          <b>${IMPORT_SET.from}</b>
-          <p>댓글 4개 · 티키타카 4/2/2/1턴 · 본문은 가져오지 않습니다</p>
-        </span>
-        <button class="btn primary small" type="button" data-use-set="1">이 세트 쓰기</button>
+  function matches(item, query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return [item.keyword, item.title, item.file].some((v) => v.toLowerCase().includes(q));
+  }
+
+  function sortedLibrary(query, sort) {
+    const list = LIBRARY.filter((item) => matches(item, query));
+    const order = { recent: 0, name: 1, comments: 2, used: 3 };
+
+    if (sort === 'name') list.sort((a, b) => a.keyword.localeCompare(b.keyword, 'ko'));
+    else if (sort === 'comments') list.sort((a, b) => b.turns.length - a.turns.length);
+    else if (sort === 'used')
+      list.sort(
+        (a, b) => (a.used === '—') - (b.used === '—') || LIBRARY.indexOf(a) - LIBRARY.indexOf(b),
+      );
+    else list.sort((a, b) => b.date.localeCompare(a.date));
+
+    return order[sort] === undefined ? list : list;
+  }
+
+  function renderLibrary() {
+    const list = sortedLibrary(state.libQuery, state.libSort);
+    const learning = LIBRARY.filter((item) => item.learn).length;
+
+    el('lib-summary').innerHTML =
+      `파일 <b>${LIBRARY.length + 2}개</b>` +
+      ` · 키워드 인식 <b>${LIBRARY.length}개</b>` +
+      ` · 확인 필요 <b>2개</b>` +
+      ` · 어투 학습에 사용 <b>${learning}개</b>` +
+      (state.libQuery ? ` · 검색 결과 <b>${list.length}개</b>` : '');
+
+    el('lib-empty').hidden = list.length > 0;
+    el('lib-grid').innerHTML = list
+      .map(
+        (item) => `<article class="libcard${state.chosenSet === item.id ? ' picked' : ''}">
+          <h4>${escapeHtml(item.keyword)}</h4>
+          <p class="libtitle">${escapeHtml(item.title)}</p>
+          <div class="libmeta">
+            <span>${turnLabel(item.turns)}</span>
+            <span>${item.date}</span>
+            <span>최근 사용 ${item.used}</span>
+          </div>
+          <div class="libmeta"><span>${escapeHtml(item.file)}</span></div>
+          <div class="libact">
+            <button class="btn small" type="button" data-use-lib="${item.id}">댓글세트 쓰기</button>
+            <button class="btn small ghost" type="button" data-toast="시안에서는 원고 보기가 열리지 않습니다">
+              원고 보기
+            </button>
+            <span class="spacer"></span>
+            <label class="learn">
+              <input type="checkbox" ${item.learn ? 'checked' : ''} aria-label="${escapeHtml(item.keyword)} 어투 학습에 사용" />
+              어투 학습
+            </label>
+          </div>
+        </article>`,
+      )
+      .join('');
+  }
+
+  function renderSetPicker(containerId, searchId) {
+    const list = sortedLibrary(state.pickQuery, 'recent').slice(0, 40);
+
+    el(containerId).innerHTML = `
+      <header>보관함에서 댓글 세트만 가져오기 — 본문 · 제목은 그대로 둡니다</header>
+      <div class="picksearch">
+        <input type="search" id="${searchId}" value="${escapeHtml(state.pickQuery)}"
+          placeholder="키워드로 원고 찾기 — 예: 모낭염" aria-label="원고 검색" />
       </div>
-      <div class="pick">
-        <span>
-          <b>역삼 치과 후기 원고 (2026.05)</b>
-          <p>댓글 4개 · 티키타카 2/1/1/2턴</p>
-        </span>
-        <button class="btn small" type="button" data-toast="시안에서는 첫 번째 세트만 열려 있습니다">
-          이 세트 쓰기
-        </button>
+      <div class="picklist">
+        ${
+          list.length
+            ? list
+                .map(
+                  (item) => `<div class="pick">
+                    <span>
+                      <b>${escapeHtml(item.keyword)}</b>
+                      <p>${turnLabel(item.turns)} · ${item.date}</p>
+                    </span>
+                    <button class="btn primary small" type="button" data-use-lib="${item.id}">
+                      이 세트 쓰기
+                    </button>
+                  </div>`,
+                )
+                .join('')
+            : '<div class="empty">찾는 키워드가 없습니다.</div>'
+        }
       </div>`;
+
+    const search = el(searchId);
+    search.addEventListener('input', () => {
+      state.pickQuery = search.value;
+      renderSetPicker(containerId, searchId);
+      el(searchId).focus();
+    });
+  }
+
+  function renderChosenSet() {
+    const item = LIBRARY.find((entry) => entry.id === state.chosenSet);
+    const box = el('set-chosen');
+
+    box.hidden = !item;
+    if (!item) return;
+    box.innerHTML =
+      `<b>${escapeHtml(item.keyword)}</b><span>${turnLabel(item.turns)}</span>` +
+      '<span class="spacer"></span>' +
+      '<button class="btn small" type="button" id="btn-change-set">바꾸기</button>' +
+      '<button class="btn small ghost" type="button" id="btn-clear-set">해제</button>';
+    el('btn-change-set').addEventListener('click', () => {
+      el('set-picker').hidden = false;
+      renderSetPicker('set-picker', 'set-search');
+    });
+    el('btn-clear-set').addEventListener('click', () => {
+      state.chosenSet = null;
+      el('set-new').checked = true;
+      renderChosenSet();
+      renderLibrary();
+      toast('새로 생성하는 댓글 세트로 되돌렸습니다');
+    });
   }
 
   const STREAM_TEXT =
@@ -2000,17 +2502,29 @@
     }, 20);
   }
 
-  function useImportedSet() {
+  function useImportedSet(id) {
+    const item = LIBRARY.find((entry) => entry.id === id) ?? LIBRARY[1];
+
     state.imported = true;
+    state.importedFrom = item;
+    state.chosenSet = item.id;
     state.turns = {};
     el('picker').hidden = true;
+    el('set-picker').hidden = true;
+    el('set-load').checked = true;
+    renderChosenSet();
+    renderLibrary();
     renderCommentPieces();
-    toast('브라질리언 모낭염 원고의 댓글 세트를 그대로 가져왔습니다');
+    toast(
+      item.id === 'l2'
+        ? `${item.keyword} 원고의 댓글 세트를 그대로 가져왔습니다`
+        : `${item.keyword} 세트를 골랐습니다 — 시안에는 브라질리언 모낭염 세트의 문장만 들어 있어 그 내용이 보입니다`,
+    );
   }
 
   document.addEventListener('click', (event) => {
     const target = event.target.closest(
-      '[data-go],[data-toast],[data-version],[data-clear],[data-use-set],[data-import-ref]',
+      '[data-go],[data-toast],[data-version],[data-clear],[data-use-lib]',
     );
     if (!target) return;
 
@@ -2026,10 +2540,10 @@
       delete state.revising[target.dataset.clear];
       renderPieces();
     }
-    if (target.dataset.useSet) useImportedSet();
-    if (target.dataset.importRef) {
-      useImportedSet();
-      show('result');
+    if (target.dataset.useLib) {
+      const fromLibrary = target.closest('#lib-grid');
+      useImportedSet(target.dataset.useLib);
+      if (fromLibrary) show('result');
     }
   });
 
@@ -2037,13 +2551,41 @@
   el('btn-fetch').addEventListener('click', () =>
     toast('시안입니다 — 실제로는 제목 · 본문 · 댓글을 수집합니다'),
   );
+  el('lib-search').addEventListener('input', () => {
+    state.libQuery = el('lib-search').value;
+    renderLibrary();
+  });
+  el('lib-sort').addEventListener('change', () => {
+    state.libSort = el('lib-sort').value;
+    renderLibrary();
+  });
+  el('btn-choose-set').addEventListener('click', () => {
+    el('set-load').checked = true;
+    el('set-picker').hidden = false;
+    renderSetPicker('set-picker', 'set-search');
+    el('set-search').focus();
+  });
+  el('set-load').addEventListener('change', () => {
+    if (!el('set-load').checked) return;
+    el('set-picker').hidden = false;
+    renderSetPicker('set-picker', 'set-search');
+  });
+  el('set-new').addEventListener('change', () => {
+    el('set-picker').hidden = true;
+  });
   el('btn-import').addEventListener('click', () => {
     const picker = el('picker');
     picker.hidden = !picker.hidden;
+    if (!picker.hidden) renderSetPicker('picker', 'result-set-search');
   });
   el('btn-reset-set').addEventListener('click', () => {
     state.imported = false;
+    state.importedFrom = null;
+    state.chosenSet = null;
     state.turns = {};
+    el('set-new').checked = true;
+    renderChosenSet();
+    renderLibrary();
     renderCommentPieces();
     toast('새로 생성하는 댓글 세트로 되돌렸습니다');
   });
@@ -2074,7 +2616,7 @@
   renderNav();
   renderVersions();
   renderPieces();
-  renderRefs();
-  renderPicker();
+  renderLibrary();
+  renderChosenSet();
   show('result');
 </script>
