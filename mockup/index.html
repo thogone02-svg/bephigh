@@ -3,76 +3,87 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
   rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
 />
 <style>
   :root {
-    --ground: #eef0f2;
+    --bg: #f2f4f6;
     --surface: #ffffff;
-    --surface-sunk: #f6f7f8;
-    --line: #dfe3e6;
-    --line-strong: #c6ccd1;
-    --ink: #121a1f;
-    --ink-2: #47545c;
-    --ink-3: #75838c;
-    --accent: #1f6e43;
-    --accent-soft: #e4f0e9;
-    --accent-ink: #145334;
-    --on-accent: #ffffff;
-    --clay: #9a5220;
-    --clay-soft: #f6ebe2;
-    --warn: #8a6100;
-    --warn-soft: #f8f0da;
-    --radius: 10px;
-    --shadow: 0 1px 2px rgb(18 26 31 / 6%), 0 8px 24px -16px rgb(18 26 31 / 30%);
-    --rail-w: 244px;
-    --font-ui:
-      'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic',
-      sans-serif;
-    --font-display: 'Gowun Batang', 'Apple SD Gothic Neo', serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --surface-2: #f9fafb;
+    --line: #e5e8eb;
+    --line-soft: #f2f4f6;
+    --t900: #191f28;
+    --t800: #333d4b;
+    --t700: #4e5968;
+    --t600: #6b7684;
+    --t500: #8b95a1;
+    --t400: #b0b8c1;
+    --blue: #3182f6;
+    --blue-press: #1b64da;
+    --blue-bg: #e8f3ff;
+    --red: #f04452;
+    --red-bg: #fdeced;
+    --green: #00c471;
+    --yellow: #f59f00;
+    --yellow-bg: #fff8e6;
+    --r-card: 16px;
+    --r-ctl: 12px;
+    --shadow: 0 1px 3px rgb(25 31 40 / 5%);
+    --shadow-up: 0 -2px 12px rgb(25 31 40 / 6%);
+    --rail: 232px;
+    --font:
+      'Pretendard Variable', Pretendard, Inter, 'Noto Sans KR', -apple-system, BlinkMacSystemFont,
+      'Apple SD Gothic Neo', sans-serif;
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      --ground: #0e1316;
-      --surface: #161d21;
-      --surface-sunk: #1b2327;
-      --line: #283238;
-      --line-strong: #3a464e;
-      --ink: #e6ecef;
-      --ink-2: #a8b5bc;
-      --ink-3: #7d8c94;
-      --accent: #59b183;
-      --accent-soft: #173024;
-      --accent-ink: #8fd3ad;
-      --on-accent: #08110c;
-      --clay: #d08f5f;
-      --clay-soft: #2e231a;
-      --warn: #d8ad4a;
-      --warn-soft: #2b2515;
-      --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 26px -18px rgb(0 0 0 / 80%);
+      --bg: #101114;
+      --surface: #1b1d22;
+      --surface-2: #232630;
+      --line: #2c2f38;
+      --line-soft: #232630;
+      --t900: #edeff2;
+      --t800: #d7dae0;
+      --t700: #b9bec7;
+      --t600: #989ea9;
+      --t500: #7d838e;
+      --t400: #646a75;
+      --blue: #4593fc;
+      --blue-press: #6aabff;
+      --blue-bg: #17273d;
+      --red: #ff6b75;
+      --red-bg: #34222a;
+      --green: #2dd38b;
+      --yellow: #ffc94a;
+      --yellow-bg: #332b16;
+      --shadow: 0 1px 3px rgb(0 0 0 / 40%);
+      --shadow-up: 0 -2px 14px rgb(0 0 0 / 50%);
     }
   }
 
   :root[data-theme='dark'] {
-    --ground: #0e1316;
-    --surface: #161d21;
-    --surface-sunk: #1b2327;
-    --line: #283238;
-    --line-strong: #3a464e;
-    --ink: #e6ecef;
-    --ink-2: #a8b5bc;
-    --ink-3: #7d8c94;
-    --accent: #59b183;
-    --accent-soft: #173024;
-    --accent-ink: #8fd3ad;
-    --on-accent: #08110c;
-    --clay: #d08f5f;
-    --clay-soft: #2e231a;
-    --warn: #d8ad4a;
-    --warn-soft: #2b2515;
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 26px -18px rgb(0 0 0 / 80%);
+    --bg: #101114;
+    --surface: #1b1d22;
+    --surface-2: #232630;
+    --line: #2c2f38;
+    --line-soft: #232630;
+    --t900: #edeff2;
+    --t800: #d7dae0;
+    --t700: #b9bec7;
+    --t600: #989ea9;
+    --t500: #7d838e;
+    --t400: #646a75;
+    --blue: #4593fc;
+    --blue-press: #6aabff;
+    --blue-bg: #17273d;
+    --red: #ff6b75;
+    --red-bg: #34222a;
+    --green: #2dd38b;
+    --yellow: #ffc94a;
+    --yellow-bg: #332b16;
+    --shadow: 0 1px 3px rgb(0 0 0 / 40%);
+    --shadow-up: 0 -2px 14px rgb(0 0 0 / 50%);
   }
 
   * {
@@ -86,11 +97,12 @@
 
   body {
     margin: 0;
-    background: var(--ground);
-    color: var(--ink);
-    font-family: var(--font-ui);
-    font-size: 14px;
-    line-height: 1.65;
+    background: var(--bg);
+    color: var(--t900);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -99,17 +111,25 @@
   select,
   textarea {
     font: inherit;
+    letter-spacing: inherit;
     color: inherit;
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--blue);
     outline-offset: 2px;
   }
 
+  svg {
+    display: block;
+    flex: none;
+  }
+
+  /* ---------- shell ---------- */
+
   .app {
     display: grid;
-    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail) minmax(0, 1fr);
     min-height: 100%;
   }
 
@@ -120,30 +140,34 @@
     height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    padding: 22px 16px;
+    gap: 26px;
+    padding: 24px 14px;
     background: var(--surface);
-    border-right: 1px solid var(--line);
   }
 
   .brand {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding-left: 6px;
+    align-items: center;
+    gap: 9px;
+    padding: 0 8px;
+  }
+
+  .brand .mark {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
   }
 
   .brand b {
-    font-family: var(--font-display);
-    font-size: 19px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-
-  .brand span {
-    font-size: 11px;
-    color: var(--ink-3);
-    letter-spacing: 0.06em;
+    letter-spacing: -0.03em;
   }
 
   .nav {
@@ -153,53 +177,41 @@
   }
 
   .nav button {
-    display: grid;
-    grid-template-columns: 22px 1fr;
-    align-items: baseline;
-    gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
-    padding: 9px 10px;
+    padding: 11px 12px;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--r-ctl);
     background: transparent;
-    color: var(--ink-2);
+    color: var(--t600);
+    font-size: 14.5px;
+    font-weight: 500;
     text-align: left;
     cursor: pointer;
   }
 
-  .nav button em {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-style: normal;
-    color: var(--ink-3);
-  }
-
   .nav button:hover {
-    background: var(--surface-sunk);
-    color: var(--ink);
+    background: var(--surface-2);
+    color: var(--t800);
   }
 
   .nav button[aria-current='true'] {
-    background: var(--accent-soft);
-    color: var(--accent-ink);
-    font-weight: 600;
-  }
-
-  .nav button[aria-current='true'] em {
-    color: var(--accent);
+    background: var(--blue-bg);
+    color: var(--blue);
+    font-weight: 700;
   }
 
   .rail-foot {
     margin-top: auto;
-    padding: 12px 10px;
-    border-top: 1px solid var(--line);
-    font-size: 11.5px;
-    color: var(--ink-3);
+    padding: 0 12px;
+    font-size: 12px;
+    color: var(--t400);
   }
 
   .main {
     min-width: 0;
-    padding: 0 0 40px;
   }
 
   .topbar {
@@ -208,979 +220,928 @@
     z-index: 5;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 24px;
-    background: color-mix(in srgb, var(--ground) 88%, transparent);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line);
+    gap: 10px;
+    height: 56px;
+    padding: 0 22px;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
   }
 
   .topbar h1 {
     margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-
-  .topbar .mobile-brand {
-    display: none;
-    font-family: var(--font-display);
+    font-size: 16px;
     font-weight: 700;
-  }
-
-  .keychip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 4px 10px 4px 8px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    background: var(--surface);
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .keychip b {
-    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   .wrap {
-    max-width: 1020px;
-    padding: 20px 24px 0;
+    max-width: 880px;
+    padding: 6px 22px 120px;
     margin: 0 auto;
   }
 
-  .notice {
+  .hint-bar {
     display: flex;
-    gap: 10px;
-    align-items: flex-start;
+    align-items: center;
+    gap: 8px;
     padding: 10px 14px;
-    margin-bottom: 20px;
-    border: 1px dashed var(--line-strong);
-    border-radius: var(--radius);
-    background: var(--warn-soft);
-    color: var(--ink-2);
-    font-size: 12.5px;
+    margin-bottom: 18px;
+    border-radius: var(--r-ctl);
+    background: var(--yellow-bg);
+    color: var(--yellow);
+    font-size: 13px;
+    font-weight: 500;
   }
 
-  .notice b {
-    color: var(--warn);
-    font-weight: 600;
+  .hint-bar b {
+    font-weight: 700;
     white-space: nowrap;
   }
 
+  .hint-bar span {
+    color: var(--t700);
+    font-weight: 400;
+  }
+
+  /* ---------- type ---------- */
+
   .view > header {
-    margin-bottom: 18px;
+    margin: 4px 0 20px;
   }
 
   .view h2 {
     margin: 0;
-    font-family: var(--font-display);
     font-size: 24px;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    line-height: 1.38;
+    letter-spacing: -0.03em;
     text-wrap: balance;
   }
 
   .view h2 + p {
-    margin: 4px 0 0;
-    max-width: 62ch;
-    color: var(--ink-2);
+    margin: 8px 0 0;
+    max-width: 52ch;
+    color: var(--t600);
+    font-size: 14.5px;
   }
 
-  .eyebrow {
-    display: block;
-    margin-bottom: 4px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-
-  .panel {
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+  .card {
+    padding: 20px;
+    border-radius: var(--r-card);
     background: var(--surface);
+    box-shadow: var(--shadow);
   }
 
-  .panel + .panel {
-    margin-top: 14px;
+  .card + .card {
+    margin-top: 12px;
   }
 
-  .panel h3 {
-    margin: 0 0 14px;
+  .card > h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .card > h3 .sub {
+    display: block;
+    margin-top: 3px;
     font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    font-weight: 400;
+    color: var(--t500);
   }
 
-  .panel h3.tight {
-    margin-bottom: 8px;
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
   }
 
-  .grid {
+  .two {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 12px;
   }
+
+  /* ---------- form ---------- */
 
   .field {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 7px;
     min-width: 0;
   }
 
-  .field.wide {
-    grid-column: 1 / -1;
+  .label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--t700);
   }
 
-  .field label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--ink-2);
+  .desc {
+    font-size: 12.5px;
+    color: var(--t500);
   }
 
-  .field label i {
-    font-style: normal;
-    color: var(--clay);
-  }
-
-  .field input,
-  .field select,
-  .field textarea {
+  .input,
+  .area {
     width: 100%;
-    padding: 9px 11px;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    background: var(--surface-sunk);
+    padding: 13px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-ctl);
+    background: var(--surface-2);
+    font-size: 15px;
   }
 
-  .field textarea {
+  .input::placeholder,
+  .area::placeholder {
+    color: var(--t400);
+  }
+
+  .input:focus,
+  .area:focus {
+    border-color: var(--blue);
+    background: var(--surface);
+    outline: none;
+  }
+
+  .input.lg {
+    padding: 15px 16px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .area {
     resize: vertical;
-    min-height: 62px;
+    min-height: 54px;
+    line-height: 1.6;
   }
 
-  .field .hint {
-    font-size: 11.5px;
-    color: var(--ink-3);
+  /* segmented control */
+
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 3px;
+    padding: 3px;
+    border-radius: var(--r-ctl);
+    background: var(--line-soft);
   }
 
-  .field input.big {
-    padding: 12px 13px;
-    font-size: 16px;
+  .seg button {
+    padding: 9px 6px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--t600);
+    font-size: 14px;
     font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
   }
 
-  .row {
+  .seg button[aria-pressed='true'] {
+    background: var(--surface);
+    color: var(--t900);
+    font-weight: 700;
+    box-shadow: var(--shadow);
+  }
+
+  /* switch row */
+
+  .switch-row {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
   }
 
-  .spacer {
+  .switch-row .txt {
     flex: 1 1 auto;
+    min-width: 0;
   }
+
+  .switch-row .txt b {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+
+  .switch {
+    position: relative;
+    flex: none;
+    width: 50px;
+    height: 30px;
+  }
+
+  .switch input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .switch i {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--line);
+    transition: background 0.16s ease;
+    pointer-events: none;
+  }
+
+  .switch i::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
+    transition: transform 0.16s ease;
+  }
+
+  .switch input:checked + i {
+    background: var(--blue);
+  }
+
+  .switch input:checked + i::after {
+    transform: translateX(20px);
+  }
+
+  .switch input:focus-visible + i {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+
+  /* stepper */
+
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--r-ctl);
+    background: var(--line-soft);
+  }
+
+  .stepper button {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--t700);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+
+  .stepper button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .stepper span {
+    min-width: 44px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* buttons */
 
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 9px 15px;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    background: var(--surface);
-    font-size: 13px;
-    font-weight: 500;
+    gap: 6px;
+    height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: var(--r-ctl);
+    background: var(--line-soft);
+    color: var(--t700);
+    font-size: 14.5px;
+    font-weight: 600;
     cursor: pointer;
   }
 
   .btn:hover {
-    border-color: var(--ink-3);
+    filter: brightness(0.97);
   }
 
-  .btn.primary {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: var(--on-accent);
+  .btn.pri {
+    background: var(--blue);
+    color: #fff;
   }
 
-  .btn.primary:hover {
-    filter: brightness(1.06);
+  .btn.pri:hover {
+    background: var(--blue-press);
+    filter: none;
+  }
+
+  .btn.lg {
+    height: 52px;
+    font-size: 16px;
+    border-radius: 14px;
+  }
+
+  .btn.sm {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 10px;
   }
 
   .btn.ghost {
-    border-color: transparent;
     background: transparent;
-    color: var(--ink-2);
+    color: var(--t600);
   }
 
   .btn.ghost:hover {
-    background: var(--surface-sunk);
+    background: var(--line-soft);
+    filter: none;
   }
 
-  .btn[disabled] {
-    opacity: 0.5;
+  .btn:disabled {
+    opacity: 0.45;
     cursor: not-allowed;
   }
 
-  .btn.small {
-    padding: 6px 11px;
-    font-size: 12px;
+  .btn.block {
+    width: 100%;
   }
 
-  .badge {
+  /* chips */
+
+  .chip {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 2px 8px;
+    gap: 4px;
+    height: 24px;
+    padding: 0 9px;
     border-radius: 999px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.02em;
+    background: var(--line-soft);
+    color: var(--t600);
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
   }
 
-  .badge.body {
-    background: var(--accent-soft);
-    color: var(--accent-ink);
+  .chip.blue {
+    background: var(--blue-bg);
+    color: var(--blue);
   }
 
-  .badge.cmt {
-    background: var(--clay-soft);
-    color: var(--clay);
+  .chip.warn {
+    background: var(--yellow-bg);
+    color: var(--yellow);
   }
 
-  .badge.soon {
-    background: var(--warn-soft);
-    color: var(--warn);
+  .chip.ok {
+    background: color-mix(in srgb, var(--green) 14%, transparent);
+    color: var(--green);
   }
 
-  .badge.edited {
-    background: var(--surface-sunk);
-    color: var(--ink-3);
-    border: 1px solid var(--line);
-  }
+  /* sticky bottom CTA */
 
-  .badge.kept {
-    background: var(--surface-sunk);
-    color: var(--accent-ink);
-    border: 1px solid var(--accent);
-  }
-
-  .badge.hand {
-    background: var(--warn-soft);
-    color: var(--warn);
-  }
-
-  .checkline {
-    display: inline-flex;
+  .dock {
+    position: fixed;
+    left: var(--rail);
+    right: 0;
+    bottom: 0;
+    z-index: 8;
+    display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 13px;
-    cursor: pointer;
+    gap: 10px;
+    padding: 12px 22px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-up);
   }
 
-  .checkline input {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--accent);
-  }
-
-  .radio {
-    display: inline-flex;
+  .dock .inner {
+    display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
+    width: 100%;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .dock p {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 13px;
-    cursor: pointer;
+    color: var(--t600);
   }
 
-  .radio input {
-    accent-color: var(--accent);
-  }
+  /* ---------- pieces ---------- */
 
-  .worktop {
-    border-color: var(--line-strong);
-    box-shadow: var(--shadow);
-  }
-
-  .worktop .grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    align-items: start;
-  }
-
-  .worktop .row {
-    margin-top: 12px;
-  }
-
-  .versions {
+  .vrow {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 14px 0 12px;
+    margin: 18px 0 10px;
     overflow-x: auto;
   }
 
   .vtab {
-    padding: 5px 12px;
-    border: 1px solid var(--line-strong);
+    height: 32px;
+    padding: 0 14px;
+    border: 0;
     border-radius: 999px;
     background: var(--surface);
-    font-family: var(--font-mono);
-    font-size: 12px;
+    color: var(--t600);
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
+    box-shadow: var(--shadow);
   }
 
   .vtab[aria-current='true'] {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--ground);
+    background: var(--t900);
+    color: var(--bg);
   }
 
-  .section-bar {
+  .sec {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin: 20px 0 10px;
+    margin: 22px 0 10px;
   }
 
-  .section-bar h3 {
+  .sec h3 {
     margin: 0;
-    font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .grow {
+    flex: 1 1 auto;
   }
 
   .piece {
-    display: grid;
-    grid-template-columns: 4px minmax(0, 1fr);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    padding: 18px 20px;
+    border-radius: var(--r-card);
     background: var(--surface);
-    overflow: hidden;
+    box-shadow: var(--shadow);
   }
 
   .piece + .piece {
-    margin-top: 12px;
+    margin-top: 10px;
   }
 
-  .piece .rail-mark {
-    background: var(--line-strong);
-  }
-
-  .piece.is-title .rail-mark,
-  .piece.is-body .rail-mark {
-    background: var(--accent);
-  }
-
-  .piece.is-comment .rail-mark {
-    background: var(--clay);
-  }
-
-  .piece.is-kept .rail-mark {
-    background: repeating-linear-gradient(180deg, var(--accent) 0 6px, transparent 6px 12px);
-  }
-
-  .piece-inner {
-    min-width: 0;
-    padding: 14px 16px;
-  }
-
-  .piece-head {
+  .phead {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 12px;
   }
 
-  .piece-head .who {
-    font-size: 12px;
-    color: var(--ink-3);
-  }
-
-  .piece-title {
+  .ptitle {
     margin: 0;
-    font-family: var(--font-display);
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 1.45;
-    text-wrap: balance;
+    letter-spacing: -0.02em;
   }
 
-  .piece-text {
+  .ptext {
     margin: 0;
-    max-width: 42em;
+    max-width: 40em;
     white-space: pre-wrap;
-    font-size: 14.5px;
+    font-size: 15px;
     line-height: 1.85;
+    color: var(--t800);
   }
 
   [data-edit] {
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: text;
-    transition: background 0.12s ease;
   }
 
   [data-edit]:hover {
-    background: var(--surface-sunk);
-    box-shadow: 0 0 0 4px var(--surface-sunk);
+    background: var(--surface-2);
+    box-shadow: 0 0 0 5px var(--surface-2);
   }
 
   .editing {
     width: 100%;
-    max-width: 42em;
-    padding: 10px 12px;
-    border: 1px solid var(--accent);
-    border-radius: 8px;
-    background: var(--surface-sunk);
+    max-width: 40em;
+    padding: 12px 14px;
+    border: 1px solid var(--blue);
+    border-radius: var(--r-ctl);
+    background: var(--surface-2);
     font-family: inherit;
-    font-size: 14.5px;
+    font-size: 15px;
     line-height: 1.85;
     resize: vertical;
-  }
-
-  .edithint {
-    margin-top: 6px;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--ink-3);
   }
 
   .thread {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin: 0;
-    max-width: 44em;
+    gap: 10px;
+    max-width: 42em;
   }
 
   .turn {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 9px;
-    font-size: 14px;
-    line-height: 1.75;
+    font-size: 14.5px;
+    line-height: 1.7;
   }
 
   .turn .tag {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    padding: 2px 7px;
-    height: fit-content;
-    margin-top: 3px;
+    height: 21px;
+    padding: 0 8px;
+    margin-top: 2px;
     border-radius: 999px;
-    background: var(--clay-soft);
-    color: var(--clay);
+    background: var(--line-soft);
+    color: var(--t600);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 21px;
     white-space: nowrap;
   }
 
   .turn.author {
-    padding-left: 18px;
+    padding-left: 20px;
   }
 
   .turn.author .tag {
-    background: var(--accent-soft);
-    color: var(--accent-ink);
+    background: var(--blue-bg);
+    color: var(--blue);
   }
 
-  .turn.author span {
-    color: var(--ink-2);
+  .turn.author span:last-child {
+    color: var(--t700);
   }
 
   .photo-slot {
     display: flex;
     align-items: center;
     gap: 7px;
-    margin-top: 10px;
-    padding: 8px 11px;
-    border: 1px dashed var(--clay);
-    border-radius: 8px;
-    background: var(--clay-soft);
-    color: var(--clay);
-    font-size: 12.5px;
-  }
-
-  .counts {
-    margin-top: 10px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .revise {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
     margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--line);
-  }
-
-  .revise input[type='text'] {
-    flex: 1 1 220px;
-    min-width: 0;
-    padding: 8px 11px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-size: 13px;
-  }
-
-  .revise input::placeholder {
-    color: var(--ink-3);
-  }
-
-  .revise input:not(:placeholder-shown) {
-    border-color: var(--clay);
-  }
-
-  .revise select {
-    padding: 8px 9px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-size: 12.5px;
-  }
-
-  .sticky-action {
-    position: sticky;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 16px;
-    padding: 12px 14px;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    background: var(--surface);
-    box-shadow: var(--shadow);
-  }
-
-  .sticky-action p {
-    margin: 0;
-    font-size: 12.5px;
-    color: var(--ink-2);
-  }
-
-  .picker {
-    margin-top: 10px;
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    background: var(--surface);
-    overflow: hidden;
-  }
-
-  .picker > header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 14px;
-    background: var(--accent-soft);
-    color: var(--accent-ink);
-    font-size: 12.5px;
+    padding: 10px 12px;
+    border-radius: var(--r-ctl);
+    background: var(--blue-bg);
+    color: var(--blue);
+    font-size: 13.5px;
     font-weight: 600;
   }
 
-  .pick {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    padding: 12px 14px;
-    border-top: 1px solid var(--line);
-  }
-
-  .pick b {
-    display: block;
-    font-size: 13.5px;
-  }
-
-  .pick p {
-    margin: 2px 0 0;
-    font-size: 12.5px;
-    color: var(--ink-3);
-  }
-
-  .picksearch {
-    padding: 11px 14px 0;
-  }
-
-  .picksearch input {
-    width: 100%;
-    padding: 8px 11px;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-size: 13px;
-  }
-
-  .picklist {
-    max-height: 330px;
-    overflow-y: auto;
-  }
-
-  .chosen {
+  .pfoot {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid var(--accent);
-    border-radius: 8px;
-    background: var(--accent-soft);
-    font-size: 12.5px;
-    color: var(--accent-ink);
-  }
-
-  .libbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-
-  .libbar input[type='search'] {
-    flex: 1 1 220px;
-    min-width: 0;
-    padding: 10px 12px;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-size: 14px;
-  }
-
-  .libbar select {
-    padding: 9px 10px;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-size: 13px;
-  }
-
-  .summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-    padding: 10px 12px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    color: var(--ink-3);
-  }
-
-  .summary b {
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  .lib-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
-    gap: 10px;
-  }
-
-  .libcard {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    padding: 13px 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--surface);
-  }
-
-  .libcard.picked {
-    border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px var(--accent);
-  }
-
-  .libcard h4 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 16.5px;
-    font-weight: 700;
-    line-height: 1.35;
-    letter-spacing: -0.01em;
-    text-wrap: balance;
-  }
-
-  .libcard .libtitle {
-    margin: 0;
-    font-size: 12.5px;
-    color: var(--ink-2);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .libcard .libmeta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 10px;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .libcard .libact {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin-top: auto;
-    padding-top: 9px;
-    border-top: 1px dashed var(--line);
-  }
-
-  .libcard .learn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11.5px;
-    color: var(--ink-3);
-  }
-
-  .libcard .learn input {
-    accent-color: var(--accent);
-  }
-
-  .empty {
-    padding: 28px;
-    text-align: center;
-    color: var(--ink-3);
-    font-size: 13px;
-  }
-
-  .needfix {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 210px);
-    gap: 10px;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 12.5px;
-  }
-
-  .needfix:last-child {
-    border-bottom: 0;
-    padding-bottom: 0;
-  }
-
-  .needfix code {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    color: var(--ink-2);
-    word-break: break-all;
-  }
-
-  .needfix input {
-    width: 100%;
-    padding: 7px 10px;
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-    font-size: 12.5px;
-  }
-
-  .ways {
-    display: grid;
-    gap: 10px;
-  }
-
-  .way {
-    display: grid;
-    grid-template-columns: 30px minmax(0, 1fr);
-    gap: 12px;
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--surface-sunk);
-  }
-
-  .way .mark {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--on-accent);
-    background: var(--accent);
-    width: 24px;
-    height: 24px;
-    display: grid;
-    place-items: center;
-    border-radius: 999px;
-  }
-
-  .way.fallback .mark {
-    background: var(--line-strong);
-    color: var(--ink-2);
-  }
-
-  .way b {
-    font-size: 13.5px;
-  }
-
-  .way p {
-    margin: 3px 0 0;
-    font-size: 12.5px;
-    color: var(--ink-2);
-  }
-
-  .way .when {
-    display: block;
-    margin-top: 5px;
-    font-size: 11.5px;
-    color: var(--ink-3);
-  }
-
-  .two-col {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-    gap: 14px;
-    align-items: start;
-  }
-
-  .two-col .panel + .panel {
     margin-top: 14px;
   }
 
-  .oprow {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--line);
+  .pfoot .input {
+    flex: 1 1 200px;
+    padding: 10px 13px;
+    font-size: 14px;
   }
 
-  .oprow:last-of-type {
+  .opts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--t500);
+  }
+
+  .opts select {
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--surface-2);
+    font-size: 13px;
+    color: var(--t700);
+  }
+
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--t600);
+    cursor: pointer;
+  }
+
+  .check input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--blue);
+  }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    margin-bottom: 10px;
+    border-radius: var(--r-ctl);
+    background: var(--blue-bg);
+    color: var(--blue);
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  /* ---------- lists ---------- */
+
+  .rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .row:last-child {
     border-bottom: 0;
     padding-bottom: 0;
   }
 
-  .oprow b {
-    display: block;
-    font-size: 13px;
+  .row:first-child {
+    padding-top: 0;
   }
 
-  .oprow span {
-    font-size: 12px;
-    color: var(--ink-3);
-  }
-
-  .tabs-preview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 9px 10px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface-sunk);
-  }
-
-  .doctab {
-    padding: 3px 9px;
-    border-radius: 6px 6px 0 0;
-    background: var(--surface);
-    border: 1px solid var(--line-strong);
-    border-bottom: 0;
-    font-size: 11.5px;
-    white-space: nowrap;
-  }
-
-  .docpick {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 12.5px;
-  }
-
-  .docpick:last-child {
-    border-bottom: 0;
-  }
-
-  .docpick input {
-    accent-color: var(--accent);
-  }
-
-  .docpick .k {
+  .row .txt {
     flex: 1 1 auto;
     min-width: 0;
+  }
+
+  .row .txt b {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .docpick .m {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--ink-3);
+  .row .txt span {
+    font-size: 13px;
+    color: var(--t500);
   }
 
-  .table-scroll {
-    overflow-x: auto;
+  .row .when {
+    font-size: 12.5px;
+    color: var(--t400);
+    white-space: nowrap;
+  }
+
+  .searchbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-ctl);
+    background: var(--surface-2);
+    color: var(--t400);
+  }
+
+  .searchbar input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 13px 0;
+    border: 0;
+    background: transparent;
+    font-size: 15px;
+    outline: none;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .toolbar .searchbar {
+    flex: 1 1 auto;
+  }
+
+  .toolbar select {
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-ctl);
+    background: var(--surface-2);
+    font-size: 14px;
+    color: var(--t700);
+  }
+
+  .libgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+    gap: 10px;
+  }
+
+  .lib {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--surface-2);
+  }
+
+  .lib.on {
+    background: var(--blue-bg);
+  }
+
+  .lib h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.4;
+  }
+
+  .lib p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--t500);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .lib .meta {
+    font-size: 12px;
+    color: var(--t400);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lib .act {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 26px 18px;
+    border: 1.5px dashed var(--line);
+    border-radius: 14px;
+    background: var(--surface-2);
+    text-align: center;
+  }
+
+  .drop b {
+    font-size: 14.5px;
+  }
+
+  .drop span {
+    font-size: 13px;
+    color: var(--t500);
+  }
+
+  .empty {
+    padding: 30px;
+    text-align: center;
+    color: var(--t400);
+    font-size: 14px;
+  }
+
+  /* pick card (radio card) */
+
+  .picks {
+    display: grid;
+    gap: 8px;
+  }
+
+  .pickcard {
+    display: flex;
+    gap: 11px;
+    padding: 15px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .pickcard.on {
+    border-color: var(--blue);
+    background: var(--blue-bg);
+  }
+
+  .pickcard input {
+    margin-top: 3px;
+    accent-color: var(--blue);
+  }
+
+  .pickcard b {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 700;
+  }
+
+  .pickcard p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--t600);
+    line-height: 1.55;
+  }
+
+  .doctabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 12px;
+    border-radius: var(--r-ctl);
+    background: var(--surface-2);
+  }
+
+  .doctab {
+    height: 28px;
+    padding: 0 11px;
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--t700);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .doctab.dim {
+    background: transparent;
+    color: var(--t400);
+    box-shadow: none;
   }
 
   table {
     width: 100%;
-    min-width: 420px;
+    min-width: 380px;
     border-collapse: collapse;
-    font-size: 12.5px;
+    font-size: 13.5px;
   }
 
   th,
   td {
-    padding: 9px 10px;
-    border-bottom: 1px solid var(--line);
+    padding: 11px 8px;
+    border-bottom: 1px solid var(--line-soft);
     text-align: left;
-    vertical-align: top;
   }
 
   th {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--t500);
   }
 
-  .locked .panel {
-    opacity: 0.6;
+  .scroll-x {
+    overflow-x: auto;
+  }
+
+  .dim {
+    opacity: 0.55;
     pointer-events: none;
   }
 
   .stream {
-    min-height: 120px;
-    padding: 14px 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--surface-sunk);
-    font-size: 13.5px;
+    min-height: 110px;
+    padding: 16px;
+    border-radius: var(--r-ctl);
+    background: var(--surface-2);
+    font-size: 14px;
     line-height: 1.8;
+    color: var(--t700);
     white-space: pre-wrap;
   }
 
   .caret::after {
     content: '▌';
-    color: var(--accent);
+    color: var(--blue);
     animation: blink 1s steps(2) infinite;
   }
 
@@ -1193,15 +1154,16 @@
   .toast {
     position: fixed;
     left: 50%;
-    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
-    transform: translate(-50%, 12px);
-    z-index: 20;
-    max-width: min(92vw, 460px);
-    padding: 9px 16px;
-    border-radius: 999px;
-    background: var(--ink);
-    color: var(--ground);
-    font-size: 12.5px;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 10px);
+    z-index: 30;
+    max-width: min(92vw, 420px);
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: rgb(25 31 40 / 92%);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 500;
     text-align: center;
     opacity: 0;
     pointer-events: none;
@@ -1228,56 +1190,38 @@
       display: none;
     }
 
-    .topbar .mobile-brand {
-      display: block;
-    }
-
-    .topbar h1 {
-      display: none;
+    .topbar {
+      padding: 0 16px;
     }
 
     .wrap {
-      padding: 16px 16px 0;
+      padding: 4px 16px 150px;
     }
 
-    .main {
-      padding-bottom: 86px;
-    }
-
-    .grid,
-    .worktop .grid,
-    .two-col {
+    .two {
       grid-template-columns: minmax(0, 1fr);
     }
 
     .view h2 {
-      font-size: 21px;
+      font-size: 22px;
     }
 
-    .pick,
-    .needfix {
-      grid-template-columns: minmax(0, 1fr);
+    .dock {
+      left: 0;
+      bottom: 62px;
+      padding: 10px 16px;
     }
 
-    .sticky-action {
-      bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 9px 11px;
-    }
-
-    .sticky-action p {
-      flex: 1 1 100%;
-      font-size: 11.5px;
-    }
-
-    .sticky-action .spacer {
+    .dock p {
       display: none;
     }
 
-    .sticky-action .btn {
+    .dock .btn {
       flex: 1 1 0;
-      padding: 8px 10px;
+    }
+
+    .toast {
+      bottom: calc(132px + env(safe-area-inset-bottom, 0px));
     }
 
     .tabbar {
@@ -1290,31 +1234,26 @@
       grid-template-columns: repeat(5, 1fr);
       padding-bottom: env(safe-area-inset-bottom, 0px);
       background: var(--surface);
-      border-top: 1px solid var(--line);
+      border-top: 1px solid var(--line-soft);
     }
 
     .tabbar button {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
-      padding: 9px 2px 10px;
+      gap: 3px;
+      padding: 9px 2px 8px;
       border: 0;
       background: transparent;
-      color: var(--ink-3);
+      color: var(--t400);
       font-size: 10.5px;
+      font-weight: 500;
       cursor: pointer;
     }
 
-    .tabbar button em {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-style: normal;
-    }
-
     .tabbar button[aria-current='true'] {
-      color: var(--accent);
-      font-weight: 600;
+      color: var(--blue);
+      font-weight: 700;
     }
   }
 
@@ -1329,601 +1268,421 @@
 <div class="app">
   <aside class="rail">
     <div class="brand">
+      <span class="mark">나</span>
       <b>나비효과플랜</b>
-      <span>카페 원고 작업실</span>
     </div>
     <nav class="nav" id="nav-desktop" aria-label="작업 단계"></nav>
-    <div class="rail-foot">화면 시안 v0.4<br />2026.09.15 · 검토용</div>
+    <div class="rail-foot">화면 시안 v0.5</div>
   </aside>
 
   <main class="main">
-    <div class="topbar">
-      <span class="mobile-brand">나비효과플랜</span>
-      <h1 id="view-name">결과 · 버전</h1>
-      <span class="keychip" title="작업 중인 키워드">
-        <span class="badge body">키워드</span><b id="chip-keyword">브라질리언 왁싱 모낭염</b>
-      </span>
-    </div>
+    <div class="topbar"><h1 id="view-name">결과</h1></div>
 
     <div class="wrap">
-      <div class="notice">
+      <div class="hint-bar">
         <b>화면 시안</b>
-        <span
-          >버튼과 화면 전환은 동작하지만, 글은 실제로 생성되지 않고 미리 준비된 예시 원고를
-          보여줍니다. 결과 화면의 <b>더블클릭 직접 수정</b>은 실제로 동작합니다.</span
-        >
+        <span>글은 실제로 생성되지 않아요. 글을 두 번 누르는 직접 수정은 동작해요.</span>
       </div>
 
-      <!-- ① 원고 생성 -->
+      <!-- ① 생성 -->
       <section class="view" id="view-write" hidden>
         <header>
-          <span class="eyebrow">단계 1</span>
-          <h2>키워드 하나로 원고 한 세트</h2>
-          <p>키워드만 넣어도 생성됩니다. 브랜드·제품을 적으면 본문에 자연스럽게 녹여 넣습니다.</p>
+          <h2>어떤 키워드로 쓸까요?</h2>
+          <p>키워드만 넣어도 돼요. 브랜드와 제품을 적으면 본문에 자연스럽게 넣어드려요.</p>
         </header>
 
-        <div class="panel">
-          <div class="grid">
-            <div class="field wide">
-              <label for="f-keyword">핵심 키워드 <i>*</i></label>
+        <div class="card">
+          <div class="stack">
+            <div class="field">
+              <label class="label" for="f-keyword">키워드</label>
               <input
                 id="f-keyword"
-                class="big"
+                class="input lg"
                 type="text"
                 value="브라질리언 왁싱 모낭염"
                 autocomplete="off"
               />
-              <span class="hint">제목에 1회, 본문에 3~5회 자연스럽게 배치됩니다.</span>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label class="label" for="f-brand">브랜드</label>
+                <input id="f-brand" class="input" type="text" value="메드젯" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label class="label" for="f-product">제품</label>
+                <input
+                  id="f-product"
+                  class="input"
+                  type="text"
+                  value="코디세핀 재생크림"
+                  autocomplete="off"
+                />
+              </div>
             </div>
             <div class="field">
-              <label for="f-brand">브랜드명</label>
-              <input id="f-brand" type="text" value="메드젯" autocomplete="off" />
-            </div>
-            <div class="field">
-              <label for="f-product">제품명</label>
-              <input id="f-product" type="text" value="코디세핀 재생크림" autocomplete="off" />
-            </div>
-            <div class="field wide">
-              <label for="f-request">요청사항</label>
-              <textarea id="f-request">
-왁싱 후 3일째 상황부터 시작 / 긁지 말라는 당부 넣기 / 효과 단정하지 말 것</textarea>
-              <span class="hint">결과 화면 상단에서도 바로 고쳐서 다시 돌릴 수 있습니다.</span>
+              <label class="label" for="f-request">요청사항</label>
+              <textarea id="f-request" class="area">
+왁싱 후 3일째 상황부터 시작 / 긁지 말라는 당부 넣기 / 효과 단정하지 않기</textarea>
             </div>
           </div>
         </div>
 
-        <div class="panel">
-          <h3>톤 · 분량 · 댓글</h3>
-          <div class="grid">
+        <div class="card">
+          <h3>원고 설정</h3>
+          <div class="stack">
             <div class="field">
-              <label id="tone-label">글 성격</label>
-              <div class="row" role="radiogroup" aria-labelledby="tone-label">
-                <label class="radio" for="tone-review">
-                  <input type="radio" id="tone-review" name="tone" checked />후기형
-                </label>
-                <label class="radio" for="tone-question">
-                  <input type="radio" id="tone-question" name="tone" />질문형
-                </label>
+              <span class="label">글 성격</span>
+              <div class="seg" id="seg-tone" role="group" aria-label="글 성격">
+                <button type="button" data-seg="tone" data-value="후기형" aria-pressed="true">
+                  후기형
+                </button>
+                <button type="button" data-seg="tone" data-value="질문형" aria-pressed="false">
+                  질문형
+                </button>
               </div>
             </div>
+
             <div class="field">
-              <label for="f-len">본문 분량</label>
-              <select id="f-len">
-                <option>짧게 · 700~1,000자</option>
-                <option selected>보통 · 1,100~1,500자</option>
-                <option>길게 · 1,600~2,200자</option>
-              </select>
+              <span class="label">본문 분량</span>
+              <div class="seg" id="seg-len" role="group" aria-label="본문 분량">
+                <button type="button" data-seg="len" data-value="짧게" aria-pressed="false">
+                  짧게
+                </button>
+                <button type="button" data-seg="len" data-value="보통" aria-pressed="true">
+                  보통
+                </button>
+                <button type="button" data-seg="len" data-value="길게" aria-pressed="false">
+                  길게
+                </button>
+              </div>
             </div>
-            <div class="field">
-              <label for="f-count">댓글 개수</label>
-              <select id="f-count">
-                <option>1개</option>
-                <option>2개</option>
-                <option>3개</option>
-                <option selected>4개</option>
-                <option>5개</option>
-                <option>6개</option>
-                <option>7개</option>
-                <option>8개</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="f-mobile">글 모양</label>
-              <label class="checkline" for="f-mobile">
-                <input type="checkbox" id="f-mobile" checked />모바일 최적화 (세로로 길게)
-              </label>
-              <span class="hint">
-                한 문단을 2~3줄로 끊고 줄바꿈을 자주 넣습니다. 체크를 풀면 문단을 길게 씁니다.
+
+            <div class="switch-row">
+              <span class="txt">
+                <b>댓글 개수</b>
+                <span class="desc">1개부터 8개까지 고를 수 있어요</span>
+              </span>
+              <span class="stepper">
+                <button type="button" id="cnt-minus" aria-label="댓글 줄이기">−</button>
+                <span id="cnt-value">4개</span>
+                <button type="button" id="cnt-plus" aria-label="댓글 늘리기">+</button>
               </span>
             </div>
-            <div class="field wide">
-              <label id="set-label">댓글 세트</label>
-              <div class="row" role="radiogroup" aria-labelledby="set-label">
-                <label class="radio" for="set-new">
-                  <input type="radio" id="set-new" name="setmode" checked />새로 생성
-                </label>
-                <label class="radio" for="set-load">
-                  <input type="radio" id="set-load" name="setmode" />기존 댓글세트 가져오기
-                </label>
-                <button class="btn small" type="button" id="btn-choose-set">원고 선택</button>
+
+            <div class="switch-row">
+              <span class="txt">
+                <b>모바일에서 세로로 길게</b>
+                <span class="desc">문단을 2~3줄로 끊어서 써요. 끄면 문단을 길게 써요.</span>
+              </span>
+              <label class="switch">
+                <input type="checkbox" id="f-mobile" checked aria-label="모바일에서 세로로 길게" />
+                <i></i>
+              </label>
+            </div>
+
+            <div class="field">
+              <span class="label">댓글 세트</span>
+              <div class="seg" id="seg-set" role="group" aria-label="댓글 세트">
+                <button type="button" data-seg="set" data-value="new" aria-pressed="true">
+                  새로 만들기
+                </button>
+                <button type="button" data-seg="set" data-value="load" aria-pressed="false">
+                  기존 세트 가져오기
+                </button>
               </div>
-              <div class="chosen" id="set-chosen" hidden></div>
-              <div class="picker" id="set-picker" hidden></div>
-              <span class="hint">가져온 세트는 재생성해도 글자 그대로 유지됩니다.</span>
+              <div id="set-zone"></div>
             </div>
-            <div class="field wide">
-              <label for="f-avoid">쓰지 말 표현</label>
-              <textarea id="f-avoid">
-완치, 부작용 없음, 100% 보장, 최저가, 의약품 효능 단정 표현</textarea>
+
+            <div class="field">
+              <label class="label" for="f-avoid">쓰지 않을 표현</label>
+              <input
+                id="f-avoid"
+                class="input"
+                type="text"
+                value="완치, 부작용 없음, 100% 보장, 최저가"
+              />
             </div>
-          </div>
-          <div class="row" style="margin-top: 16px">
-            <button class="btn primary" id="btn-generate" type="button">원고 생성</button>
-            <button class="btn ghost" type="button" data-go="refs">보관함 열기</button>
-            <span class="spacer"></span>
-            <span class="badge edited">예상 30~60초</span>
           </div>
         </div>
 
-        <div class="panel" id="stream-panel" hidden>
-          <h3>생성 중</h3>
+        <div class="card" id="stream-card" hidden>
+          <h3>쓰는 중이에요</h3>
           <div class="stream" id="stream-out"></div>
         </div>
       </section>
 
-      <!-- ② 원고 보관함 -->
+      <!-- ② 보관함 -->
       <section class="view" id="view-refs" hidden>
         <header>
-          <span class="eyebrow">단계 2</span>
           <h2>원고 보관함</h2>
           <p>
-            <code>키워드.txt</code> 파일들을 폴더째 올리면 파일명이 곧 키워드가 됩니다. 검색·정렬로
-            찾고, 원하는 원고의 <b>댓글 세트만</b> 바로 가져다 씁니다.
+            <b>키워드.txt</b> 파일을 폴더째 올리면 파일명이 그대로 키워드가 돼요. 원하는 원고의 댓글
+            세트만 바로 가져다 쓸 수 있어요.
           </p>
         </header>
 
-        <div class="panel">
-          <h3 class="tight">폴더 통째로 올리기</h3>
-          <div class="drop-area">
-            <div
-              style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 4px;
-                padding: 22px;
-                border: 1px dashed var(--line-strong);
-                border-radius: var(--radius);
-                background: var(--surface-sunk);
-                color: var(--ink-3);
-                font-size: 12.5px;
-                text-align: center;
-              "
-            >
-              <b style="color: var(--ink-2)">원고 폴더를 여기에 끌어다 놓기</b>
-              <span>.txt · .docx · 구글 문서 링크 · 하위 폴더까지 한 번에</span>
-              <button
-                class="btn small"
-                type="button"
-                data-toast="시안에서는 업로드가 열리지 않습니다"
+        <div class="card">
+          <div class="toolbar">
+            <label class="searchbar">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
               >
-                폴더 선택
-              </button>
-            </div>
-          </div>
-          <div class="table-scroll" style="margin-top: 14px">
-            <table>
-              <thead>
-                <tr>
-                  <th>읽는 규칙</th>
-                  <th>내용</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><b>키워드</b></td>
-                  <td>
-                    파일명에서 확장자만 뗍니다. <code>브라질리언 왁싱 모낭염.txt</code> → 그대로
-                    키워드
-                  </td>
-                </tr>
-                <tr>
-                  <td><b>제목</b></td>
-                  <td><code>제목:</code> 표기가 없으면 <b>첫 줄</b>을 제목으로 봅니다</td>
-                </tr>
-                <tr>
-                  <td><b>본문</b></td>
-                  <td>첫 빈 줄 다음부터, 댓글 시작 전까지</td>
-                </tr>
-                <tr>
-                  <td><b>댓글 세트</b></td>
-                  <td>
-                    <code>댓글1</code> <code>댓글 1</code> <code>1.</code> 같은 번호 표기가 처음
-                    나오는 줄부터. <code>ㄴ</code> <code>└</code> 로 시작하면 글쓴이 답글로 인식
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="summary" id="lib-summary"></div>
-          <div class="libbar">
-            <input
-              type="search"
-              id="lib-search"
-              placeholder="키워드 · 제목 · 브랜드 검색 — 예: 모낭염"
-              aria-label="보관함 검색"
-            />
-            <select id="lib-sort" aria-label="정렬 기준">
-              <option value="recent">최근 올린 순</option>
-              <option value="name">키워드 가나다순</option>
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+              <input
+                id="lib-search"
+                type="search"
+                placeholder="키워드 검색"
+                aria-label="보관함 검색"
+              />
+            </label>
+            <select id="lib-sort" aria-label="정렬">
+              <option value="recent">최근 순</option>
+              <option value="name">가나다순</option>
               <option value="comments">댓글 많은 순</option>
               <option value="used">최근 쓴 순</option>
             </select>
           </div>
-          <div class="lib-grid" id="lib-grid"></div>
-          <div class="empty" id="lib-empty" hidden>찾는 키워드가 없습니다.</div>
+          <p class="desc" id="lib-summary" style="margin: 0 0 12px"></p>
+          <div class="libgrid" id="lib-grid"></div>
+          <div class="empty" id="lib-empty" hidden>찾는 키워드가 없어요</div>
         </div>
 
-        <div class="panel">
-          <div class="row" style="margin-bottom: 8px">
-            <h3 style="margin: 0">확인 필요</h3>
-            <span class="spacer"></span>
-            <span class="badge soon">2건</span>
+        <div class="card">
+          <h3>
+            원고 올리기
+            <span class="sub">첫 줄을 제목으로, 댓글 번호가 나오는 줄부터 댓글로 읽어요</span>
+          </h3>
+          <div class="drop">
+            <b>폴더를 여기에 끌어다 놓아 주세요</b>
+            <span>.txt · 구글 문서 · 하위 폴더까지 한 번에</span>
+            <button class="btn sm" type="button" data-toast="시안에서는 업로드가 열리지 않아요">
+              폴더 고르기
+            </button>
           </div>
-          <p style="margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3)">
-            본문과 댓글 경계를 못 찾은 파일입니다. 키워드만 적어주면 보관함에 들어가고, 댓글 구분은
-            직접 지정할 수 있습니다.
-          </p>
-          <div class="needfix">
-            <span><code>무제-2.txt</code> · 댓글 번호 표기 없음</span>
-            <input type="text" placeholder="키워드 입력" aria-label="무제-2.txt 키워드" />
-          </div>
-          <div class="needfix">
-            <span><code>0912_수정본(1).txt</code> · 첫 줄이 비어 있음</span>
-            <input type="text" placeholder="키워드 입력" aria-label="0912 수정본 키워드" />
+          <div
+            class="row"
+            style="margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 14px"
+          >
+            <span class="txt">
+              <b>확인이 필요한 파일 2개</b>
+              <span>댓글이 어디부터인지 못 찾았어요</span>
+            </span>
+            <button class="btn sm" type="button" data-toast="시안에서는 열리지 않아요">
+              확인하기
+            </button>
           </div>
         </div>
 
-        <div class="panel">
-          <h3 class="tight">네이버 카페 글 가져오기</h3>
-          <p style="margin: 0 0 14px; font-size: 12.5px; color: var(--ink-3)">
-            아래 순서대로 자동 시도합니다. <b>멤버 공개 글</b>은 2번 방법이나 열람용 계정을 등록하면
-            읽을 수 있습니다. 수집한 글도 보관함에 키워드 카드로 들어갑니다.
-          </p>
-          <div class="ways">
-            <div class="way">
-              <span class="mark">1</span>
-              <div>
-                <b>URL 붙여넣기 — 서버가 바로 수집</b>
-                <p>주소만 넣으면 제목 · 본문 · 댓글(대댓글 포함)을 한 번에 가져옵니다.</p>
-                <span class="when">전체 공개 글 · 대부분 여기서 끝납니다</span>
-              </div>
-            </div>
-            <div class="way">
-              <span class="mark">2</span>
-              <div>
-                <b>열람용 계정 등록 / 수집 버튼</b>
-                <p>
-                  멤버 공개 글은 읽을 수 있는 계정이 필요합니다. 열람용 계정을 한 번 등록해 두거나,
-                  즐겨찾기에 넣어 둔 <b>카페 수집</b> 버튼을 글에서 누르면 됩니다.
-                </p>
-                <span class="when">멤버 공개 · 등급 제한 글</span>
-              </div>
-            </div>
-            <div class="way fallback">
-              <span class="mark">3</span>
-              <div>
-                <b>직접 붙여넣기</b>
-                <p>
-                  본문과 댓글을 그대로 붙여넣습니다. 어떤 상황에서도 쓸 수 있는 최후 수단입니다.
-                </p>
-                <span class="when">항상 열려 있음</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top: 14px">
+        <div class="card">
+          <h3>
+            카페 글 가져오기
+            <span class="sub"
+              >전체 공개 글은 주소만, 멤버 공개 글은 열람 계정이나 수집 버튼으로</span
+            >
+          </h3>
+          <div class="field">
             <input
               id="f-url"
+              class="input"
               type="url"
-              style="
-                flex: 1 1 260px;
-                min-width: 0;
-                padding: 11px 12px;
-                border: 1px solid var(--line-strong);
-                border-radius: 8px;
-                background: var(--surface-sunk);
-                font-size: 15px;
-              "
               value="https://cafe.naver.com/lolkor/31337299"
+              aria-label="카페 글 주소"
             />
-            <button class="btn primary" id="btn-fetch" type="button">가져오기</button>
-            <button class="btn" type="button" data-toast="즐겨찾기 바에 끌어다 놓으면 등록됩니다">
+          </div>
+          <div class="pfoot" style="margin-top: 12px">
+            <button class="btn pri" id="btn-fetch" type="button">가져오기</button>
+            <button class="btn" type="button" data-toast="즐겨찾기 바에 끌어다 놓으면 등록돼요">
               수집 버튼 설치
             </button>
           </div>
         </div>
       </section>
 
-      <!-- ③ 결과 · 버전 -->
+      <!-- ③ 결과 -->
       <section class="view" id="view-result" hidden>
         <header>
-          <span class="eyebrow">단계 3</span>
-          <h2>제목 · 본문 · 댓글 세트</h2>
-          <p>
-            수정 지시를 적어 다시 생성하거나, <b>글을 더블클릭해서 직접 고칠 수 있습니다.</b> 직접
-            고친 내용은 바로 자동 저장되고, 다음 버전을 만들어도 그대로 남습니다.
-          </p>
+          <h2>제목 · 본문 · 댓글</h2>
+          <p>고칠 곳을 적어서 다시 만들거나, 글을 두 번 눌러 직접 고칠 수 있어요.</p>
         </header>
 
-        <div class="panel worktop">
-          <div class="grid">
+        <div class="card">
+          <div class="two">
             <div class="field">
-              <label for="w-keyword">키워드</label>
-              <input id="w-keyword" type="text" value="브라질리언 왁싱 모낭염" autocomplete="off" />
+              <label class="label" for="w-keyword">키워드</label>
+              <input id="w-keyword" class="input" type="text" value="브라질리언 왁싱 모낭염" />
             </div>
             <div class="field">
-              <label for="w-request">요청사항</label>
-              <textarea id="w-request" style="min-height: 46px">
-왁싱 후 3일째 상황부터 시작 / 긁지 말라는 당부 넣기 / 효과 단정하지 말 것</textarea>
+              <label class="label" for="w-request">요청사항</label>
+              <input
+                id="w-request"
+                class="input"
+                type="text"
+                value="왁싱 후 3일째부터 / 긁지 말라는 당부"
+              />
             </div>
           </div>
-          <div class="row">
-            <button class="btn" type="button" id="btn-regen">이 조건으로 전체 다시 생성</button>
-            <span class="spacer"></span>
-            <span class="badge edited" id="save-state">자동 저장됨</span>
+          <div class="pfoot">
+            <button class="btn" type="button" id="btn-regen">이 조건으로 다시 만들기</button>
+            <span class="grow"></span>
+            <span class="chip ok" id="save-state">저장됨</span>
           </div>
         </div>
 
-        <div class="versions" id="version-tabs"></div>
+        <div class="vrow" id="version-tabs"></div>
 
         <div id="head-pieces"></div>
 
-        <div class="section-bar">
-          <h3>댓글 세트</h3>
-          <span class="badge cmt" id="comment-count">4개</span>
-          <span class="spacer"></span>
-          <button class="btn small" type="button" id="btn-import">기존 세트 가져오기</button>
-          <button class="btn small" type="button" id="btn-reset-set" hidden>
-            새로 생성으로 되돌리기
-          </button>
+        <div class="sec">
+          <h3>댓글</h3>
+          <span class="grow"></span>
+          <button class="btn sm" type="button" id="btn-import">기존 세트 가져오기</button>
         </div>
 
-        <div class="picker" id="picker" hidden></div>
-
+        <div id="import-banner"></div>
+        <div id="picker-zone"></div>
         <div id="comment-pieces"></div>
-
-        <div class="sticky-action">
-          <p id="revise-status">수정 지시를 적은 카드: <b>0개</b></p>
-          <span class="spacer"></span>
-          <button class="btn" type="button" data-go="export">내보내기</button>
-          <button class="btn primary" id="btn-revise" type="button">다음 버전 생성</button>
-        </div>
       </section>
 
       <!-- ④ 내보내기 -->
       <section class="view" id="view-export" hidden>
         <header>
-          <span class="eyebrow">단계 4</span>
-          <h2>저장하고 전달하기</h2>
-          <p>카페에 올릴 때 실제로 쓰는 단위로 복사하고, 여러 키워드를 한 문서에 모아 넘깁니다.</p>
+          <h2>어떤 원고를 내보낼까요?</h2>
+          <p>여러 번 만든 원고를 골라 한 번에 넘길 수 있어요.</p>
         </header>
 
-        <div class="two-col">
-          <div>
-            <div class="panel">
-              <h3 class="tight">복사 · 저장</h3>
-              <div class="oprow">
-                <span><b>전체</b><span>제목 + 본문 + 댓글 세트</span></span>
-                <button class="btn small" type="button" data-toast="전체 원고를 복사했습니다">
-                  복사
-                </button>
-              </div>
-              <div class="oprow">
-                <span><b>본문만</b><span>카페 글쓰기 창에 그대로</span></span>
-                <button class="btn small" type="button" data-toast="본문을 복사했습니다">
-                  복사
-                </button>
-              </div>
-              <div class="oprow">
-                <span><b>댓글 세트만</b><span>티키타카 순서 · 사진 표시 포함</span></span>
-                <button class="btn small" type="button" data-toast="댓글 세트를 복사했습니다">
-                  복사
-                </button>
-              </div>
-              <div class="oprow">
-                <span><b>파일로 저장</b><span>브라질리언 왁싱 모낭염.txt</span></span>
-                <button class="btn small" type="button" data-toast="시안에서는 저장되지 않습니다">
-                  .txt 저장
-                </button>
-              </div>
-              <p style="margin: 10px 0 0; font-size: 11.5px; color: var(--ink-3)">
-                파일은 항상 <code>.txt</code>로, 파일명은 키워드로 저장됩니다.
-              </p>
-            </div>
+        <div class="card">
+          <h3>
+            만든 원고
+            <span class="sub" id="doc-count"></span>
+          </h3>
+          <div class="rows" id="doc-list"></div>
+          <div class="pfoot">
+            <button class="btn sm" type="button" id="btn-all">전체 고르기</button>
+            <button class="btn sm ghost" type="button" id="btn-none">전체 해제</button>
           </div>
+        </div>
 
-          <div>
-            <div class="panel">
-              <h3 class="tight">Google Docs로 내보내기</h3>
-              <div class="field" style="margin-bottom: 12px">
-                <label for="f-doctitle">문서 제목</label>
-                <input
-                  id="f-doctitle"
-                  type="text"
-                  placeholder="비워두면 2026-09-15 브라질리언 왁싱 모낭염"
-                />
-                <span class="hint">비워두면 오늘 날짜 + 키워드로 자동 저장됩니다.</span>
-              </div>
-
-              <label class="checkline" for="f-multi" style="margin-bottom: 10px">
-                <input type="checkbox" id="f-multi" checked />여러 키워드를 한 문서에 · 키워드마다
-                탭 분리
-              </label>
-
-              <div id="doc-list"></div>
-
-              <div class="tabs-preview" id="doc-tabs" style="margin-top: 10px"></div>
-
-              <div class="row" style="margin-top: 14px">
-                <button
-                  class="btn primary"
-                  type="button"
-                  data-toast="구글 계정 연결 후 문서가 열립니다"
-                >
-                  구글 계정 연결하고 내보내기
-                </button>
-                <span class="badge edited">최근 내보냄 · 없음</span>
-              </div>
-            </div>
+        <div class="card">
+          <h3>내보내는 방법</h3>
+          <div class="seg" id="seg-way" role="group" aria-label="내보내는 방법">
+            <button type="button" data-seg="way" data-value="docs" aria-pressed="true">
+              구글 문서
+            </button>
+            <button type="button" data-seg="way" data-value="txt" aria-pressed="false">
+              txt 파일
+            </button>
+            <button type="button" data-seg="way" data-value="copy" aria-pressed="false">
+              복사하기
+            </button>
           </div>
+          <div id="way-zone" style="margin-top: 18px"></div>
         </div>
       </section>
 
-      <!-- ⑤ 네이버 업로드 -->
+      <!-- ⑤ 업로드 -->
       <section class="view" id="view-publish" hidden>
         <header>
-          <span class="eyebrow">단계 5 · 심화</span>
-          <h2>네이버 카페 업로드 <span class="badge soon">준비 중</span></h2>
-          <p>
-            열람과 업로드는 필요한 것이 다릅니다. 열람은 계정 하나면 되지만, 업로드는 본문과 댓글이
-            서로 다른 계정으로 올라가야 합니다.
-          </p>
+          <h2>네이버 카페에 올리기 <span class="chip warn">준비 중</span></h2>
+          <p>읽는 것과 올리는 것은 필요한 게 달라요. 아래 방식만 정해 주시면 그대로 만들어요.</p>
         </header>
 
-        <div class="panel">
-          <h3 class="tight">1차 · 멤버 공개 글 열람</h3>
-          <p style="margin: 0 0 10px; font-size: 13px; color: var(--ink-2)">
-            읽을 수 있는 계정 <b>하나</b>만 등록하면 해결됩니다. 수집(단계 2)에서 바로 쓰입니다.
-          </p>
-          <div class="oprow">
-            <span><b>열람용 계정</b><span>카페 가입·등급이 확보된 계정 1개</span></span>
-            <span class="badge soon">미등록</span>
+        <div class="card">
+          <h3>
+            먼저, 멤버 공개 글 읽기
+            <span class="sub">읽을 수 있는 계정 하나만 등록하면 끝나요</span>
+          </h3>
+          <div class="row">
+            <span class="txt">
+              <b>열람용 계정</b>
+              <span>카페 가입과 등급이 되어 있는 계정 1개</span>
+            </span>
+            <span class="chip warn">미등록</span>
           </div>
         </div>
 
-        <div class="panel">
-          <h3 class="tight">2차 · 업로드 — 계정 연결 방식을 먼저 정해야 합니다</h3>
-          <p style="margin: 0 0 12px; font-size: 13px; color: var(--ink-2)">
-            댓글1, 댓글2가 각각 다른 계정이라 계정을 <b>여러 개</b> 다뤄야 합니다. 아래 셋 중 하나를
-            고르면 그 방식으로 개발합니다.
-          </p>
-          <div class="ways">
-            <div class="way">
-              <span class="mark">A</span>
-              <div>
-                <b>서버에 계정 세션 저장 <span class="badge body">여러 계정에 적합</span></b>
-                <p>
-                  계정마다 한 번씩 로그인해 세션만 저장합니다. 비밀번호 대신 세션을 보관하고, 예약
-                  발행·순차 등록이 전부 자동으로 돌아갑니다.
-                </p>
-                <span class="when">세션이 풀리면 해당 계정만 다시 연결</span>
-              </div>
-            </div>
-            <div class="way">
-              <span class="mark">B</span>
-              <div>
-                <b>크롬 브라우저에 로그인해 두고 등록</b>
-                <p>
-                  내 브라우저에서 글이 올라갑니다. 계정 정보를 서버가 전혀 모르지만, 댓글 계정마다
-                  프로필을 바꿔 로그인해야 해서 사람이 계속 붙어 있어야 합니다.
-                </p>
-                <span class="when">계정이 1~2개일 때 가장 안전</span>
-              </div>
-            </div>
-            <div class="way fallback">
-              <span class="mark">C</span>
-              <div>
-                <b>아이디 · 비밀번호를 서버에 저장</b>
-                <p>
-                  서버가 직접 로그인합니다. 캡차 · 기기 인증에 자주 막히고 계정 잠김 위험이
-                  있습니다.
-                </p>
-                <span class="when">권장하지 않음</span>
-              </div>
-            </div>
+        <div class="card">
+          <h3>
+            올릴 때 계정 연결 방식
+            <span class="sub">댓글마다 계정이 달라서 여러 개를 다뤄야 해요</span>
+          </h3>
+          <div class="picks" id="way-picks"></div>
+        </div>
+
+        <div class="card dim">
+          <h3>계정 배정</h3>
+          <div class="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th>역할</th>
+                  <th>계정</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>본문 · 글쓴이 답글</td>
+                  <td>계정 고르기</td>
+                  <td>미연결</td>
+                </tr>
+                <tr>
+                  <td>댓글1</td>
+                  <td>계정 고르기</td>
+                  <td>미연결</td>
+                </tr>
+                <tr>
+                  <td>댓글2</td>
+                  <td>계정 고르기</td>
+                  <td>미연결</td>
+                </tr>
+                <tr>
+                  <td>댓글3</td>
+                  <td>계정 고르기</td>
+                  <td>미연결</td>
+                </tr>
+                <tr>
+                  <td>댓글4</td>
+                  <td>계정 고르기</td>
+                  <td>미연결</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <div class="locked">
-          <div class="panel">
-            <h3 class="tight">계정 배정 (미리 배치된 화면)</h3>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>역할</th>
-                    <th>계정</th>
-                    <th>상태</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><b>본문 · 글쓴이 답글</b></td>
-                    <td>계정 선택</td>
-                    <td>미연결</td>
-                  </tr>
-                  <tr>
-                    <td><b>댓글1</b></td>
-                    <td>계정 선택</td>
-                    <td>미연결</td>
-                  </tr>
-                  <tr>
-                    <td><b>댓글2</b></td>
-                    <td>계정 선택</td>
-                    <td>미연결</td>
-                  </tr>
-                  <tr>
-                    <td><b>댓글3</b></td>
-                    <td>계정 선택</td>
-                    <td>미연결</td>
-                  </tr>
-                  <tr>
-                    <td><b>댓글4</b></td>
-                    <td>계정 선택</td>
-                    <td>미연결</td>
-                  </tr>
-                </tbody>
-              </table>
+        <div class="card dim">
+          <h3>올리는 간격</h3>
+          <div class="rows">
+            <div class="row">
+              <span class="txt"><b>본문 올리는 시각</b></span
+              ><span class="when">바로 / 예약</span>
             </div>
-          </div>
-
-          <div class="panel">
-            <h3 class="tight">발행 · 텀 설정</h3>
-            <div class="grid">
-              <div class="field">
-                <label for="p-cafe">카페 · 게시판</label>
-                <select id="p-cafe">
-                  <option>계정 연결 후 선택</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="p-when">본문 발행 시각</label>
-                <input id="p-when" type="text" value="즉시 / 예약" readonly />
-              </div>
-              <div class="field">
-                <label for="p-first">본문 → 첫 댓글 텀</label>
-                <input id="p-first" type="text" value="10분" readonly />
-              </div>
-              <div class="field">
-                <label for="p-gap">댓글 사이 텀</label>
-                <input id="p-gap" type="text" value="3분 ~ 20분 (랜덤)" readonly />
-              </div>
-              <div class="field wide">
-                <label for="p-reply">글쓴이 답글 텀</label>
-                <input id="p-reply" type="text" value="댓글이 달린 뒤 2분 ~ 10분 (랜덤)" readonly />
-              </div>
+            <div class="row">
+              <span class="txt"><b>본문 → 첫 댓글</b></span
+              ><span class="when">10분</span>
             </div>
-            <div class="row" style="margin-top: 14px">
-              <button class="btn primary" type="button" disabled>카페에 등록</button>
+            <div class="row">
+              <span class="txt"><b>댓글 사이</b></span
+              ><span class="when">3~20분 랜덤</span>
+            </div>
+            <div class="row">
+              <span class="txt"><b>글쓴이 답글</b></span
+              ><span class="when">2~10분 랜덤</span>
             </div>
           </div>
         </div>
       </section>
     </div>
+
+    <div class="dock" id="dock"><div class="inner" id="dock-inner"></div></div>
   </main>
 
   <nav class="tabbar" id="nav-mobile" aria-label="작업 단계"></nav>
@@ -1932,12 +1691,30 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+  const ICON = {
+    write: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M14 6l4 4"/>',
+    refs: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>',
+    result:
+      '<path d="M6 3h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+    export:
+      '<path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/>',
+    publish:
+      '<path d="M7 18a4 4 0 0 1-.4-8A6 6 0 0 1 18 9.6 3.7 3.7 0 0 1 17.5 18H7Z"/><path d="M12 21v-7"/><path d="m9 16 3-3 3 3"/>',
+    check: '<path d="m5 13 4 4L19 7"/>',
+    lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    image:
+      '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m5 17 4.5-4.5L13 16l2.5-2.5L19 17"/>',
+  };
+
+  const icon = (name, size = 20) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
+
   const VIEWS = [
-    { id: 'write', no: '1', label: '원고 생성', short: '생성' },
-    { id: 'refs', no: '2', label: '원고 보관함', short: '보관함' },
-    { id: 'result', no: '3', label: '결과 · 버전', short: '결과' },
-    { id: 'export', no: '4', label: '내보내기', short: '내보내기' },
-    { id: 'publish', no: '5', label: '네이버 업로드', short: '업로드' },
+    { id: 'write', label: '생성' },
+    { id: 'refs', label: '보관함' },
+    { id: 'result', label: '결과' },
+    { id: 'export', label: '내보내기' },
+    { id: 'publish', label: '업로드' },
   ];
 
   const TITLE_V1 = '브라질리언 왁싱하고 모낭염 올라와서 2주 고생한 후기';
@@ -1976,8 +1753,7 @@
 혹시 저처럼 왁싱하고 올라오신 분들 계시면
 긁지 말고 며칠만 참아보세요. 그게 제일 빨랐습니다.`;
 
-  // 티키타카는 댓글1 · 댓글2에만. 나머지는 단일 댓글.
-  const COMMENTS_V1 = [
+  const COMMENTS = [
     {
       photo: false,
       thread: [
@@ -2014,54 +1790,41 @@
     },
   ];
 
-  const COMMENT3_V2 = {
-    photo: false,
-    edited: true,
-    thread: [
-      { by: 'c', text: '왁싱하고 바로 운동 가는 게 제일 안 좋대요. 땀 차면 더 올라오더라고요' },
-    ],
-  };
-
-  // 보관함 — 실제 발행 시트 기준 예시
   const LIBRARY = [
     {
       id: 'l1',
       keyword: '브라질리언 왁싱 모낭염',
-      title: '브라질리언 왁싱하고 모낭염 올라와서 2주 고생한 후기',
+      title: '왁싱하고 모낭염 올라와서 2주 고생한 후기',
       turns: [3, 5, 1, 1],
-      date: '2026.08.13',
+      date: '08.13',
       used: '오늘',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: true,
     },
     {
       id: 'l2',
       keyword: '팔꿈치 각질',
-      title: '팔꿈치 까맣게 각질 올라온 거 관리한 방법',
+      title: '팔꿈치 각질 관리한 방법 정리',
       turns: [3, 5, 1, 1],
-      date: '2026.08.13',
+      date: '08.13',
       used: '3일 전',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: true,
     },
     {
       id: 'l3',
       keyword: '티티베연고',
-      title: '연고 바꿔보면서 정리한 내용 공유해요',
+      title: '연고 바꿔보면서 정리한 내용',
       turns: [3, 1, 1],
-      date: '2026.08.19',
+      date: '08.19',
       used: '2주 전',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: true,
     },
     {
       id: 'l4',
       keyword: '피부 발진 가려움',
-      title: '갑자기 올라온 발진 때문에 밤에 잠 못 잔 얘기',
+      title: '갑자기 올라온 발진 때문에 잠 못 잔 얘기',
       turns: [3, 5, 1, 1],
-      date: '2026.08.20',
+      date: '08.20',
       used: '—',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
@@ -2069,9 +1832,8 @@
       keyword: '피부 곰팡이균 연고',
       title: '곰팡이균이라는 말 듣고 찾아본 것들',
       turns: [3, 1, 1, 1],
-      date: '2026.08.20',
+      date: '08.20',
       used: '한 달 전',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
@@ -2079,29 +1841,26 @@
       keyword: '피부 소양증 연고',
       title: '가려움 때문에 병원 갔다가 들은 얘기',
       turns: [3, 5, 1],
-      date: '2026.08.20',
+      date: '08.20',
       used: '—',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
       id: 'l7',
       keyword: '햇빛 알레르기 연고',
-      title: '여름마다 올라오는 거 올해는 미리 준비했어요',
+      title: '여름마다 올라오는 거 올해는 미리 준비',
       turns: [3, 1, 1, 1],
-      date: '2026.08.21',
+      date: '08.21',
       used: '—',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
       id: 'l8',
       keyword: '어루러기 연고 추천',
-      title: '등에 하얗게 번진 거 신경 쓰여서 정리했습니다',
+      title: '등에 하얗게 번진 거 신경 쓰여서 정리',
       turns: [3, 5, 1, 1],
-      date: '2026.08.21',
+      date: '08.21',
       used: '3주 전',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
@@ -2109,9 +1868,8 @@
       keyword: '남자 사타구니 가려움',
       title: '말 꺼내기 민망해서 혼자 찾아본 것들',
       turns: [3, 1, 1],
-      date: '2026.08.21',
+      date: '08.21',
       used: '—',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
@@ -2119,9 +1877,8 @@
       keyword: '쥐젖 제거 후 관리',
       title: '쥐젖 빼고 나서 관리가 더 중요하더라고요',
       turns: [3, 5, 1, 1],
-      date: '2026.08.21',
+      date: '08.21',
       used: '—',
-      brand: '메드젯 · 코디세핀 재생크림',
       learn: false,
     },
     {
@@ -2129,115 +1886,150 @@
       keyword: '바이브랩 두피앰플',
       title: '두피 앰플 두 달 써보고 남기는 기록',
       turns: [3, 5, 1],
-      date: '2026.08.21',
+      date: '08.21',
       used: '—',
-      brand: '리커먼 · 3GF샴푸',
       learn: false,
     },
     {
       id: 'l12',
-      keyword: '라우쉬 헤어토닉',
-      title: '헤어토닉 바꾸면서 같이 정리한 루틴',
-      turns: [3, 1, 1, 1],
-      date: '2026.08.21',
-      used: '—',
-      brand: '리커먼 · 3GF샴푸',
-      learn: false,
-    },
-    {
-      id: 'l13',
       keyword: '미녹시딜 3%',
       title: '3% 쓰다가 생긴 궁금한 것들 정리',
       turns: [3, 5, 1, 1],
-      date: '2026.08.24',
+      date: '08.24',
       used: '—',
-      brand: '리커먼 · 3GF샴푸',
       learn: false,
     },
+  ];
+
+  // 이번에 만든 원고 (내보내기 대상)
+  const MADE = [
+    { id: 'm1', keyword: '브라질리언 왁싱 모낭염', when: '방금', comments: 4 },
+    { id: 'm2', keyword: '팔꿈치 각질', when: '오늘 14:02', comments: 4 },
+    { id: 'm3', keyword: '티티베연고', when: '오늘 13:40', comments: 3 },
+    { id: 'm4', keyword: '피부 발진 가려움', when: '오늘 11:20', comments: 4 },
+    { id: 'm5', keyword: '어루러기 연고 추천', when: '어제', comments: 4 },
+  ];
+
+  const UPLOAD_WAYS = [
     {
-      id: 'l14',
-      keyword: '지루성 피부염 연고',
-      title: '재발 반복하다가 루틴 잡은 얘기',
-      turns: [3, 5, 1],
-      date: '2026.08.24',
-      used: '두 달 전',
-      brand: '메드젯 · 코디세핀 재생크림',
-      learn: false,
+      id: 'a',
+      title: '서버에 계정 세션 저장',
+      desc: '계정마다 한 번씩만 로그인해요. 비밀번호는 저장하지 않고, 예약과 순차 등록이 자동으로 돌아가요.',
+      tag: '계정 많을 때 편해요',
     },
     {
-      id: 'l15',
-      keyword: '편평사마귀 제거 비용',
-      title: '견적 두 군데 받아보고 결정했습니다',
-      turns: [3, 1, 1, 1],
-      date: '2026.08.26',
-      used: '—',
-      brand: '메드젯 · 코디세핀 재생크림',
-      learn: false,
+      id: 'b',
+      title: '크롬에 로그인해 두고 올리기',
+      desc: '내 브라우저에서 올라가요. 계정 정보를 서버가 전혀 몰라요. 대신 댓글 계정마다 바꿔 로그인해야 해요.',
+      tag: '가장 안전해요',
     },
     {
-      id: 'l16',
-      keyword: '로게인폼 약국',
-      title: '약국에서 물어보기 전에 알아둔 것',
-      turns: [3, 5, 1, 1],
-      date: '2026.08.25',
-      used: '—',
-      brand: '리커먼 · 3GF샴푸',
-      learn: false,
+      id: 'c',
+      title: '아이디·비밀번호 저장',
+      desc: '서버가 직접 로그인해요. 캡차와 기기 인증에 자주 막히고 계정이 잠길 수 있어요.',
+      tag: '',
     },
   ];
 
   const state = {
     view: 'result',
     version: 2,
+    count: 4,
+    tone: '후기형',
+    len: '보통',
+    setMode: 'new',
+    way: 'docs',
+    uploadWay: 'a',
     revising: {},
-    imported: false,
-    importedFrom: null,
     turns: {},
     photos: {},
     edits: {},
+    imported: null,
     libQuery: '',
     libSort: 'recent',
     pickQuery: '',
-    chosenSet: null,
-    docPicks: ['l1', 'l2', 'l3'],
+    pickOpen: null,
+    picks: ['m1', 'm2', 'm3'],
   };
 
   const el = (id) => document.getElementById(id);
-
-  const escapeHtml = (value) =>
-    String(value).replace(
+  const esc = (v) =>
+    String(v).replace(
       /[&<>"]/g,
-      (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch],
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
     );
-
   const edited = (key, fallback) => state.edits[key] ?? fallback;
+  const title = () => edited('title', state.version === 2 ? TITLE_V2 : TITLE_V1);
 
-  function currentComments() {
-    if (state.imported) return COMMENTS_V1;
-    return COMMENTS_V1.map((c, i) => (state.version === 2 && i === 2 ? COMMENT3_V2 : c));
-  }
+  function toast(message) {
+    const node = el('toast');
 
-  function currentTitle() {
-    return state.version === 2 ? TITLE_V2 : TITLE_V1;
+    node.textContent = message;
+    node.classList.add('show');
+    clearTimeout(node._t);
+    node._t = setTimeout(() => node.classList.remove('show'), 2600);
   }
 
   function markSaved() {
     const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    el('save-state').textContent = `자동 저장됨 · ${time}`;
+
+    el('save-state').textContent =
+      `저장됨 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   }
 
   function renderNav() {
     el('nav-desktop').innerHTML = VIEWS.map(
       (v) =>
-        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">` +
-        `<em>${v.no}</em><span>${v.label}</span></button>`,
+        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">${icon(v.id)}<span>${v.label}</span></button>`,
     ).join('');
     el('nav-mobile').innerHTML = VIEWS.map(
       (v) =>
-        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">` +
-        `<em>${v.no}</em><span>${v.short}</span></button>`,
+        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">${icon(v.id, 22)}<span>${v.label}</span></button>`,
     ).join('');
+  }
+
+  function renderDock() {
+    const inner = el('dock-inner');
+    const pending = Object.values(state.revising).filter((v) => v && v.trim()).length;
+
+    if (state.view === 'write') {
+      inner.innerHTML =
+        `<p>댓글 ${state.count}개 · ${state.tone}</p>` +
+        '<button class="btn pri lg" id="btn-generate" type="button">원고 만들기</button>';
+      el('btn-generate').addEventListener('click', fakeGenerate);
+    } else if (state.view === 'result') {
+      inner.innerHTML =
+        `<p>${pending ? `고칠 곳 ${pending}군데를 적었어요` : '고칠 곳을 적거나 글을 두 번 눌러 보세요'}</p>` +
+        '<button class="btn" type="button" data-go="export">내보내기</button>' +
+        '<button class="btn pri" id="btn-revise" type="button">다음 버전 만들기</button>';
+      el('btn-revise').addEventListener('click', nextVersion);
+    } else if (state.view === 'export') {
+      const n = state.picks.length;
+
+      inner.innerHTML =
+        `<p>${n}개를 골랐어요</p>` +
+        `<button class="btn pri lg" type="button" id="btn-export"${n ? '' : ' disabled'}>${
+          state.way === 'docs'
+            ? '구글 문서로 내보내기'
+            : state.way === 'txt'
+              ? 'txt로 저장하기'
+              : '복사하기'
+        }</button>`;
+      if (n) {
+        el('btn-export').addEventListener('click', () =>
+          toast(
+            state.way === 'docs'
+              ? `구글 계정을 연결하면 탭 ${n}개짜리 문서가 만들어져요`
+              : state.way === 'txt'
+                ? `키워드.txt ${n}개로 저장돼요`
+                : '지금 원고를 복사했어요',
+          ),
+        );
+      }
+    } else {
+      inner.innerHTML = '';
+    }
+    el('dock').hidden = !inner.innerHTML;
   }
 
   function show(view) {
@@ -2247,152 +2039,125 @@
     });
     el('view-name').textContent = VIEWS.find((v) => v.id === view).label;
     renderNav();
+    renderDock();
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  function toast(message) {
-    const node = el('toast');
-    node.textContent = message;
-    node.classList.add('show');
-    clearTimeout(node._t);
-    node._t = setTimeout(() => node.classList.remove('show'), 2800);
+  function setSeg(group, value) {
+    document.querySelectorAll(`[data-seg="${group}"]`).forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.value === value));
+    });
   }
 
+  // ---------- 결과 ----------
   function renderVersions() {
-    const label = state.version === 2 ? '제목 · 댓글3 수정본' : '최초 생성본';
     el('version-tabs').innerHTML =
       [1, 2]
         .map(
           (n) =>
-            `<button class="vtab" type="button" data-version="${n}" aria-current="${n === state.version}">v${n}</button>`,
+            `<button class="vtab" type="button" data-version="${n}" aria-current="${n === state.version}">${n}차</button>`,
         )
-        .join('') + `<span class="badge edited" style="margin-left:6px">${label}</span>`;
+        .join('') +
+      `<span class="chip">${state.version === 2 ? '제목을 고쳤어요' : '처음 만든 글'}</span>`;
   }
 
-  function renderHeadPieces() {
-    const title = edited('title', currentTitle());
+  function renderHead() {
     const body = edited('body', BODY);
-    const chars = body.replace(/\s/g, '').length;
 
     el('head-pieces').innerHTML = `
-      <article class="piece is-title">
-        <div class="rail-mark"></div>
-        <div class="piece-inner">
-          <div class="piece-head">
-            <span class="badge body">제목</span>
-            <span class="who">공백 포함 ${title.length}자</span>
-            ${state.edits.title ? '<span class="badge hand">직접 수정함</span>' : ''}
-            ${state.version === 2 && !state.edits.title ? '<span class="badge edited">v2에서 수정됨</span>' : ''}
-          </div>
-          <h3 class="piece-title" data-edit="title" title="더블클릭하면 직접 고칠 수 있습니다">${escapeHtml(title)}</h3>
-          <div class="revise">
-            <input type="text" data-part="title" placeholder="제목 수정 지시 — 예: 숫자 빼고 질문형으로" />
-            <button class="btn small" type="button" data-clear="title">지우기</button>
-          </div>
+      <article class="piece">
+        <div class="phead">
+          <span class="chip blue">제목</span>
+          ${state.edits.title ? '<span class="chip warn">직접 고침</span>' : ''}
+        </div>
+        <h3 class="ptitle" data-edit="title" title="두 번 누르면 고칠 수 있어요">${esc(title())}</h3>
+        <div class="pfoot">
+          <input class="input" type="text" data-part="title" placeholder="제목에서 고칠 곳" />
         </div>
       </article>
 
-      <article class="piece is-body">
-        <div class="rail-mark"></div>
-        <div class="piece-inner">
-          <div class="piece-head">
-            <span class="badge body">본문</span>
-            <span class="who">키워드 4회 · 모바일 최적화</span>
-            ${state.edits.body ? '<span class="badge hand">직접 수정함</span>' : ''}
-          </div>
-          <p class="piece-text" data-edit="body" title="더블클릭하면 직접 고칠 수 있습니다">${escapeHtml(body)}</p>
-          <div class="counts">공백 제외 ${chars.toLocaleString()}자 · 예시라 축약됨</div>
-          <div class="revise">
-            <input type="text" data-part="body" placeholder="본문 수정 지시 — 예: 관리 방법을 더 구체적으로" />
-            <button class="btn small" type="button" data-clear="body">지우기</button>
-          </div>
+      <article class="piece">
+        <div class="phead">
+          <span class="chip blue">본문</span>
+          <span class="chip">${body.replace(/\s/g, '').length}자</span>
+          ${state.edits.body ? '<span class="chip warn">직접 고침</span>' : ''}
+        </div>
+        <p class="ptext" data-edit="body" title="두 번 누르면 고칠 수 있어요">${esc(body)}</p>
+        <div class="pfoot">
+          <input class="input" type="text" data-part="body" placeholder="본문에서 고칠 곳" />
         </div>
       </article>`;
   }
 
-  function renderCommentPieces() {
-    const comments = currentComments();
+  function renderComments() {
+    el('import-banner').innerHTML = state.imported
+      ? `<div class="banner">${icon('lock', 18)}<span class="grow">${esc(state.imported.keyword)} 원고에서 가져온 댓글이에요. 다시 만들어도 그대로 있어요.</span>
+         <button class="btn sm" type="button" id="btn-reset-set">되돌리기</button></div>`
+      : '';
 
-    el('comment-count').textContent = state.imported
-      ? `${comments.length}개 · 가져온 세트 · ${state.importedFrom?.keyword ?? '보관함'}`
-      : `${comments.length}개`;
-    el('btn-reset-set').hidden = !state.imported;
-    el('btn-import').textContent = state.imported ? '다른 세트로 바꾸기' : '기존 세트 가져오기';
+    el('comment-pieces').innerHTML = COMMENTS.map((c, i) => {
+      const n = i + 1;
+      const turns = state.turns[n] ?? c.thread.length;
+      const photo = state.photos[n] ?? c.photo;
+      const hand = Object.keys(state.edits).some((k) => k.startsWith(`c${n}-`));
+      const thread = c.thread
+        .slice(0, turns)
+        .map((t, ti) => {
+          const key = `c${n}-${ti}`;
 
-    el('comment-pieces').innerHTML = comments
-      .map((c, i) => {
-        const n = i + 1;
-        const turns = state.turns[n] ?? c.thread.length;
-        const photo = state.photos[n] ?? c.photo;
-        const handEdited = Object.keys(state.edits).some((k) => k.startsWith(`c${n}-`));
-        const thread = c.thread
-          .slice(0, turns)
-          .map((t, ti) => {
-            const key = `c${n}-${ti}`;
-            const text = edited(key, t.text);
+          return `<div class="turn ${t.by === 'a' ? 'author' : ''}">
+            <span class="tag">${t.by === 'a' ? '글쓴이' : `댓글${n}`}</span>
+            <span data-edit="${key}" title="두 번 누르면 고칠 수 있어요">${esc(edited(key, t.text))}</span>
+          </div>`;
+        })
+        .join('');
+      const options = [1, 2, 3, 4, 5, 6, 7]
+        .map((v) => `<option value="${v}"${v === turns ? ' selected' : ''}>${v}턴</option>`)
+        .join('');
 
-            return `<div class="turn ${t.by === 'a' ? 'author' : ''}">
-                <span class="tag">${t.by === 'a' ? '글쓴이' : `댓글${n}`}</span>
-                <span data-edit="${key}" title="더블클릭하면 직접 고칠 수 있습니다">${escapeHtml(text)}</span>
-              </div>`;
-          })
-          .join('');
-        const options = [1, 2, 3, 4, 5, 6, 7]
-          .map(
-            (v) => `<option value="${v}"${v === turns ? ' selected' : ''}>티키타카 ${v}턴</option>`,
-          )
-          .join('');
+      return `<article class="piece">
+        <div class="phead">
+          <span class="chip blue">댓글${n}</span>
+          ${turns > 1 ? `<span class="chip">티키타카 ${turns}턴</span>` : ''}
+          ${hand ? '<span class="chip warn">직접 고침</span>' : ''}
+        </div>
+        <div class="thread">${thread}</div>
+        ${photo ? `<div class="photo-slot">${icon('image', 18)}댓글 사진 여기에 첨부해주세요</div>` : ''}
+        <div class="pfoot">
+          <input class="input" type="text" data-part="c${n}" placeholder="댓글${n}에서 고칠 곳" />
+        </div>
+        <div class="opts">
+          <label>티키타카 <select data-turns="${n}" aria-label="댓글${n} 턴 수">${options}</select></label>
+          <label class="check">
+            <input type="checkbox" data-photo="${n}" ${photo ? 'checked' : ''} />사진 자리 넣기
+          </label>
+        </div>
+      </article>`;
+    }).join('');
 
-        return `<article class="piece is-comment${state.imported ? ' is-kept' : ''}">
-          <div class="rail-mark"></div>
-          <div class="piece-inner">
-            <div class="piece-head">
-              <span class="badge cmt">댓글${n}</span>
-              <span class="who">${turns > 1 ? `티키타카 ${turns}턴` : '단일 댓글'}</span>
-              ${state.imported ? '<span class="badge kept">가져온 세트 · 재생성 안 함</span>' : ''}
-              ${handEdited ? '<span class="badge hand">직접 수정함</span>' : ''}
-              ${c.edited && !state.imported ? '<span class="badge edited">v2에서 수정됨</span>' : ''}
-            </div>
-            <div class="thread">${thread}</div>
-            ${photo ? '<div class="photo-slot">📷 댓글 사진 여기에 첨부해주세요</div>' : ''}
-            <div class="revise">
-              <select data-turns="${n}" aria-label="댓글${n} 티키타카 턴 수">${options}</select>
-              <label class="checkline" style="font-size:12.5px">
-                <input type="checkbox" data-photo="${n}" ${photo ? 'checked' : ''} />댓글 사진 여기에 첨부
-              </label>
-              <input type="text" data-part="c${n}" placeholder="댓글${n} 수정 지시 — 예: 더 짧게, 살짝 의심하는 톤으로" />
-              <button class="btn small" type="button" data-clear="c${n}">지우기</button>
-            </div>
-          </div>
-        </article>`;
-      })
-      .join('');
-
-    bindResultControls();
+    bindResult();
   }
 
-  function bindResultControls() {
-    document
-      .querySelectorAll('#comment-pieces .revise input[type="text"], #head-pieces .revise input')
-      .forEach((input) => {
-        input.value = state.revising[input.dataset.part] || '';
-        input.addEventListener('input', () => {
-          state.revising[input.dataset.part] = input.value;
-          updateReviseStatus();
-        });
+  function bindResult() {
+    document.querySelectorAll('[data-part]').forEach((input) => {
+      input.value = state.revising[input.dataset.part] || '';
+      input.addEventListener('input', () => {
+        state.revising[input.dataset.part] = input.value;
+        renderDock();
       });
-    document.querySelectorAll('[data-turns]').forEach((select) => {
-      select.addEventListener('change', () => {
-        const n = Number(select.dataset.turns);
-        const wanted = Number(select.value);
-        const available = currentComments()[n - 1].thread.length;
+    });
+    document.querySelectorAll('[data-turns]').forEach((sel) => {
+      sel.addEventListener('change', () => {
+        const n = Number(sel.dataset.turns);
+        const want = Number(sel.value);
+        const have = COMMENTS[n - 1].thread.length;
 
-        state.turns[n] = Math.min(wanted, available);
-        renderCommentPieces();
+        state.turns[n] = Math.min(want, have);
+        renderComments();
         toast(
-          wanted > available
-            ? `예시에는 댓글${n}이 ${available}턴까지만 들어 있습니다 — 실제로는 ${wanted}턴까지 생성됩니다`
-            : `댓글${n}을 ${wanted}턴으로 맞췄습니다`,
+          want > have
+            ? `예시에는 ${have}턴까지만 있어요. 실제로는 ${want}턴으로 만들어져요`
+            : `댓글${n}을 ${want}턴으로 맞췄어요`,
         );
       });
     });
@@ -2401,34 +2166,50 @@
         const n = Number(box.dataset.photo);
 
         state.photos[n] = box.checked;
-        renderCommentPieces();
+        renderComments();
         markSaved();
-        toast(
-          box.checked
-            ? `댓글${n}에 "댓글 사진 여기에 첨부해주세요" 표시가 들어갑니다`
-            : `댓글${n}의 사진 표시를 뺐습니다`,
-        );
+        toast(box.checked ? `댓글${n}에 사진 자리를 넣었어요` : `댓글${n}의 사진 자리를 뺐어요`);
       });
     });
-    updateReviseStatus();
+    const reset = el('btn-reset-set');
+
+    if (reset) {
+      reset.addEventListener('click', () => {
+        state.imported = null;
+        state.turns = {};
+        renderComments();
+        renderSetZone();
+        renderLibrary();
+        toast('새로 만드는 댓글로 되돌렸어요');
+      });
+    }
   }
 
-  function renderPieces() {
-    renderHeadPieces();
-    renderCommentPieces();
+  function renderResult() {
+    renderVersions();
+    renderHead();
+    renderComments();
   }
 
-  function updateReviseStatus() {
+  function nextVersion() {
     const n = Object.values(state.revising).filter((v) => v && v.trim()).length;
 
-    el('revise-status').innerHTML =
-      `수정 지시를 적은 카드: <b>${n}개</b>` + (n ? ' — 나머지는 그대로 유지됩니다' : '');
+    if (!n) {
+      toast('고칠 곳을 한 군데 이상 적어 주세요');
+      return;
+    }
+    state.version = 2;
+    state.revising = {};
+    renderResult();
+    renderDock();
+    toast('2차 원고가 나왔어요. 적은 곳만 새로 썼어요');
   }
 
-  // ---------- 더블클릭 직접 수정 ----------
+  // ---------- 직접 수정 ----------
   document.addEventListener('dblclick', (event) => {
     const target = event.target.closest('[data-edit]');
-    if (!target || target.dataset.editing) return;
+
+    if (!target) return;
 
     const key = target.dataset.edit;
     const original = target.textContent;
@@ -2436,8 +2217,7 @@
 
     area.className = 'editing';
     area.value = original;
-    area.rows = Math.min(24, Math.max(2, original.split('\n').length + 1));
-    target.dataset.editing = 'true';
+    area.rows = Math.min(22, Math.max(2, original.split('\n').length + 1));
     target.replaceWith(area);
     area.focus();
     area.setSelectionRange(area.value.length, area.value.length);
@@ -2445,15 +2225,14 @@
     let timer = null;
     const commit = (keep) => {
       clearTimeout(timer);
-      if (keep && area.value.trim() && area.value !== original) {
-        state.edits[key] = area.value;
-      } else if (keep && !area.value.trim()) {
-        delete state.edits[key];
+      if (keep) {
+        if (area.value.trim() && area.value !== original) state.edits[key] = area.value;
+        else if (!area.value.trim()) delete state.edits[key];
       }
-      renderPieces();
+      renderResult();
       if (keep) {
         markSaved();
-        toast('직접 수정한 내용을 저장했습니다');
+        toast('고친 내용을 저장했어요');
       }
     };
 
@@ -2475,19 +2254,11 @@
   });
 
   // ---------- 보관함 ----------
-  function turnLabel(turns) {
-    return `댓글 ${turns.length}개 · 티키타카 ${turns.join('·')}턴`;
-  }
+  const turnText = (turns) => `댓글 ${turns.length}개 · ${turns.join('·')}턴`;
 
-  function matches(item, query) {
+  function libList(query, sort) {
     const q = query.trim().toLowerCase();
-
-    if (!q) return true;
-    return [item.keyword, item.title, item.brand].some((v) => v.toLowerCase().includes(q));
-  }
-
-  function sortedLibrary(query, sort) {
-    const list = LIBRARY.filter((item) => matches(item, query));
+    const list = LIBRARY.filter((i) => !q || (i.keyword + i.title).toLowerCase().includes(q));
 
     if (sort === 'name') list.sort((a, b) => a.keyword.localeCompare(b.keyword, 'ko'));
     else if (sort === 'comments') list.sort((a, b) => b.turns.length - a.turns.length);
@@ -2498,165 +2269,191 @@
   }
 
   function renderLibrary() {
-    const list = sortedLibrary(state.libQuery, state.libSort);
-    const learning = LIBRARY.filter((item) => item.learn).length;
+    const list = libList(state.libQuery, state.libSort);
 
-    el('lib-summary').innerHTML =
-      `파일 <b>${LIBRARY.length + 2}개</b> · 키워드 인식 <b>${LIBRARY.length}개</b>` +
-      ` · 확인 필요 <b>2개</b> · 어투 학습 <b>${learning}개</b>` +
-      (state.libQuery ? ` · 검색 결과 <b>${list.length}개</b>` : '');
+    el('lib-summary').textContent = state.libQuery
+      ? `${list.length}개 찾았어요`
+      : `원고 ${LIBRARY.length}개 · 어투 학습에 쓰는 원고 ${LIBRARY.filter((i) => i.learn).length}개`;
     el('lib-empty').hidden = list.length > 0;
     el('lib-grid').innerHTML = list
       .map(
-        (item) => `<article class="libcard${state.chosenSet === item.id ? ' picked' : ''}">
-          <h4>${escapeHtml(item.keyword)}</h4>
-          <p class="libtitle">${escapeHtml(item.title)}</p>
-          <div class="libmeta">
-            <span>${turnLabel(item.turns)}</span>
-            <span>${item.date}</span>
-            <span>최근 사용 ${item.used}</span>
-          </div>
-          <div class="libmeta"><span>${escapeHtml(item.brand)}</span></div>
-          <div class="libmeta"><span>${escapeHtml(item.keyword)}.txt</span></div>
-          <div class="libact">
-            <button class="btn small" type="button" data-use-lib="${item.id}">댓글세트 쓰기</button>
-            <button class="btn small ghost" type="button" data-toast="시안에서는 원고 보기가 열리지 않습니다">
-              원고 보기
-            </button>
-            <span class="spacer"></span>
-            <label class="learn">
-              <input type="checkbox" ${item.learn ? 'checked' : ''} aria-label="${escapeHtml(item.keyword)} 어투 학습에 사용" />
-              어투 학습
-            </label>
-          </div>
-        </article>`,
+        (i) => `<article class="lib${state.imported?.id === i.id ? ' on' : ''}">
+        <h4>${esc(i.keyword)}</h4>
+        <p>${esc(i.title)}</p>
+        <span class="meta">${turnText(i.turns)} · ${i.date}</span>
+        <div class="act">
+          <button class="btn sm" type="button" data-use="${i.id}">댓글 가져오기</button>
+          <span class="grow"></span>
+          <label class="check"><input type="checkbox" ${i.learn ? 'checked' : ''} aria-label="${esc(i.keyword)} 어투 학습" />어투 학습</label>
+        </div>
+      </article>`,
       )
       .join('');
   }
 
-  function renderSetPicker(containerId, searchId) {
-    const list = sortedLibrary(state.pickQuery, 'recent').slice(0, 40);
+  // ---------- 댓글 세트 고르기 ----------
+  function pickerHtml(searchId) {
+    const list = libList(state.pickQuery, 'recent').slice(0, 30);
 
-    el(containerId).innerHTML = `
-      <header>보관함에서 댓글 세트만 가져오기 — 제목 · 본문은 그대로 둡니다</header>
-      <div class="picksearch">
-        <input type="search" id="${searchId}" value="${escapeHtml(state.pickQuery)}"
-          placeholder="키워드로 원고 찾기 — 예: 모낭염" aria-label="원고 검색" />
-      </div>
-      <div class="picklist">
+    return `<div class="card" style="margin-top:10px">
+      <label class="searchbar" style="margin-bottom:10px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="${searchId}" value="${esc(state.pickQuery)}" placeholder="키워드로 찾기" aria-label="원고 찾기" />
+      </label>
+      <div class="rows">
         ${
           list.length
             ? list
                 .map(
-                  (item) => `<div class="pick">
-                    <span>
-                      <b>${escapeHtml(item.keyword)}</b>
-                      <p>${turnLabel(item.turns)} · ${item.date}</p>
-                    </span>
-                    <button class="btn primary small" type="button" data-use-lib="${item.id}">
-                      이 세트 쓰기
-                    </button>
+                  (i) => `<div class="row">
+                    <span class="txt"><b>${esc(i.keyword)}</b><span>${turnText(i.turns)}</span></span>
+                    <button class="btn sm pri" type="button" data-use="${i.id}">가져오기</button>
                   </div>`,
                 )
                 .join('')
-            : '<div class="empty">찾는 키워드가 없습니다.</div>'
+            : '<div class="empty">찾는 키워드가 없어요</div>'
         }
-      </div>`;
+      </div>
+    </div>`;
+  }
 
+  function bindPicker(searchId, zoneId) {
     const search = el(searchId);
 
+    if (!search) return;
     search.addEventListener('input', () => {
       state.pickQuery = search.value;
-      renderSetPicker(containerId, searchId);
+      el(zoneId).innerHTML = pickerHtml(searchId);
+      bindPicker(searchId, zoneId);
       el(searchId).focus();
     });
   }
 
-  function renderChosenSet() {
-    const item = LIBRARY.find((entry) => entry.id === state.chosenSet);
-    const box = el('set-chosen');
+  function renderSetZone() {
+    const zone = el('set-zone');
 
-    box.hidden = !item;
-    if (!item) return;
-    box.innerHTML =
-      `<b>${escapeHtml(item.keyword)}</b><span>${turnLabel(item.turns)}</span>` +
-      '<span class="spacer"></span>' +
-      '<button class="btn small" type="button" id="btn-change-set">바꾸기</button>' +
-      '<button class="btn small ghost" type="button" id="btn-clear-set">해제</button>';
-    el('btn-change-set').addEventListener('click', () => {
-      el('set-picker').hidden = false;
-      renderSetPicker('set-picker', 'set-search');
-    });
-    el('btn-clear-set').addEventListener('click', () => {
-      state.chosenSet = null;
-      state.imported = false;
-      el('set-new').checked = true;
-      renderChosenSet();
-      renderLibrary();
-      renderCommentPieces();
-      toast('새로 생성하는 댓글 세트로 되돌렸습니다');
-    });
+    if (state.setMode === 'new') {
+      zone.innerHTML = '';
+      return;
+    }
+    zone.innerHTML = state.imported
+      ? `<div class="banner" style="margin-top:10px">${icon('check', 18)}
+          <span class="grow">${esc(state.imported.keyword)} · ${turnText(state.imported.turns)}</span>
+          <button class="btn sm" type="button" id="btn-change">바꾸기</button></div>`
+      : pickerHtml('set-search');
+    if (state.imported) {
+      el('btn-change').addEventListener('click', () => {
+        state.imported = null;
+        renderSetZone();
+      });
+    } else {
+      bindPicker('set-search', 'set-zone');
+    }
+  }
+
+  function useSet(id, fromLibrary) {
+    state.imported = LIBRARY.find((i) => i.id === id);
+    state.setMode = 'load';
+    state.turns = {};
+    setSeg('set', 'load');
+    el('picker-zone').innerHTML = '';
+    state.pickOpen = null;
+    renderSetZone();
+    renderLibrary();
+    renderComments();
+    if (fromLibrary) show('result');
+    toast(
+      id === 'l1'
+        ? `${state.imported.keyword} 댓글을 가져왔어요`
+        : `${state.imported.keyword} 세트를 골랐어요. 시안에는 예시 댓글 하나만 들어 있어 그 내용이 보여요`,
+    );
   }
 
   // ---------- 내보내기 ----------
-  function renderDocList() {
-    const multi = el('f-multi').checked;
+  function renderExport() {
+    el('doc-count').textContent = `${state.picks.length}개 골랐어요`;
+    el('doc-list').innerHTML = MADE.map(
+      (m) => `<label class="row" style="cursor:pointer">
+        <input type="checkbox" data-doc="${m.id}" ${state.picks.includes(m.id) ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--blue)" />
+        <span class="txt"><b>${esc(m.keyword)}</b><span>댓글 ${m.comments}개</span></span>
+        <span class="when">${m.when}</span>
+      </label>`,
+    ).join('');
 
-    el('doc-list').innerHTML = multi
-      ? LIBRARY.slice(0, 5)
-          .map(
-            (item) => `<label class="docpick">
-              <input type="checkbox" data-doc="${item.id}" ${state.docPicks.includes(item.id) ? 'checked' : ''} />
-              <span class="k">${escapeHtml(item.keyword)}</span>
-              <span class="m">${item.date}</span>
-            </label>`,
-          )
-          .join('')
-      : '<p style="margin:0;font-size:12.5px;color:var(--ink-3)">지금 작업 중인 원고 1편만 문서 하나로 만듭니다.</p>';
+    const names = state.picks.map((id) => MADE.find((m) => m.id === id)?.keyword).filter(Boolean);
+    const zone = el('way-zone');
 
-    el('doc-tabs').innerHTML = multi
-      ? state.docPicks.length
-        ? state.docPicks
-            .map((id) => {
-              const item = LIBRARY.find((entry) => entry.id === id);
-
-              return `<span class="doctab">${escapeHtml(item ? item.keyword : id)}</span>`;
-            })
-            .join('') +
-          `<span class="doctab" style="border-style:dashed">탭 ${state.docPicks.length}개</span>`
-        : '<span class="doctab" style="border-style:dashed">원고를 고르면 탭이 만들어집니다</span>'
-      : '<span class="doctab">브라질리언 왁싱 모낭염</span>';
+    if (state.way === 'docs') {
+      zone.innerHTML = `
+        <div class="field" style="margin-bottom:14px">
+          <label class="label" for="f-doctitle">문서 제목</label>
+          <input id="f-doctitle" class="input" type="text" placeholder="비우면 2026-09-15 ${esc(names[0] ?? '원고')}${names.length > 1 ? ` 외 ${names.length - 1}건` : ''}" />
+        </div>
+        <div class="doctabs">
+          ${names.length ? names.map((k) => `<span class="doctab">${esc(k)}</span>`).join('') : '<span class="doctab dim">원고를 고르면 탭이 만들어져요</span>'}
+        </div>
+        <p class="desc" style="margin:10px 0 0">문서 하나에 탭 ${names.length}개로 들어가요. 탭 이름은 키워드예요.</p>`;
+    } else if (state.way === 'txt') {
+      zone.innerHTML = `
+        <div class="rows">
+          ${names.length ? names.map((k) => `<div class="row"><span class="txt"><b>${esc(k)}.txt</b></span></div>`).join('') : '<div class="empty">원고를 골라 주세요</div>'}
+        </div>
+        <p class="desc" style="margin:10px 0 0">파일 이름은 키워드로, 항상 txt로 저장돼요.</p>`;
+    } else {
+      zone.innerHTML = `
+        <div class="pfoot" style="margin-top:0">
+          <button class="btn" type="button" data-toast="전체를 복사했어요">전체</button>
+          <button class="btn" type="button" data-toast="본문을 복사했어요">본문만</button>
+          <button class="btn" type="button" data-toast="댓글을 복사했어요">댓글만</button>
+        </div>
+        <p class="desc" style="margin:10px 0 0">지금 보고 있는 원고를 복사해요. 사진 자리 표시도 같이 들어가요.</p>`;
+    }
 
     document.querySelectorAll('[data-doc]').forEach((box) => {
       box.addEventListener('change', () => {
-        const id = box.dataset.doc;
-
-        state.docPicks = box.checked
-          ? [...state.docPicks, id]
-          : state.docPicks.filter((entry) => entry !== id);
-        renderDocList();
+        state.picks = box.checked
+          ? [...state.picks, box.dataset.doc]
+          : state.picks.filter((id) => id !== box.dataset.doc);
+        renderExport();
+        renderDock();
       });
     });
   }
 
-  const STREAM_TEXT =
-    '[제목]\n' +
-    TITLE_V1 +
-    '\n\n[본문]\n' +
-    BODY.slice(0, 190) +
-    '…\n\n[댓글1] 티키타카 3턴\n댓글1: 저도 왁싱하고 딱 저랬는데…\n└글쓴이: 저는 안 건드리고 통풍만…';
+  // ---------- 업로드 ----------
+  function renderUploadWays() {
+    el('way-picks').innerHTML = UPLOAD_WAYS.map(
+      (w) => `<label class="pickcard${state.uploadWay === w.id ? ' on' : ''}">
+        <input type="radio" name="uway" value="${w.id}" ${state.uploadWay === w.id ? 'checked' : ''} />
+        <span>
+          <b>${w.title} ${w.tag ? `<span class="chip blue">${w.tag}</span>` : ''}</b>
+          <p>${w.desc}</p>
+        </span>
+      </label>`,
+    ).join('');
+    document.querySelectorAll('[name="uway"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        state.uploadWay = radio.value;
+        renderUploadWays();
+        toast(`${UPLOAD_WAYS.find((w) => w.id === radio.value).title} 방식으로 정했어요`);
+      });
+    });
+  }
+
+  // ---------- 생성 ----------
+  const STREAM_TEXT = `[제목]\n${TITLE_V1}\n\n[본문]\n${BODY.slice(0, 180)}…\n\n[댓글1] 3턴\n댓글1: 저도 왁싱하고 딱 저랬는데…\n└글쓴이: 저는 안 건드리고 통풍만…`;
 
   function fakeGenerate() {
-    const panel = el('stream-panel');
+    const card = el('stream-card');
     const out = el('stream-out');
     const button = el('btn-generate');
 
-    panel.hidden = false;
+    card.hidden = false;
     out.textContent = '';
     out.classList.add('caret');
     button.disabled = true;
-    button.textContent = '생성 중…';
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    button.textContent = '쓰는 중…';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     let i = 0;
     const timer = setInterval(() => {
@@ -2665,70 +2462,62 @@
       if (i >= STREAM_TEXT.length) {
         clearInterval(timer);
         out.classList.remove('caret');
-        button.disabled = false;
-        button.textContent = '원고 생성';
         state.version = 1;
         state.revising = {};
         state.turns = {};
         state.edits = {};
-        renderVersions();
-        renderPieces();
+        renderResult();
         show('result');
-        toast('1차 원고가 만들어졌습니다 (예시)');
+        toast('원고가 나왔어요');
       }
-    }, 20);
+    }, 18);
   }
 
-  function useImportedSet(id) {
-    const item = LIBRARY.find((entry) => entry.id === id) ?? LIBRARY[0];
-
-    state.imported = true;
-    state.importedFrom = item;
-    state.chosenSet = item.id;
-    state.turns = {};
-    el('picker').hidden = true;
-    el('set-picker').hidden = true;
-    el('set-load').checked = true;
-    renderChosenSet();
-    renderLibrary();
-    renderCommentPieces();
-    toast(
-      item.id === 'l1'
-        ? `${item.keyword} 원고의 댓글 세트를 그대로 가져왔습니다`
-        : `${item.keyword} 세트를 골랐습니다 — 시안에는 브라질리언 왁싱 모낭염 세트의 문장만 들어 있어 그 내용이 보입니다`,
-    );
-  }
-
+  // ---------- events ----------
   document.addEventListener('click', (event) => {
-    const target = event.target.closest(
-      '[data-go],[data-toast],[data-version],[data-clear],[data-use-lib]',
-    );
+    const t = event.target.closest('[data-go],[data-toast],[data-version],[data-use],[data-seg]');
 
-    if (!target) return;
-    if (target.dataset.go) show(target.dataset.go);
-    if (target.dataset.toast) toast(target.dataset.toast);
-    if (target.dataset.version) {
-      state.version = Number(target.dataset.version);
-      state.turns = {};
-      renderVersions();
-      renderPieces();
+    if (!t) return;
+    if (t.dataset.go) show(t.dataset.go);
+    if (t.dataset.toast) toast(t.dataset.toast);
+    if (t.dataset.version) {
+      state.version = Number(t.dataset.version);
+      renderResult();
     }
-    if (target.dataset.clear) {
-      delete state.revising[target.dataset.clear];
-      renderPieces();
-    }
-    if (target.dataset.useLib) {
-      const fromLibrary = target.closest('#lib-grid');
+    if (t.dataset.use) useSet(t.dataset.use, Boolean(t.closest('#lib-grid')));
+    if (t.dataset.seg) {
+      const { seg, value } = t.dataset;
 
-      useImportedSet(target.dataset.useLib);
-      if (fromLibrary) show('result');
+      setSeg(seg, value);
+      if (seg === 'tone') state.tone = value;
+      if (seg === 'len') state.len = value;
+      if (seg === 'set') {
+        state.setMode = value;
+        renderSetZone();
+      }
+      if (seg === 'way') {
+        state.way = value;
+        renderExport();
+      }
+      renderDock();
     }
   });
 
-  el('btn-generate').addEventListener('click', fakeGenerate);
-  el('btn-fetch').addEventListener('click', () =>
-    toast('시안입니다 — 실제로는 제목 · 본문 · 댓글을 수집합니다'),
-  );
+  el('cnt-minus').addEventListener('click', () => {
+    state.count = Math.max(1, state.count - 1);
+    el('cnt-value').textContent = `${state.count}개`;
+    el('cnt-minus').disabled = state.count === 1;
+    el('cnt-plus').disabled = false;
+    renderDock();
+  });
+  el('cnt-plus').addEventListener('click', () => {
+    state.count = Math.min(8, state.count + 1);
+    el('cnt-value').textContent = `${state.count}개`;
+    el('cnt-plus').disabled = state.count === 8;
+    el('cnt-minus').disabled = false;
+    renderDock();
+  });
+
   el('lib-search').addEventListener('input', () => {
     state.libQuery = el('lib-search').value;
     renderLibrary();
@@ -2737,62 +2526,36 @@
     state.libSort = el('lib-sort').value;
     renderLibrary();
   });
-  el('btn-choose-set').addEventListener('click', () => {
-    el('set-load').checked = true;
-    el('set-picker').hidden = false;
-    renderSetPicker('set-picker', 'set-search');
-    el('set-search').focus();
-  });
-  el('set-load').addEventListener('change', () => {
-    if (!el('set-load').checked) return;
-    el('set-picker').hidden = false;
-    renderSetPicker('set-picker', 'set-search');
-  });
-  el('set-new').addEventListener('change', () => {
-    el('set-picker').hidden = true;
-  });
+  el('btn-fetch').addEventListener('click', () =>
+    toast('시안이에요. 실제로는 제목·본문·댓글을 가져와요'),
+  );
   el('btn-import').addEventListener('click', () => {
-    const picker = el('picker');
+    const zone = el('picker-zone');
 
-    picker.hidden = !picker.hidden;
-    if (!picker.hidden) renderSetPicker('picker', 'result-set-search');
+    state.pickOpen = state.pickOpen ? null : 'result';
+    zone.innerHTML = state.pickOpen ? pickerHtml('result-search') : '';
+    if (state.pickOpen) bindPicker('result-search', 'picker-zone');
   });
-  el('btn-reset-set').addEventListener('click', () => {
-    state.imported = false;
-    state.importedFrom = null;
-    state.chosenSet = null;
-    state.turns = {};
-    el('set-new').checked = true;
-    renderChosenSet();
-    renderLibrary();
-    renderCommentPieces();
-    toast('새로 생성하는 댓글 세트로 되돌렸습니다');
+  el('btn-regen').addEventListener('click', () =>
+    toast('시안이에요. 실제로는 바뀐 조건으로 다시 만들어요'),
+  );
+  el('btn-all').addEventListener('click', () => {
+    state.picks = MADE.map((m) => m.id);
+    renderExport();
+    renderDock();
   });
-  el('f-multi').addEventListener('change', renderDocList);
-  el('btn-regen').addEventListener('click', () => {
-    el('chip-keyword').textContent = el('w-keyword').value || '키워드 없음';
-    toast('시안입니다 — 실제로는 바뀐 키워드 · 요청사항으로 전체를 다시 생성합니다');
-  });
-  el('btn-revise').addEventListener('click', () => {
-    const n = Object.values(state.revising).filter((v) => v && v.trim()).length;
-
-    if (!n) {
-      toast('수정 지시를 한 곳 이상 적어 주세요');
-      return;
-    }
-    state.version = 2;
-    state.revising = {};
-    renderVersions();
-    renderPieces();
-    toast('v2가 만들어졌습니다 — 지시한 카드만 새로 쓰였습니다 (직접 수정한 내용은 유지)');
+  el('btn-none').addEventListener('click', () => {
+    state.picks = [];
+    renderExport();
+    renderDock();
   });
 
   renderNav();
-  renderVersions();
-  renderPieces();
+  renderResult();
   renderLibrary();
-  renderChosenSet();
-  renderDocList();
+  renderSetZone();
+  renderExport();
+  renderUploadWays();
   markSaved();
   show('result');
 </script>

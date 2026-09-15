@@ -25,6 +25,7 @@ words:
   - Decap
   - docpick
   - doctab
+  - doctabs
   - edithint
   - esbuild
   - GHSA
@@ -37,19 +38,31 @@ words:
   - libact
   - libbar
   - libcard
+  - libgrid
   - libmeta
   - libtitle
   - needfix
+  - Noto
   - oprow
+  - pfoot
+  - phead
+  - pickcard
   - picklist
   - picksearch
   - PKCE
+  - Pretendard
+  - ptext
+  - ptitle
   - regen
+  - searchbar
   - setmode
   - singleline
+  - stepper
   - Sveltia
+  - tabbar
   - topbar
   - undici
   - unrs
+  - uway
   - vtab
   - workerd
