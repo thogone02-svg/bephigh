@@ -253,11 +253,6 @@
     font-weight: 500;
   }
 
-  .hint-bar b {
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
   .hint-bar span {
     color: var(--t700);
     font-weight: 400;
@@ -1099,6 +1094,49 @@
     box-shadow: none;
   }
 
+  .pickcard .side {
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .pickcard .cost {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--t800);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pickcard .costsub {
+    font-size: 11.5px;
+    color: var(--t400);
+  }
+
+  .acct {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 0;
+  }
+
+  .acct .input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 860px) {
+    .acct {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pickcard .side {
+      margin-left: 0;
+      text-align: left;
+    }
+  }
+
   table {
     width: 100%;
     min-width: 380px;
@@ -1272,7 +1310,7 @@
       <b>나비효과플랜</b>
     </div>
     <nav class="nav" id="nav-desktop" aria-label="작업 단계"></nav>
-    <div class="rail-foot">화면 시안 v0.5</div>
+    <div class="rail-foot">화면 시안 v0.6</div>
   </aside>
 
   <main class="main">
@@ -1281,7 +1319,7 @@
     <div class="wrap">
       <div class="hint-bar">
         <b>화면 시안</b>
-        <span>글은 실제로 생성되지 않아요. 글을 두 번 누르는 직접 수정은 동작해요.</span>
+        <span>글은 실제로 생성되지 않아요. 결과 화면의 예시 원고로 구성만 확인해 주세요.</span>
       </div>
 
       <!-- ① 생성 -->
@@ -1299,14 +1337,20 @@
                 id="f-keyword"
                 class="input lg"
                 type="text"
-                value="브라질리언 왁싱 모낭염"
+                placeholder="예: 브라질리언 왁싱 모낭염"
                 autocomplete="off"
               />
             </div>
             <div class="two">
               <div class="field">
                 <label class="label" for="f-brand">브랜드</label>
-                <input id="f-brand" class="input" type="text" value="메드젯" autocomplete="off" />
+                <input
+                  id="f-brand"
+                  class="input"
+                  type="text"
+                  placeholder="선택"
+                  autocomplete="off"
+                />
               </div>
               <div class="field">
                 <label class="label" for="f-product">제품</label>
@@ -1314,15 +1358,18 @@
                   id="f-product"
                   class="input"
                   type="text"
-                  value="코디세핀 재생크림"
+                  placeholder="선택"
                   autocomplete="off"
                 />
               </div>
             </div>
             <div class="field">
               <label class="label" for="f-request">요청사항</label>
-              <textarea id="f-request" class="area">
-왁싱 후 3일째 상황부터 시작 / 긁지 말라는 당부 넣기 / 효과 단정하지 않기</textarea>
+              <textarea
+                id="f-request"
+                class="area"
+                placeholder="이번 원고에 꼭 넣고 싶은 내용이나 흐름을 적어 주세요"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -1330,9 +1377,18 @@
         <div class="card">
           <h3>원고 설정</h3>
           <div class="stack">
+            <div class="switch-row">
+              <span class="txt">
+                <b>AI 모델</b>
+                <span class="desc" id="model-now"></span>
+              </span>
+              <button class="btn sm" type="button" id="btn-model">바꾸기</button>
+            </div>
+            <div id="model-zone"></div>
+
             <div class="field">
               <span class="label">글 성격</span>
-              <div class="seg" id="seg-tone" role="group" aria-label="글 성격">
+              <div class="seg" role="group" aria-label="글 성격">
                 <button type="button" data-seg="tone" data-value="후기형" aria-pressed="true">
                   후기형
                 </button>
@@ -1344,7 +1400,7 @@
 
             <div class="field">
               <span class="label">본문 분량</span>
-              <div class="seg" id="seg-len" role="group" aria-label="본문 분량">
+              <div class="seg" role="group" aria-label="본문 분량">
                 <button type="button" data-seg="len" data-value="짧게" aria-pressed="false">
                   짧게
                 </button>
@@ -1363,9 +1419,13 @@
                 <span class="desc">1개부터 8개까지 고를 수 있어요</span>
               </span>
               <span class="stepper">
-                <button type="button" id="cnt-minus" aria-label="댓글 줄이기">−</button>
+                <button type="button" data-step="count" data-delta="-1" aria-label="댓글 줄이기">
+                  −
+                </button>
                 <span id="cnt-value">4개</span>
-                <button type="button" id="cnt-plus" aria-label="댓글 늘리기">+</button>
+                <button type="button" data-step="count" data-delta="1" aria-label="댓글 늘리기">
+                  +
+                </button>
               </span>
             </div>
 
@@ -1382,7 +1442,7 @@
 
             <div class="field">
               <span class="label">댓글 세트</span>
-              <div class="seg" id="seg-set" role="group" aria-label="댓글 세트">
+              <div class="seg" role="group" aria-label="댓글 세트">
                 <button type="button" data-seg="set" data-value="new" aria-pressed="true">
                   새로 만들기
                 </button>
@@ -1399,7 +1459,7 @@
                 id="f-avoid"
                 class="input"
                 type="text"
-                value="완치, 부작용 없음, 100% 보장, 최저가"
+                placeholder="예: 완치, 부작용 없음, 100% 보장"
               />
             </div>
           </div>
@@ -1420,6 +1480,55 @@
             세트만 바로 가져다 쓸 수 있어요.
           </p>
         </header>
+
+        <div class="card">
+          <h3>
+            원고 올리기
+            <span class="sub">첫 줄은 제목, 댓글 번호가 나오는 줄부터는 댓글로 읽어요</span>
+          </h3>
+          <div class="drop">
+            <b>폴더를 여기에 끌어다 놓아 주세요</b>
+            <span>.txt · .docx · 하위 폴더까지 한 번에</span>
+            <button class="btn sm" type="button" data-toast="시안에서는 업로드가 열리지 않아요">
+              폴더 고르기
+            </button>
+          </div>
+
+          <div class="field" style="margin-top: 16px">
+            <label class="label" for="f-doclink">구글 문서로 올리기</label>
+            <div class="pfoot" style="margin-top: 0">
+              <input
+                id="f-doclink"
+                class="input"
+                type="url"
+                placeholder="구글 문서 · 스프레드시트 · 폴더 주소를 붙여넣어 주세요"
+              />
+              <button
+                class="btn"
+                type="button"
+                data-toast="시안이에요. 실제로는 문서를 읽어 원고로 넣어요"
+              >
+                불러오기
+              </button>
+            </div>
+            <span class="desc">
+              폴더 주소를 넣으면 안에 있는 문서를 한 번에 읽어요. 문서 1개 주소도 돼요.
+            </span>
+          </div>
+
+          <div
+            class="row"
+            style="margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 14px"
+          >
+            <span class="txt">
+              <b>확인이 필요한 파일 2개</b>
+              <span>댓글이 어디부터인지 못 찾았어요</span>
+            </span>
+            <button class="btn sm" type="button" data-toast="시안에서는 열리지 않아요">
+              확인하기
+            </button>
+          </div>
+        </div>
 
         <div class="card">
           <div class="toolbar">
@@ -1447,7 +1556,7 @@
               <option value="recent">최근 순</option>
               <option value="name">가나다순</option>
               <option value="comments">댓글 많은 순</option>
-              <option value="used">최근 쓴 순</option>
+              <option value="used">많이 쓴 순</option>
             </select>
           </div>
           <p class="desc" id="lib-summary" style="margin: 0 0 12px"></p>
@@ -1457,35 +1566,9 @@
 
         <div class="card">
           <h3>
-            원고 올리기
-            <span class="sub">첫 줄을 제목으로, 댓글 번호가 나오는 줄부터 댓글로 읽어요</span>
-          </h3>
-          <div class="drop">
-            <b>폴더를 여기에 끌어다 놓아 주세요</b>
-            <span>.txt · 구글 문서 · 하위 폴더까지 한 번에</span>
-            <button class="btn sm" type="button" data-toast="시안에서는 업로드가 열리지 않아요">
-              폴더 고르기
-            </button>
-          </div>
-          <div
-            class="row"
-            style="margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 14px"
-          >
-            <span class="txt">
-              <b>확인이 필요한 파일 2개</b>
-              <span>댓글이 어디부터인지 못 찾았어요</span>
-            </span>
-            <button class="btn sm" type="button" data-toast="시안에서는 열리지 않아요">
-              확인하기
-            </button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>
             카페 글 가져오기
             <span class="sub"
-              >전체 공개 글은 주소만, 멤버 공개 글은 열람 계정이나 수집 버튼으로</span
+              >잘 나간 카페 글을 보관함에 넣어 두면 어투를 배우고 댓글도 재사용해요</span
             >
           </h3>
           <div class="field">
@@ -1493,14 +1576,37 @@
               id="f-url"
               class="input"
               type="url"
-              value="https://cafe.naver.com/lolkor/31337299"
+              placeholder="카페 글 주소를 붙여넣어 주세요"
               aria-label="카페 글 주소"
             />
           </div>
           <div class="pfoot" style="margin-top: 12px">
             <button class="btn pri" id="btn-fetch" type="button">가져오기</button>
-            <button class="btn" type="button" data-toast="즐겨찾기 바에 끌어다 놓으면 등록돼요">
-              수집 버튼 설치
+          </div>
+
+          <div
+            class="row"
+            style="margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 16px"
+          >
+            <span class="txt">
+              <b>열람용 계정</b>
+              <span>멤버만 볼 수 있는 글을 읽으려면 계정 1개가 필요해요</span>
+            </span>
+            <button class="btn sm" type="button" data-toast="시안에서는 계정 등록이 열리지 않아요">
+              등록하기
+            </button>
+          </div>
+
+          <div class="row">
+            <span class="txt">
+              <b>브라우저에 수집 버튼 넣기</b>
+              <span>
+                즐겨찾기에 버튼을 하나 만들어 둬요. 카페 글을 열어 둔 채로 누르면 그 글이 이
+                보관함으로 들어와요. 주소만으로 안 읽히는 글에 써요.
+              </span>
+            </span>
+            <button class="btn sm" type="button" data-toast="즐겨찾기 바에 끌어다 놓으면 등록돼요">
+              만들기
             </button>
           </div>
         </div>
@@ -1517,7 +1623,12 @@
           <div class="two">
             <div class="field">
               <label class="label" for="w-keyword">키워드</label>
-              <input id="w-keyword" class="input" type="text" value="브라질리언 왁싱 모낭염" />
+              <input
+                id="w-keyword"
+                class="input"
+                type="text"
+                placeholder="생성 화면에서 넣은 키워드가 들어와요"
+              />
             </div>
             <div class="field">
               <label class="label" for="w-request">요청사항</label>
@@ -1525,7 +1636,7 @@
                 id="w-request"
                 class="input"
                 type="text"
-                value="왁싱 후 3일째부터 / 긁지 말라는 당부"
+                placeholder="여기서 바꿔서 다시 만들 수 있어요"
               />
             </div>
           </div>
@@ -1559,20 +1670,17 @@
         </header>
 
         <div class="card">
-          <h3>
-            만든 원고
-            <span class="sub" id="doc-count"></span>
-          </h3>
+          <h3>만든 원고 <span class="sub" id="doc-count"></span></h3>
           <div class="rows" id="doc-list"></div>
           <div class="pfoot">
-            <button class="btn sm" type="button" id="btn-all">전체 고르기</button>
-            <button class="btn sm ghost" type="button" id="btn-none">전체 해제</button>
+            <button class="btn sm" type="button" data-pick="all">전체 고르기</button>
+            <button class="btn sm ghost" type="button" data-pick="none">전체 해제</button>
           </div>
         </div>
 
         <div class="card">
           <h3>내보내는 방법</h3>
-          <div class="seg" id="seg-way" role="group" aria-label="내보내는 방법">
+          <div class="seg" role="group" aria-label="내보내는 방법">
             <button type="button" data-seg="way" data-value="docs" aria-pressed="true">
               구글 문서
             </button>
@@ -1591,93 +1699,74 @@
       <section class="view" id="view-publish" hidden>
         <header>
           <h2>네이버 카페에 올리기 <span class="chip warn">준비 중</span></h2>
-          <p>읽는 것과 올리는 것은 필요한 게 달라요. 아래 방식만 정해 주시면 그대로 만들어요.</p>
+          <p>올릴 원고를 고르고, 댓글마다 어떤 계정으로 올릴지 정해요.</p>
         </header>
 
         <div class="card">
-          <h3>
-            먼저, 멤버 공개 글 읽기
-            <span class="sub">읽을 수 있는 계정 하나만 등록하면 끝나요</span>
-          </h3>
-          <div class="row">
-            <span class="txt">
-              <b>열람용 계정</b>
-              <span>카페 가입과 등급이 되어 있는 계정 1개</span>
-            </span>
-            <span class="chip warn">미등록</span>
-          </div>
+          <h3>올릴 원고 <span class="sub" id="up-count"></span></h3>
+          <div class="rows" id="up-list"></div>
         </div>
 
         <div class="card">
           <h3>
-            올릴 때 계정 연결 방식
+            계정 연결 방식
             <span class="sub">댓글마다 계정이 달라서 여러 개를 다뤄야 해요</span>
           </h3>
           <div class="picks" id="way-picks"></div>
         </div>
 
-        <div class="card dim">
-          <h3>계정 배정</h3>
-          <div class="scroll-x">
-            <table>
-              <thead>
-                <tr>
-                  <th>역할</th>
-                  <th>계정</th>
-                  <th>상태</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>본문 · 글쓴이 답글</td>
-                  <td>계정 고르기</td>
-                  <td>미연결</td>
-                </tr>
-                <tr>
-                  <td>댓글1</td>
-                  <td>계정 고르기</td>
-                  <td>미연결</td>
-                </tr>
-                <tr>
-                  <td>댓글2</td>
-                  <td>계정 고르기</td>
-                  <td>미연결</td>
-                </tr>
-                <tr>
-                  <td>댓글3</td>
-                  <td>계정 고르기</td>
-                  <td>미연결</td>
-                </tr>
-                <tr>
-                  <td>댓글4</td>
-                  <td>계정 고르기</td>
-                  <td>미연결</td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="card">
+          <h3>
+            계정 관리
+            <span class="sub">여기에 등록한 계정을 아래 배정에서 고를 수 있어요</span>
+          </h3>
+          <div class="rows" id="acct-list"></div>
+          <div
+            class="acct"
+            style="border-top: 1px solid var(--line-soft); margin-top: 6px; padding-top: 14px"
+          >
+            <input
+              class="input"
+              type="text"
+              placeholder="별칭 (예: 댓글용1)"
+              aria-label="계정 별칭"
+            />
+            <input
+              class="input"
+              type="text"
+              placeholder="네이버 아이디"
+              autocomplete="off"
+              aria-label="네이버 아이디"
+            />
+            <input
+              class="input"
+              type="password"
+              placeholder="비밀번호"
+              autocomplete="new-password"
+              aria-label="비밀번호"
+            />
+            <button
+              class="btn pri"
+              type="button"
+              data-toast="시안이에요. 실제로는 암호화해서 저장해요"
+            >
+              추가
+            </button>
           </div>
+          <p class="desc" style="margin: 10px 0 0">
+            비밀번호는 암호화해서 저장하고, 로그인 후에는 세션만 들고 있어요. 계정을 지우면 저장된
+            정보도 같이 지워져요.
+          </p>
         </div>
 
-        <div class="card dim">
-          <h3>올리는 간격</h3>
-          <div class="rows">
-            <div class="row">
-              <span class="txt"><b>본문 올리는 시각</b></span
-              ><span class="when">바로 / 예약</span>
-            </div>
-            <div class="row">
-              <span class="txt"><b>본문 → 첫 댓글</b></span
-              ><span class="when">10분</span>
-            </div>
-            <div class="row">
-              <span class="txt"><b>댓글 사이</b></span
-              ><span class="when">3~20분 랜덤</span>
-            </div>
-            <div class="row">
-              <span class="txt"><b>글쓴이 답글</b></span
-              ><span class="when">2~10분 랜덤</span>
-            </div>
-          </div>
+        <div class="card">
+          <h3>계정 배정</h3>
+          <div class="rows" id="assign-list"></div>
+        </div>
+
+        <div class="card">
+          <h3>올리는 간격 <span class="sub">1분부터 5분까지 정할 수 있어요</span></h3>
+          <div class="rows" id="gap-list"></div>
         </div>
       </section>
     </div>
@@ -1717,6 +1806,69 @@
     { id: 'publish', label: '업로드' },
   ];
 
+  // 원고 1편 = 입력 3,000 + 출력 3,000 토큰 기준 예상 비용 (1,400원/달러)
+  const MODELS = [
+    {
+      id: 'gemini-flash',
+      maker: '제미나이',
+      name: 'Gemini 2.5 Flash',
+      desc: '무료 한도 안에서 쓸 수 있어요. 평소 작업은 이걸로 충분해요.',
+      cost: '0원',
+      sub: '무료 한도 안',
+      free: true,
+    },
+    {
+      id: 'gemini-pro',
+      maker: '제미나이',
+      name: 'Gemini 2.5 Pro',
+      desc: '더 긴 글이나 까다로운 요청에 써요.',
+      cost: '확인 필요',
+      sub: '공식 단가 확인 후 표시',
+    },
+    {
+      id: 'claude-haiku',
+      maker: '클로드',
+      name: 'Claude Haiku 4.5',
+      desc: '빠르고 싸요. 댓글 세트만 다시 만들 때 좋아요.',
+      cost: '약 26원',
+      sub: '$1 / $5 per 1M',
+    },
+    {
+      id: 'claude-sonnet',
+      maker: '클로드',
+      name: 'Claude Sonnet 5',
+      desc: '품질과 가격이 균형 잡혀 있어요.',
+      cost: '약 50원',
+      sub: '$2 / $10 per 1M',
+    },
+    {
+      id: 'claude-opus',
+      maker: '클로드',
+      name: 'Claude Opus 5',
+      desc: '한국어 장문이 가장 자연스러워요. 중요한 원고에 써요.',
+      cost: '약 126원',
+      sub: '$5 / $25 per 1M',
+    },
+    {
+      id: 'gpt-mini',
+      maker: '챗지피티',
+      name: 'GPT 계열 · 경량',
+      desc: '가벼운 작업용이에요.',
+      cost: '확인 필요',
+      sub: '공식 단가 확인 후 표시',
+    },
+    {
+      id: 'gpt-main',
+      maker: '챗지피티',
+      name: 'GPT 계열 · 기본',
+      desc: '기본 모델이에요.',
+      cost: '확인 필요',
+      sub: '공식 단가 확인 후 표시',
+    },
+  ];
+
+  const MAKERS = ['제미나이', '클로드', '챗지피티'];
+
   const TITLE_V1 = '브라질리언 왁싱하고 모낭염 올라와서 2주 고생한 후기';
   const TITLE_V2 = '왁싱하고 좁쌀 올라왔을 때, 제가 2주 동안 한 것들';
 
@@ -1738,9 +1890,6 @@
 
 바를 건 뭘 써야 하나 한참 찾다가
 자극 적은 재생크림 쪽으로 방향을 잡았어요.
-
-제가 쓴 건 메드젯 코디세핀 재생크림이었는데
-향이 세지 않고 발랐을 때 따갑지 않은 게 제일 좋았어요.
 
 아침저녁으로 얇게 펴 바르면서
 2주 정도 지나니까 올라온 게 많이 가라앉았습니다.
@@ -1772,8 +1921,8 @@
       photo: true,
       thread: [
         { by: 'c', text: '재생크림 뭐 쓰셨는지 여쭤봐도 될까요? 저는 바르면 따가운 게 많아서요' },
-        { by: 'a', text: '저는 코디세핀 들어간 걸로 썼어요. 따갑지 않아서 계속 쓰고 있습니다' },
-        { by: 'c', text: '오 그거 저도 봤는데 향은 어때요? 향 세면 못 쓰거든요' },
+        { by: 'a', text: '자극 적다고 나온 걸로 썼어요. 따갑지 않아서 계속 쓰고 있습니다' },
+        { by: 'c', text: '오 향은 어때요? 향 세면 못 쓰거든요' },
         { by: 'a', text: '향은 거의 없어요. 저도 향 있는 게 부담스러워서 그거 보고 고른 거예요' },
         { by: 'c', text: '감사합니다! 저도 한번 찾아볼게요' },
       ],
@@ -1797,98 +1946,87 @@
       title: '왁싱하고 모낭염 올라와서 2주 고생한 후기',
       turns: [3, 5, 1, 1],
       date: '08.13',
-      used: '오늘',
-      learn: true,
+      uses: 9,
     },
     {
       id: 'l2',
+      keyword: '왁싱 후 좁쌀 여드름',
+      title: '왁싱 후에 올라온 좁쌀 관리한 방법',
+      turns: [3, 5, 1, 1],
+      date: '08.30',
+      uses: 4,
+    },
+    {
+      id: 'l3',
       keyword: '팔꿈치 각질',
       title: '팔꿈치 각질 관리한 방법 정리',
       turns: [3, 5, 1, 1],
       date: '08.13',
-      used: '3일 전',
-      learn: true,
+      uses: 12,
     },
     {
-      id: 'l3',
+      id: 'l4',
       keyword: '티티베연고',
       title: '연고 바꿔보면서 정리한 내용',
       turns: [3, 1, 1],
       date: '08.19',
-      used: '2주 전',
-      learn: true,
+      uses: 2,
     },
     {
-      id: 'l4',
+      id: 'l5',
       keyword: '피부 발진 가려움',
       title: '갑자기 올라온 발진 때문에 잠 못 잔 얘기',
       turns: [3, 5, 1, 1],
       date: '08.20',
-      used: '—',
-      learn: false,
+      uses: 0,
     },
     {
-      id: 'l5',
+      id: 'l6',
       keyword: '피부 곰팡이균 연고',
       title: '곰팡이균이라는 말 듣고 찾아본 것들',
       turns: [3, 1, 1, 1],
       date: '08.20',
-      used: '한 달 전',
-      learn: false,
+      uses: 1,
     },
     {
-      id: 'l6',
+      id: 'l7',
       keyword: '피부 소양증 연고',
       title: '가려움 때문에 병원 갔다가 들은 얘기',
       turns: [3, 5, 1],
       date: '08.20',
-      used: '—',
-      learn: false,
+      uses: 0,
     },
     {
-      id: 'l7',
+      id: 'l8',
       keyword: '햇빛 알레르기 연고',
       title: '여름마다 올라오는 거 올해는 미리 준비',
       turns: [3, 1, 1, 1],
       date: '08.21',
-      used: '—',
-      learn: false,
+      uses: 0,
     },
     {
-      id: 'l8',
+      id: 'l9',
       keyword: '어루러기 연고 추천',
       title: '등에 하얗게 번진 거 신경 쓰여서 정리',
       turns: [3, 5, 1, 1],
       date: '08.21',
-      used: '3주 전',
-      learn: false,
+      uses: 3,
     },
     {
-      id: 'l9',
+      id: 'l10',
       keyword: '남자 사타구니 가려움',
       title: '말 꺼내기 민망해서 혼자 찾아본 것들',
       turns: [3, 1, 1],
       date: '08.21',
-      used: '—',
-      learn: false,
+      uses: 0,
     },
     {
-      id: 'l10',
+      id: 'l11',
       keyword: '쥐젖 제거 후 관리',
       title: '쥐젖 빼고 나서 관리가 더 중요하더라고요',
       turns: [3, 5, 1, 1],
       date: '08.21',
-      used: '—',
-      learn: false,
-    },
-    {
-      id: 'l11',
-      keyword: '바이브랩 두피앰플',
-      title: '두피 앰플 두 달 써보고 남기는 기록',
-      turns: [3, 5, 1],
-      date: '08.21',
-      used: '—',
-      learn: false,
+      uses: 0,
     },
     {
       id: 'l12',
@@ -1896,12 +2034,10 @@
       title: '3% 쓰다가 생긴 궁금한 것들 정리',
       turns: [3, 5, 1, 1],
       date: '08.24',
-      used: '—',
-      learn: false,
+      uses: 0,
     },
   ];
 
-  // 이번에 만든 원고 (내보내기 대상)
   const MADE = [
     { id: 'm1', keyword: '브라질리언 왁싱 모낭염', when: '방금', comments: 4 },
     { id: 'm2', keyword: '팔꿈치 각질', when: '오늘 14:02', comments: 4 },
@@ -1913,30 +2049,44 @@
   const UPLOAD_WAYS = [
     {
       id: 'a',
-      title: '서버에 계정 세션 저장',
-      desc: '계정마다 한 번씩만 로그인해요. 비밀번호는 저장하지 않고, 예약과 순차 등록이 자동으로 돌아가요.',
+      title: '서버에 계정 저장',
+      desc: '계정을 한 번 등록해 두면 예약과 순차 등록이 자동으로 돌아가요.',
       tag: '계정 많을 때 편해요',
     },
     {
       id: 'b',
       title: '크롬에 로그인해 두고 올리기',
-      desc: '내 브라우저에서 올라가요. 계정 정보를 서버가 전혀 몰라요. 대신 댓글 계정마다 바꿔 로그인해야 해요.',
+      desc: '내 브라우저에서 올라가요. 계정 정보를 서버가 몰라요. 대신 댓글 계정마다 바꿔 로그인해야 해요.',
       tag: '가장 안전해요',
     },
     {
       id: 'c',
-      title: '아이디·비밀번호 저장',
-      desc: '서버가 직접 로그인해요. 캡차와 기기 인증에 자주 막히고 계정이 잠길 수 있어요.',
+      title: '올릴 때마다 직접 로그인',
+      desc: '저장하지 않고 올릴 때마다 입력해요. 원고가 많으면 번거로워요.',
       tag: '',
     },
+  ];
+
+  const ACCOUNTS = [
+    { id: 'a1', alias: '본문용', login: 'nabi_main', role: '본문 · 글쓴이 답글' },
+    { id: 'a2', alias: '댓글용1', login: 'nabi_c1', role: '댓글1' },
+    { id: 'a3', alias: '댓글용2', login: 'nabi_c2', role: '댓글2' },
+  ];
+
+  const GAPS = [
+    { id: 'first', label: '본문 올린 뒤 첫 댓글까지', value: 3 },
+    { id: 'between', label: '댓글과 댓글 사이', value: 2 },
+    { id: 'reply', label: '댓글 달린 뒤 글쓴이 답글까지', value: 1 },
   ];
 
   const state = {
     view: 'result',
     version: 2,
     count: 4,
+    model: 'gemini-flash',
+    modelOpen: false,
+    maker: '제미나이',
     tone: '후기형',
-    len: '보통',
     setMode: 'new',
     way: 'docs',
     uploadWay: 'a',
@@ -1948,8 +2098,12 @@
     libQuery: '',
     libSort: 'recent',
     pickQuery: '',
-    pickOpen: null,
+    pickOpen: false,
+    showAllPicks: false,
     picks: ['m1', 'm2', 'm3'],
+    upPick: 'm1',
+    gaps: { first: 3, between: 2, reply: 1 },
+    assign: { body: 'a1', c1: 'a2', c2: 'a3', c3: '', c4: '' },
   };
 
   const el = (id) => document.getElementById(id);
@@ -1960,6 +2114,7 @@
     );
   const edited = (key, fallback) => state.edits[key] ?? fallback;
   const title = () => edited('title', state.version === 2 ? TITLE_V2 : TITLE_V1);
+  const turnText = (turns) => `댓글 ${turns.length}개 · ${turns.join('·')}턴`;
 
   function toast(message) {
     const node = el('toast');
@@ -1991,10 +2146,11 @@
   function renderDock() {
     const inner = el('dock-inner');
     const pending = Object.values(state.revising).filter((v) => v && v.trim()).length;
+    const model = MODELS.find((m) => m.id === state.model);
 
     if (state.view === 'write') {
       inner.innerHTML =
-        `<p>댓글 ${state.count}개 · ${state.tone}</p>` +
+        `<p>${model.name} · 댓글 ${state.count}개</p>` +
         '<button class="btn pri lg" id="btn-generate" type="button">원고 만들기</button>';
       el('btn-generate').addEventListener('click', fakeGenerate);
     } else if (state.view === 'result') {
@@ -2026,6 +2182,10 @@
           ),
         );
       }
+    } else if (state.view === 'publish') {
+      inner.innerHTML =
+        '<p>계정 연결 방식을 정하면 만들 수 있어요</p>' +
+        '<button class="btn pri lg" type="button" disabled>카페에 올리기</button>';
     } else {
       inner.innerHTML = '';
     }
@@ -2046,6 +2206,52 @@
   function setSeg(group, value) {
     document.querySelectorAll(`[data-seg="${group}"]`).forEach((b) => {
       b.setAttribute('aria-pressed', String(b.dataset.value === value));
+    });
+  }
+
+  // ---------- AI 모델 ----------
+  function renderModel() {
+    const model = MODELS.find((m) => m.id === state.model);
+
+    el('model-now').textContent = `${model.name} · ${model.cost}`;
+    el('btn-model').textContent = state.modelOpen ? '닫기' : '바꾸기';
+    el('model-zone').innerHTML = state.modelOpen
+      ? `<div class="seg" role="group" aria-label="제공사" style="margin-bottom:10px">
+          ${MAKERS.map((m) => `<button type="button" data-maker="${m}" aria-pressed="${m === state.maker}">${m}</button>`).join('')}
+        </div>
+        <div class="picks">
+          ${MODELS.filter((m) => m.maker === state.maker)
+            .map(
+              (m) => `<label class="pickcard${state.model === m.id ? ' on' : ''}">
+                <input type="radio" name="model" value="${m.id}" ${state.model === m.id ? 'checked' : ''} />
+                <span>
+                  <b>${m.name} ${m.free ? '<span class="chip blue">무료</span>' : ''}</b>
+                  <p>${m.desc}</p>
+                </span>
+                <span class="side"><b class="cost">${m.cost}</b><span class="costsub">${m.sub}</span></span>
+              </label>`,
+            )
+            .join('')}
+        </div>
+        <p class="desc" style="margin:10px 0 0">
+          원고 1편(입력·출력 각 3,000토큰) 기준 예상 비용이에요. 클로드 단가는 공식 가격 기준이고,
+          제미나이·챗지피티는 만들 때 공식 가격을 넣어 맞춰요.
+        </p>`
+      : '';
+
+    document.querySelectorAll('[name="model"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        state.model = radio.value;
+        renderModel();
+        renderDock();
+        toast(`${MODELS.find((m) => m.id === radio.value).name}으로 정했어요`);
+      });
+    });
+    document.querySelectorAll('[data-maker]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.maker = button.dataset.maker;
+        renderModel();
+      });
     });
   }
 
@@ -2128,9 +2334,7 @@
         </div>
         <div class="opts">
           <label>티키타카 <select data-turns="${n}" aria-label="댓글${n} 턴 수">${options}</select></label>
-          <label class="check">
-            <input type="checkbox" data-photo="${n}" ${photo ? 'checked' : ''} />사진 자리 넣기
-          </label>
+          <label class="check"><input type="checkbox" data-photo="${n}" ${photo ? 'checked' : ''} />사진 자리 넣기</label>
         </div>
       </article>`;
     }).join('');
@@ -2171,6 +2375,7 @@
         toast(box.checked ? `댓글${n}에 사진 자리를 넣었어요` : `댓글${n}의 사진 자리를 뺐어요`);
       });
     });
+
     const reset = el('btn-reset-set');
 
     if (reset) {
@@ -2254,15 +2459,13 @@
   });
 
   // ---------- 보관함 ----------
-  const turnText = (turns) => `댓글 ${turns.length}개 · ${turns.join('·')}턴`;
-
   function libList(query, sort) {
     const q = query.trim().toLowerCase();
     const list = LIBRARY.filter((i) => !q || (i.keyword + i.title).toLowerCase().includes(q));
 
     if (sort === 'name') list.sort((a, b) => a.keyword.localeCompare(b.keyword, 'ko'));
     else if (sort === 'comments') list.sort((a, b) => b.turns.length - a.turns.length);
-    else if (sort === 'used') list.sort((a, b) => (a.used === '—') - (b.used === '—'));
+    else if (sort === 'used') list.sort((a, b) => b.uses - a.uses);
     else list.sort((a, b) => b.date.localeCompare(a.date));
 
     return list;
@@ -2273,47 +2476,96 @@
 
     el('lib-summary').textContent = state.libQuery
       ? `${list.length}개 찾았어요`
-      : `원고 ${LIBRARY.length}개 · 어투 학습에 쓰는 원고 ${LIBRARY.filter((i) => i.learn).length}개`;
+      : `원고 ${LIBRARY.length}개`;
     el('lib-empty').hidden = list.length > 0;
     el('lib-grid').innerHTML = list
       .map(
         (i) => `<article class="lib${state.imported?.id === i.id ? ' on' : ''}">
         <h4>${esc(i.keyword)}</h4>
         <p>${esc(i.title)}</p>
-        <span class="meta">${turnText(i.turns)} · ${i.date}</span>
+        <span class="meta">${turnText(i.turns)} · ${i.date}${i.uses ? ` · ${i.uses}번 씀` : ''}</span>
         <div class="act">
           <button class="btn sm" type="button" data-use="${i.id}">댓글 가져오기</button>
           <span class="grow"></span>
-          <label class="check"><input type="checkbox" ${i.learn ? 'checked' : ''} aria-label="${esc(i.keyword)} 어투 학습" />어투 학습</label>
+          <label class="check"><input type="checkbox" aria-label="${esc(i.keyword)} 어투 학습" />어투 학습</label>
         </div>
       </article>`,
       )
       .join('');
   }
 
-  // ---------- 댓글 세트 고르기 ----------
+  // ---------- 댓글 세트 추천 + 고르기 ----------
+  function recommend() {
+    const keyword = (el('f-keyword')?.value || el('w-keyword')?.value || '').trim();
+    const words = keyword.split(/\s+/).filter(Boolean);
+    const scored = LIBRARY.map((item) => {
+      const hit = words.filter((w) => item.keyword.includes(w)).length;
+      const same = keyword && item.keyword === keyword;
+
+      return {
+        item,
+        reason: same ? '같은 키워드' : hit ? '비슷한 키워드' : item.uses >= 9 ? '많이 쓴 세트' : '',
+        score: (same ? 100 : 0) + hit * 10 + item.uses,
+      };
+    })
+      .filter((r) => r.reason)
+      .sort((a, b) => b.score - a.score);
+
+    if (scored.length < 3) {
+      LIBRARY.slice()
+        .sort((a, b) => b.uses - a.uses)
+        .forEach((item) => {
+          if (scored.length < 3 && !scored.some((r) => r.item.id === item.id) && item.uses) {
+            scored.push({ item, reason: '많이 쓴 세트', score: item.uses });
+          }
+        });
+    }
+
+    return scored.slice(0, 3);
+  }
+
   function pickerHtml(searchId) {
-    const list = libList(state.pickQuery, 'recent').slice(0, 30);
+    const recs = recommend();
+    const list = libList(state.pickQuery, 'recent');
+    const shown = state.pickQuery ? list : state.showAllPicks ? list : [];
 
     return `<div class="card" style="margin-top:10px">
-      <label class="searchbar" style="margin-bottom:10px">
+      ${
+        recs.length && !state.pickQuery
+          ? `<p class="desc" style="margin:0 0 8px">추천</p>
+             <div class="rows" style="margin-bottom:6px">
+              ${recs
+                .map(
+                  (r) => `<div class="row">
+                    <span class="txt"><b>${esc(r.item.keyword)} <span class="chip blue">${r.reason}</span></b>
+                    <span>${turnText(r.item.turns)}${r.item.uses ? ` · ${r.item.uses}번 씀` : ''}</span></span>
+                    <button class="btn sm pri" type="button" data-use="${r.item.id}">가져오기</button>
+                  </div>`,
+                )
+                .join('')}
+             </div>`
+          : ''
+      }
+      <label class="searchbar" style="margin:10px 0">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="search" id="${searchId}" value="${esc(state.pickQuery)}" placeholder="키워드로 찾기" aria-label="원고 찾기" />
+        <input type="search" id="${searchId}" value="${esc(state.pickQuery)}" placeholder="다른 키워드로 찾기" aria-label="원고 찾기" />
       </label>
-      <div class="rows">
-        ${
-          list.length
-            ? list
+      ${
+        shown.length
+          ? `<div class="rows" style="max-height:290px;overflow-y:auto">
+              ${shown
                 .map(
                   (i) => `<div class="row">
                     <span class="txt"><b>${esc(i.keyword)}</b><span>${turnText(i.turns)}</span></span>
-                    <button class="btn sm pri" type="button" data-use="${i.id}">가져오기</button>
+                    <button class="btn sm" type="button" data-use="${i.id}">가져오기</button>
                   </div>`,
                 )
-                .join('')
-            : '<div class="empty">찾는 키워드가 없어요</div>'
-        }
-      </div>
+                .join('')}
+            </div>`
+          : state.pickQuery
+            ? '<div class="empty">찾는 키워드가 없어요</div>'
+            : `<button class="btn sm ghost block" type="button" data-showall="1">전체 ${LIBRARY.length}개 보기</button>`
+      }
     </div>`;
   }
 
@@ -2355,18 +2607,14 @@
     state.imported = LIBRARY.find((i) => i.id === id);
     state.setMode = 'load';
     state.turns = {};
+    state.pickOpen = false;
     setSeg('set', 'load');
     el('picker-zone').innerHTML = '';
-    state.pickOpen = null;
     renderSetZone();
     renderLibrary();
     renderComments();
     if (fromLibrary) show('result');
-    toast(
-      id === 'l1'
-        ? `${state.imported.keyword} 댓글을 가져왔어요`
-        : `${state.imported.keyword} 세트를 골랐어요. 시안에는 예시 댓글 하나만 들어 있어 그 내용이 보여요`,
-    );
+    toast(`${state.imported.keyword} 댓글을 가져왔어요`);
   }
 
   // ---------- 내보내기 ----------
@@ -2421,7 +2669,16 @@
   }
 
   // ---------- 업로드 ----------
-  function renderUploadWays() {
+  function renderPublish() {
+    el('up-count').textContent = `1개 골랐어요`;
+    el('up-list').innerHTML = MADE.map(
+      (m) => `<label class="row" style="cursor:pointer">
+        <input type="radio" name="uppick" value="${m.id}" ${state.upPick === m.id ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--blue)" />
+        <span class="txt"><b>${esc(m.keyword)}</b><span>댓글 ${m.comments}개</span></span>
+        <span class="when">${m.when}</span>
+      </label>`,
+    ).join('');
+
     el('way-picks').innerHTML = UPLOAD_WAYS.map(
       (w) => `<label class="pickcard${state.uploadWay === w.id ? ' on' : ''}">
         <input type="radio" name="uway" value="${w.id}" ${state.uploadWay === w.id ? 'checked' : ''} />
@@ -2431,11 +2688,75 @@
         </span>
       </label>`,
     ).join('');
+
+    el('acct-list').innerHTML = ACCOUNTS.map(
+      (a) => `<div class="row">
+        <span class="txt"><b>${esc(a.alias)}</b><span>${esc(a.login)} · 비밀번호 저장됨</span></span>
+        <span class="chip ok">연결됨</span>
+        <button class="btn sm ghost" type="button" data-toast="시안에서는 삭제되지 않아요">삭제</button>
+      </div>`,
+    ).join('');
+
+    const roles = [
+      { key: 'body', label: '본문 · 글쓴이 답글' },
+      { key: 'c1', label: '댓글1' },
+      { key: 'c2', label: '댓글2' },
+      { key: 'c3', label: '댓글3' },
+      { key: 'c4', label: '댓글4' },
+    ];
+
+    el('assign-list').innerHTML = roles
+      .map(
+        (r) => `<div class="row">
+        <span class="txt"><b>${r.label}</b></span>
+        <select data-assign="${r.key}" aria-label="${r.label} 계정">
+          <option value="">계정 고르기</option>
+          ${ACCOUNTS.map((a) => `<option value="${a.id}"${state.assign[r.key] === a.id ? ' selected' : ''}>${esc(a.alias)}</option>`).join('')}
+        </select>
+      </div>`,
+      )
+      .join('');
+
+    el('gap-list').innerHTML = GAPS.map(
+      (g) => `<div class="row">
+        <span class="txt"><b>${g.label}</b></span>
+        <span class="stepper">
+          <button type="button" data-gap="${g.id}" data-delta="-1" aria-label="${g.label} 줄이기">−</button>
+          <span>${state.gaps[g.id]}분</span>
+          <button type="button" data-gap="${g.id}" data-delta="1" aria-label="${g.label} 늘리기">+</button>
+        </span>
+      </div>`,
+    ).join('');
+
     document.querySelectorAll('[name="uway"]').forEach((radio) => {
       radio.addEventListener('change', () => {
         state.uploadWay = radio.value;
-        renderUploadWays();
+        renderPublish();
         toast(`${UPLOAD_WAYS.find((w) => w.id === radio.value).title} 방식으로 정했어요`);
+      });
+    });
+    document.querySelectorAll('[name="uppick"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        state.upPick = radio.value;
+        renderPublish();
+      });
+    });
+    document.querySelectorAll('[data-assign]').forEach((sel) => {
+      sel.addEventListener('change', () => {
+        state.assign[sel.dataset.assign] = sel.value;
+      });
+    });
+    document.querySelectorAll('[data-gap]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.gap;
+        const next = state.gaps[id] + Number(button.dataset.delta);
+
+        if (next < 1 || next > 5) {
+          toast('1분부터 5분까지 정할 수 있어요');
+          return;
+        }
+        state.gaps[id] = next;
+        renderPublish();
       });
     });
   }
@@ -2475,7 +2796,9 @@
 
   // ---------- events ----------
   document.addEventListener('click', (event) => {
-    const t = event.target.closest('[data-go],[data-toast],[data-version],[data-use],[data-seg]');
+    const t = event.target.closest(
+      '[data-go],[data-toast],[data-version],[data-use],[data-seg],[data-step],[data-pick],[data-showall]',
+    );
 
     if (!t) return;
     if (t.dataset.go) show(t.dataset.go);
@@ -2485,12 +2808,30 @@
       renderResult();
     }
     if (t.dataset.use) useSet(t.dataset.use, Boolean(t.closest('#lib-grid')));
+    if (t.dataset.showall) {
+      state.showAllPicks = true;
+      const zone =
+        state.setMode === 'load' && el('set-zone').contains(t) ? 'set-zone' : 'picker-zone';
+      const search = zone === 'set-zone' ? 'set-search' : 'result-search';
+
+      el(zone).innerHTML = pickerHtml(search);
+      bindPicker(search, zone);
+    }
+    if (t.dataset.pick) {
+      state.picks = t.dataset.pick === 'all' ? MADE.map((m) => m.id) : [];
+      renderExport();
+      renderDock();
+    }
+    if (t.dataset.step === 'count') {
+      state.count = Math.min(8, Math.max(1, state.count + Number(t.dataset.delta)));
+      el('cnt-value').textContent = `${state.count}개`;
+      renderDock();
+    }
     if (t.dataset.seg) {
       const { seg, value } = t.dataset;
 
       setSeg(seg, value);
       if (seg === 'tone') state.tone = value;
-      if (seg === 'len') state.len = value;
       if (seg === 'set') {
         state.setMode = value;
         renderSetZone();
@@ -2503,21 +2844,10 @@
     }
   });
 
-  el('cnt-minus').addEventListener('click', () => {
-    state.count = Math.max(1, state.count - 1);
-    el('cnt-value').textContent = `${state.count}개`;
-    el('cnt-minus').disabled = state.count === 1;
-    el('cnt-plus').disabled = false;
-    renderDock();
+  el('btn-model').addEventListener('click', () => {
+    state.modelOpen = !state.modelOpen;
+    renderModel();
   });
-  el('cnt-plus').addEventListener('click', () => {
-    state.count = Math.min(8, state.count + 1);
-    el('cnt-value').textContent = `${state.count}개`;
-    el('cnt-plus').disabled = state.count === 8;
-    el('cnt-minus').disabled = false;
-    renderDock();
-  });
-
   el('lib-search').addEventListener('input', () => {
     state.libQuery = el('lib-search').value;
     renderLibrary();
@@ -2530,32 +2860,21 @@
     toast('시안이에요. 실제로는 제목·본문·댓글을 가져와요'),
   );
   el('btn-import').addEventListener('click', () => {
-    const zone = el('picker-zone');
-
-    state.pickOpen = state.pickOpen ? null : 'result';
-    zone.innerHTML = state.pickOpen ? pickerHtml('result-search') : '';
+    state.pickOpen = !state.pickOpen;
+    el('picker-zone').innerHTML = state.pickOpen ? pickerHtml('result-search') : '';
     if (state.pickOpen) bindPicker('result-search', 'picker-zone');
   });
   el('btn-regen').addEventListener('click', () =>
     toast('시안이에요. 실제로는 바뀐 조건으로 다시 만들어요'),
   );
-  el('btn-all').addEventListener('click', () => {
-    state.picks = MADE.map((m) => m.id);
-    renderExport();
-    renderDock();
-  });
-  el('btn-none').addEventListener('click', () => {
-    state.picks = [];
-    renderExport();
-    renderDock();
-  });
 
   renderNav();
+  renderModel();
   renderResult();
   renderLibrary();
   renderSetZone();
   renderExport();
-  renderUploadWays();
+  renderPublish();
   markSaved();
   show('result');
 </script>

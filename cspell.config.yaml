@@ -21,6 +21,7 @@ words:
   - bephigh
   - checkline
   - cooldown
+  - costsub
   - CVEs
   - Decap
   - docpick
@@ -28,6 +29,7 @@ words:
   - doctabs
   - edithint
   - esbuild
+  - Gemini
   - GHSA
   - Ghsas
   - Gowun
@@ -41,6 +43,7 @@ words:
   - libgrid
   - libmeta
   - libtitle
+  - nabi
   - needfix
   - Noto
   - oprow
@@ -56,6 +59,7 @@ words:
   - regen
   - searchbar
   - setmode
+  - showall
   - singleline
   - stepper
   - Sveltia
@@ -63,6 +67,7 @@ words:
   - topbar
   - undici
   - unrs
+  - uppick
   - uway
   - vtab
   - workerd
