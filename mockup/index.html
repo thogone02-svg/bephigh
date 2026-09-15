@@ -205,9 +205,64 @@
 
   .rail-foot {
     margin-top: auto;
-    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     font-size: 12px;
     color: var(--t400);
+  }
+
+  .rail-foot span {
+    padding: 0 12px;
+  }
+
+  .railset {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: var(--r-ctl);
+    background: transparent;
+    color: var(--t600);
+    font-size: 14.5px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .railset:hover {
+    background: var(--surface-2);
+    color: var(--t800);
+  }
+
+  .railset[aria-current='true'] {
+    background: var(--blue-bg);
+    color: var(--blue);
+    font-weight: 700;
+  }
+
+  .iconbtn {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--t600);
+    cursor: pointer;
+  }
+
+  .iconbtn:hover {
+    background: var(--surface-2);
+    color: var(--t800);
+  }
+
+  .iconbtn[aria-current='true'] {
+    background: var(--blue-bg);
+    color: var(--blue);
   }
 
   .main {
@@ -1396,11 +1451,24 @@
       <b>나비효과플랜</b>
     </div>
     <nav class="nav" id="nav-desktop" aria-label="작업 단계"></nav>
-    <div class="rail-foot">화면 시안 v0.6</div>
+    <div class="rail-foot">
+      <button class="railset" type="button" data-go="settings" id="rail-settings"></button>
+      <span>화면 시안 v0.7</span>
+    </div>
   </aside>
 
   <main class="main">
-    <div class="topbar"><h1 id="view-name">결과</h1></div>
+    <div class="topbar">
+      <h1 id="view-name">결과</h1>
+      <span class="grow"></span>
+      <button
+        class="iconbtn"
+        type="button"
+        data-go="settings"
+        aria-label="설정"
+        id="btn-settings"
+      ></button>
+    </div>
 
     <div class="wrap">
       <div class="hint-bar">
@@ -1874,6 +1942,79 @@
           <div class="rows" id="gap-list"></div>
         </div>
       </section>
+      <!-- ⑥ 설정 -->
+      <section class="view" id="view-settings" hidden>
+        <header>
+          <h2>설정</h2>
+          <p>API 키와 연결된 계정을 여기서 관리해요.</p>
+        </header>
+
+        <div class="card">
+          <h3>
+            API 키
+            <span class="sub">회사별로 한 번만 넣어두면 돼요</span>
+          </h3>
+          <div class="rows" id="key-list"></div>
+          <p class="desc" style="margin: 12px 0 0">
+            키는 암호화해서 보관하고 화면에는 뒷자리만 보여줘요. 지우면 그 회사 모델은 목록에서
+            빠져요.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>기본 모델</h3>
+          <div class="rows">
+            <div class="row">
+              <span class="txt"><b>기본 생성</b><span id="set-base"></span></span>
+              <button class="btn sm" type="button" data-go="write">바꾸기</button>
+            </div>
+            <div class="row">
+              <span class="txt"><b>이상할 때 다시 쓰기</b><span id="set-upper"></span></span>
+              <button class="btn sm" type="button" data-go="write">바꾸기</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>연결된 계정</h3>
+          <div class="rows">
+            <div class="row">
+              <span class="txt"><b>구글 계정</b><span>문서로 내보낼 때 써요</span></span>
+              <span class="chip warn">미연결</span>
+              <button class="btn sm" type="button" data-toast="시안에서는 연결이 열리지 않아요">
+                연결하기
+              </button>
+            </div>
+            <div class="row">
+              <span class="txt"><b>네이버 계정</b><span>카페에 올릴 때 써요</span></span>
+              <span class="chip ok">3개</span>
+              <button class="btn sm" type="button" data-go="publish">관리하기</button>
+            </div>
+            <div class="row">
+              <span class="txt"
+                ><b>카페 열람용 계정</b><span>멤버 공개 글을 읽을 때 써요</span></span
+              >
+              <span class="chip warn">미등록</span>
+              <button class="btn sm" type="button" data-go="refs">등록하기</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>
+            저장
+            <span class="sub">원고와 보관함은 이 브라우저에 저장돼요</span>
+          </h3>
+          <div class="pfoot" style="margin-top: 0">
+            <button class="btn" type="button" data-toast="시안에서는 백업이 열리지 않아요">
+              백업 파일 내려받기
+            </button>
+            <button class="btn ghost" type="button" data-toast="시안에서는 열리지 않아요">
+              백업 불러오기
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="dock" id="dock"><div class="inner" id="dock-inner"></div></div>
@@ -1896,6 +2037,8 @@
       '<path d="M7 18a4 4 0 0 1-.4-8A6 6 0 0 1 18 9.6 3.7 3.7 0 0 1 17.5 18H7Z"/><path d="M12 21v-7"/><path d="m9 16 3-3 3 3"/>',
     check: '<path d="m5 13 4 4L19 7"/>',
     lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    settings:
+      '<circle cx="12" cy="12" r="3"/><path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.5 14H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 3.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.4a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1Z"/>',
     image:
       '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m5 17 4.5-4.5L13 16l2.5-2.5L19 17"/>',
   };
@@ -1909,6 +2052,7 @@
     { id: 'result', label: '결과' },
     { id: 'export', label: '내보내기' },
     { id: 'publish', label: '업로드' },
+    { id: 'settings', label: '설정', off: true },
   ];
 
   // 2026-09-15 공식 API 가격 (100만 토큰당 USD)
@@ -2244,6 +2388,7 @@
     turns: {},
     shots: {},
     cafe: null,
+    keys: { OpenAI: 'sk-live-…7f2a', Google: '', Anthropic: '' },
     board: '',
     edits: {},
     imported: null,
@@ -2285,14 +2430,24 @@
   }
 
   function renderNav() {
-    el('nav-desktop').innerHTML = VIEWS.map(
-      (v) =>
-        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">${icon(v.id)}<span>${v.label}</span></button>`,
-    ).join('');
-    el('nav-mobile').innerHTML = VIEWS.map(
-      (v) =>
-        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">${icon(v.id, 22)}<span>${v.label}</span></button>`,
-    ).join('');
+    const main = VIEWS.filter((v) => !v.off);
+
+    el('btn-settings').innerHTML = icon('settings');
+    el('btn-settings').setAttribute('aria-current', String(state.view === 'settings'));
+    el('rail-settings').innerHTML = `${icon('settings')}<span>설정</span>`;
+    el('rail-settings').setAttribute('aria-current', String(state.view === 'settings'));
+    el('nav-desktop').innerHTML = main
+      .map(
+        (v) =>
+          `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">${icon(v.id)}<span>${v.label}</span></button>`,
+      )
+      .join('');
+    el('nav-mobile').innerHTML = main
+      .map(
+        (v) =>
+          `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">${icon(v.id, 22)}<span>${v.label}</span></button>`,
+      )
+      .join('');
   }
 
   function renderDock() {
@@ -2350,6 +2505,7 @@
       el('view-' + v.id).hidden = v.id !== view;
     });
     el('view-name').textContent = VIEWS.find((v) => v.id === view).label;
+    if (view === 'settings') renderSettings();
     renderNav();
     renderDock();
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -2436,6 +2592,7 @@
         state.model = radio.value;
         renderModel();
         renderDock();
+        renderSettings();
         toast(`${MODELS.find((m) => m.id === radio.value).name}으로 정했어요`);
       });
     });
@@ -3011,6 +3168,56 @@
     toast(`${state.cafe.name}의 게시판 ${state.cafe.boards.length}개를 불러왔어요`);
   }
 
+  function renderSettings() {
+    const base = MODELS.find((m) => m.id === state.model);
+    const upper = MODELS.find((m) => m.id === state.upgradeModel);
+
+    el('set-base').textContent = `${base.name} · 원고 1건 ${wonPerDoc(base)}원`;
+    el('set-upper').textContent = state.upgrade ? `${upper.name} · 켜짐` : '꺼짐';
+
+    el('key-list').innerHTML = ['OpenAI', 'Google', 'Anthropic']
+      .map((maker) => {
+        const saved = state.keys[maker];
+        const models = MODELS.filter((m) => m.maker === maker).length;
+
+        return `<div class="row">
+          <span class="txt"><b>${maker}</b><span>모델 ${models}개${saved ? ` · ${esc(saved)}` : ''}</span></span>
+          ${
+            saved
+              ? `<span class="chip ok">등록됨</span>
+                 <button class="btn sm ghost" type="button" data-key-del="${maker}">지우기</button>`
+              : `<input class="input" type="password" data-key="${maker}" placeholder="API 키 붙여넣기"
+                   autocomplete="off" aria-label="${maker} API 키" style="max-width:260px;padding:10px 12px" />
+                 <button class="btn sm pri" type="button" data-key-save="${maker}">저장</button>`
+          }
+        </div>`;
+      })
+      .join('');
+
+    document.querySelectorAll('[data-key-save]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const maker = button.dataset.keySave;
+        const input = document.querySelector(`[data-key="${maker}"]`);
+        const value = input.value.trim();
+
+        if (!value) {
+          toast('API 키를 붙여넣어 주세요');
+          return;
+        }
+        state.keys[maker] = `${value.slice(0, 7)}…${value.slice(-4)}`;
+        renderSettings();
+        toast(`${maker} 키를 저장했어요`);
+      });
+    });
+    document.querySelectorAll('[data-key-del]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.keys[button.dataset.keyDel] = '';
+        renderSettings();
+        toast(`${button.dataset.keyDel} 키를 지웠어요`);
+      });
+    });
+  }
+
   // ---------- 생성 ----------
   const STREAM_TEXT = `[제목]\n${TITLE_V1}\n\n[본문]\n${BODY.slice(0, 180)}…\n\n[댓글1] 3턴\n댓글1: 저도 왁싱하고 딱 저랬는데…\n└글쓴이: 저는 안 건드리고 통풍만…`;
 
@@ -3130,6 +3337,7 @@
 
   renderNav();
   renderModel();
+  renderSettings();
   renderResult();
   renderLibrary();
   renderSetZone();
