@@ -19,9 +19,13 @@ ignoreRegExpList:
   - "/[\\uAC00-\\uD7A3\\u3131-\\u318E]+/gu"
 words:
   - bephigh
+  - checkline
   - cooldown
   - CVEs
   - Decap
+  - docpick
+  - doctab
+  - edithint
   - esbuild
   - GHSA
   - Ghsas
@@ -36,6 +40,7 @@ words:
   - libmeta
   - libtitle
   - needfix
+  - oprow
   - picklist
   - picksearch
   - PKCE
