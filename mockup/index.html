@@ -2378,8 +2378,8 @@
     model: 'luna',
     modelOpen: false,
     maker: '전체',
-    upgrade: true,
-    upgradeModel: 'sonnet5',
+    upgrade: false,
+    upgradeModel: 'terra',
     tone: '후기형',
     setMode: 'new',
     way: 'docs',
@@ -2522,7 +2522,8 @@
     const model = MODELS.find((m) => m.id === state.model);
     const upper = MODELS.find((m) => m.id === state.upgradeModel);
     const base = Math.round(usdPerDoc(model) * 1000 * WON);
-    const extra = state.upgrade ? Math.round(usdPerDoc(upper) * 100 * WON) : 0;
+    const retry = Math.round(usdPerDoc(upper) * 100 * WON);
+    const extra = state.upgrade ? retry : 0;
     const list = MODELS.filter((m) => state.maker === '전체' || m.maker === state.maker);
 
     el('model-now').textContent = `${model.name} · 원고 1건 ${wonPerDoc(model)}원`;
@@ -2563,14 +2564,8 @@
           state.upgrade
             ? `<div class="pfoot" style="margin-top:10px">
                 <span class="desc" style="align-self:center">다시 쓸 모델</span>
-                <select id="f-upmodel" class="sel" aria-label="다시 쓸 모델">
-                  ${MODELS.filter((m) => !m.over)
-                    .map(
-                      (m) =>
-                        `<option value="${m.id}"${state.upgradeModel === m.id ? ' selected' : ''}>${m.name}</option>`,
-                    )
-                    .join('')}
-                </select>
+                <span class="chip blue">${upper.name}</span>
+                <span class="desc" style="align-self:center">원고 1건 ${wonPerDoc(upper)}원</span>
               </div>`
             : ''
         }
@@ -2578,7 +2573,7 @@
         <div class="banner" style="margin-top:14px;background:var(--surface-2);color:var(--t700)">
           <span class="grow">
             원고 <b>1,000건</b>에 약 <b>${comma(base + extra)}원</b>
-            ${state.upgrade ? ` (${model.name} 900건 + ${upper.name} 100건)` : ''}
+            ${state.upgrade ? ` (${model.name} 1,000건 + ${upper.name} 재생성 100건 ${comma(retry)}원)` : ''}
           </span>
         </div>
         <p class="desc" style="margin:8px 0 0">
@@ -2608,14 +2603,7 @@
       up.addEventListener('change', () => {
         state.upgrade = up.checked;
         renderModel();
-      });
-    }
-    const upModel = el('f-upmodel');
-
-    if (upModel) {
-      upModel.addEventListener('change', () => {
-        state.upgradeModel = upModel.value;
-        renderModel();
+        renderSettings();
       });
     }
   }
@@ -3173,7 +3161,7 @@
     const upper = MODELS.find((m) => m.id === state.upgradeModel);
 
     el('set-base').textContent = `${base.name} · 원고 1건 ${wonPerDoc(base)}원`;
-    el('set-upper').textContent = state.upgrade ? `${upper.name} · 켜짐` : '꺼짐';
+    el('set-upper').textContent = state.upgrade ? `${upper.name} · 켜짐` : `${upper.name} · 꺼짐`;
 
     el('key-list').innerHTML = ['OpenAI', 'Google', 'Anthropic']
       .map((maker) => {
