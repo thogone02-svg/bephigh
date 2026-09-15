@@ -325,6 +325,10 @@
     letter-spacing: 0.02em;
   }
 
+  .panel h3.tight {
+    margin-bottom: 8px;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -451,6 +455,7 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.02em;
+    white-space: nowrap;
   }
 
   .badge.body {
@@ -474,13 +479,35 @@
     border: 1px solid var(--line);
   }
 
+  .badge.kept {
+    background: var(--surface-sunk);
+    color: var(--accent-ink);
+    border: 1px solid var(--accent);
+  }
+
+  /* ---------- work header (키워드 · 요청사항) ---------- */
+
+  .worktop {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+
+  .worktop .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    align-items: start;
+  }
+
+  .worktop .row {
+    margin-top: 12px;
+  }
+
   /* ---------- manuscript cards ---------- */
 
   .versions {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding-bottom: 12px;
+    padding: 14px 0 12px;
     overflow-x: auto;
   }
 
@@ -501,6 +528,21 @@
     color: var(--ground);
   }
 
+  .section-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0 10px;
+  }
+
+  .section-bar h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
   .piece {
     display: grid;
     grid-template-columns: 4px minmax(0, 1fr);
@@ -518,12 +560,17 @@
     background: var(--line-strong);
   }
 
+  .piece.is-title .rail-mark,
   .piece.is-body .rail-mark {
     background: var(--accent);
   }
 
   .piece.is-comment .rail-mark {
     background: var(--clay);
+  }
+
+  .piece.is-kept .rail-mark {
+    background: repeating-linear-gradient(180deg, var(--accent) 0 6px, transparent 6px 12px);
   }
 
   .piece-inner {
@@ -533,6 +580,7 @@
 
   .piece-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
@@ -547,7 +595,7 @@
   }
 
   .piece-title {
-    margin: 0 0 8px;
+    margin: 0;
     font-family: var(--font-display);
     font-size: 19px;
     font-weight: 700;
@@ -563,12 +611,47 @@
     line-height: 1.85;
   }
 
-  .piece-text .reply {
-    display: block;
-    margin-top: 6px;
-    padding-left: 14px;
+  /* ---------- 티키타카 스레드 ---------- */
+
+  .thread {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    max-width: 44em;
+  }
+
+  .turn {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 9px;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .turn .tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 2px 7px;
+    height: fit-content;
+    margin-top: 3px;
+    border-radius: 999px;
+    background: var(--clay-soft);
+    color: var(--clay);
+    white-space: nowrap;
+  }
+
+  .turn.author {
+    padding-left: 18px;
+  }
+
+  .turn.author .tag {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .turn.author span {
     color: var(--ink-2);
-    font-size: 13.5px;
   }
 
   .counts {
@@ -581,14 +664,15 @@
 
   .revise {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px dashed var(--line);
   }
 
-  .revise input {
-    flex: 1 1 auto;
+  .revise input[type='text'] {
+    flex: 1 1 220px;
     min-width: 0;
     padding: 8px 11px;
     border: 1px solid var(--line);
@@ -603,6 +687,14 @@
 
   .revise input:not(:placeholder-shown) {
     border-color: var(--clay);
+  }
+
+  .revise select {
+    padding: 8px 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-size: 12.5px;
   }
 
   .sticky-action {
@@ -623,6 +715,47 @@
     margin: 0;
     font-size: 12.5px;
     color: var(--ink-2);
+  }
+
+  /* ---------- 댓글 세트 가져오기 ---------- */
+
+  .picker {
+    margin-top: 10px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .picker > header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .pick {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .pick b {
+    display: block;
+    font-size: 13.5px;
+  }
+
+  .pick p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-3);
   }
 
   /* ---------- reference list ---------- */
@@ -658,10 +791,13 @@
     margin: 2px 0 0;
     font-size: 12.5px;
     color: var(--ink-3);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  }
+
+  .ref .side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
   }
 
   .ref .meta {
@@ -683,6 +819,58 @@
     color: var(--ink-3);
     font-size: 12.5px;
     text-align: center;
+  }
+
+  /* ---------- 수집 방법 ---------- */
+
+  .ways {
+    display: grid;
+    gap: 10px;
+  }
+
+  .way {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-sunk);
+  }
+
+  .way .mark {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--on-accent);
+    background: var(--accent);
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+  }
+
+  .way.fallback .mark {
+    background: var(--line-strong);
+    color: var(--ink-2);
+  }
+
+  .way b {
+    font-size: 13.5px;
+  }
+
+  .way p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+
+  .way .when {
+    display: block;
+    margin-top: 5px;
+    font-size: 11.5px;
+    color: var(--ink-3);
   }
 
   /* ---------- export & publish ---------- */
@@ -785,10 +973,6 @@
     font-weight: 500;
   }
 
-  .locked {
-    position: relative;
-  }
-
   .locked .panel {
     opacity: 0.55;
     pointer-events: none;
@@ -825,11 +1009,13 @@
     bottom: calc(22px + env(safe-area-inset-bottom, 0px));
     transform: translate(-50%, 12px);
     z-index: 20;
+    max-width: min(92vw, 440px);
     padding: 9px 16px;
     border-radius: 999px;
     background: var(--ink);
     color: var(--ground);
     font-size: 12.5px;
+    text-align: center;
     opacity: 0;
     pointer-events: none;
     transition:
@@ -873,12 +1059,17 @@
       padding-bottom: 86px;
     }
 
-    .grid {
+    .grid,
+    .worktop .grid {
       grid-template-columns: minmax(0, 1fr);
     }
 
     .view h2 {
       font-size: 21px;
+    }
+
+    .pick {
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .sticky-action {
@@ -955,10 +1146,7 @@
       <span>카페 원고 작업실</span>
     </div>
     <nav class="nav" id="nav-desktop" aria-label="작업 단계"></nav>
-    <div class="rail-foot">
-      화면 시안 v0.1<br />
-      2026.09.15 · 검토용
-    </div>
+    <div class="rail-foot">화면 시안 v0.2<br />2026.09.15 · 검토용</div>
   </aside>
 
   <main class="main">
@@ -966,7 +1154,7 @@
       <span class="mobile-brand">나비효과플랜</span>
       <h1 id="view-name">결과 · 버전</h1>
       <span class="keychip" title="작업 중인 키워드">
-        <span class="badge body">키워드</span><b>강남 임플란트 잘하는곳</b>
+        <span class="badge body">키워드</span><b id="chip-keyword">강남 임플란트 잘하는곳</b>
       </span>
     </div>
 
@@ -1001,6 +1189,12 @@
                 autocomplete="off"
               />
               <span class="hint">제목에 1회, 본문에 3~5회 자연스럽게 배치됩니다.</span>
+            </div>
+            <div class="field wide">
+              <label for="f-request">요청사항</label>
+              <textarea id="f-request">
+상담 3곳 비교하는 흐름으로 / 야간진료·주차 언급 / 가격은 단정하지 말 것</textarea>
+              <span class="hint">이 내용은 결과 화면에서도 바로 고쳐서 다시 돌릴 수 있습니다.</span>
             </div>
             <div class="field">
               <label for="f-brand">업체 · 브랜드명</label>
@@ -1052,15 +1246,12 @@
               </select>
             </div>
             <div class="field">
-              <label for="f-refs">학습자료 사용</label>
-              <select id="f-refs">
-                <option selected>선택한 3건 사용</option>
-                <option>사용 안 함 (기본 스타일)</option>
+              <label for="f-set">댓글 세트</label>
+              <select id="f-set">
+                <option selected>새로 생성</option>
+                <option>보관함에서 가져오기 (브라질리언 모낭염 원고 세트)</option>
               </select>
-            </div>
-            <div class="field wide">
-              <label for="f-must">반드시 포함할 내용</label>
-              <textarea id="f-must">상담은 예약제 / 주차 2시간 무료 / 야간진료 목요일</textarea>
+              <span class="hint">가져온 세트는 재생성해도 바뀌지 않습니다.</span>
             </div>
             <div class="field wide">
               <label for="f-avoid">쓰지 말 표현</label>
@@ -1084,38 +1275,72 @@
       <!-- ② 학습자료 -->
       <section class="view" id="view-refs" hidden>
         <header>
-          <span class="eyebrow">단계 2 · 선택</span>
-          <h2>내가 쓰던 어투를 그대로</h2>
+          <span class="eyebrow">단계 2</span>
+          <h2>원고 보관함 &amp; 카페 글 수집</h2>
           <p>
-            기존 작업 원고나 잘 나간 카페 글을 넣어두면, 문장 길이·단락 나누기·댓글 호흡을 그대로
-            흉내 냅니다. 내용을 베끼지는 않습니다.
+            여기에 쌓인 원고가 두 가지로 쓰입니다. 하나는 <b>어투 학습</b>, 다른 하나는
+            <b>댓글 세트 재사용</b>입니다.
           </p>
         </header>
 
         <div class="panel">
-          <h3>네이버 카페 글 가져오기</h3>
-          <div class="row">
+          <h3 class="tight">네이버 카페 글 가져오기</h3>
+          <p style="margin: 0 0 14px; font-size: 12.5px; color: var(--ink-3)">
+            아래 순서대로 자동 시도합니다. 앞 방법이 막히면 다음 방법으로 자동 넘어가므로, 어떤
+            글이든 결국 가져올 수 있습니다.
+          </p>
+          <div class="ways">
+            <div class="way">
+              <span class="mark">1</span>
+              <div>
+                <b>URL 붙여넣기 — 서버가 바로 수집</b>
+                <p>주소만 넣으면 제목 · 본문 · 댓글(대댓글 포함)을 한 번에 가져옵니다.</p>
+                <span class="when">공개 카페 글 · 대부분 여기서 끝납니다</span>
+              </div>
+            </div>
+            <div class="way">
+              <span class="mark">2</span>
+              <div>
+                <b>수집 버튼 — 내 브라우저에서 수집</b>
+                <p>
+                  즐겨찾기에 등록해 둔 <b>카페 수집</b> 버튼을 카페 글에서 누르면, 지금 로그인된 내
+                  계정 기준으로 읽어서 작업실로 보냅니다.
+                </p>
+                <span class="when">비공개 카페 · 등급 제한 글 · 서버 수집이 막혔을 때</span>
+              </div>
+            </div>
+            <div class="way fallback">
+              <span class="mark">3</span>
+              <div>
+                <b>직접 붙여넣기</b>
+                <p>
+                  본문과 댓글을 그대로 붙여넣습니다. 어떤 상황에서도 쓸 수 있는 최후 수단입니다.
+                </p>
+                <span class="when">항상 열려 있음</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 14px">
             <input
-              class="big"
               id="f-url"
               type="url"
               style="
                 flex: 1 1 260px;
                 min-width: 0;
-                padding: 10px 12px;
+                padding: 11px 12px;
                 border: 1px solid var(--line-strong);
                 border-radius: 8px;
                 background: var(--surface-sunk);
-                font-size: 14px;
+                font-size: 15px;
               "
               value="https://cafe.naver.com/example/1234567"
             />
             <button class="btn primary" id="btn-fetch" type="button">가져오기</button>
+            <button class="btn" type="button" data-toast="즐겨찾기 바에 끌어다 놓으면 등록됩니다">
+              수집 버튼 설치
+            </button>
           </div>
-          <p style="margin: 10px 0 0; font-size: 12.5px; color: var(--ink-3)">
-            제목 · 본문 · 댓글을 한 번에 수집합니다. 로그인 없이 읽히는 공개 글만 가능하며, 비공개
-            카페 글은 아래 <b>직접 붙여넣기</b>를 쓰면 됩니다.
-          </p>
         </div>
 
         <div class="panel">
@@ -1135,9 +1360,9 @@
 
         <div class="panel">
           <div class="row" style="margin-bottom: 6px">
-            <h3 style="margin: 0">등록된 학습자료</h3>
+            <h3 style="margin: 0">보관된 원고</h3>
             <span class="spacer"></span>
-            <span class="badge edited">3건 선택됨 / 최대 6건 사용</span>
+            <span class="badge edited">어투 학습 3건 선택됨</span>
           </div>
           <div id="ref-list"></div>
         </div>
@@ -1147,15 +1372,49 @@
       <section class="view" id="view-result" hidden>
         <header>
           <span class="eyebrow">단계 3</span>
-          <h2>본문과 댓글 세트</h2>
+          <h2>제목 · 본문 · 댓글 세트</h2>
           <p>
             카드마다 수정 지시를 적고 <b>다음 버전 생성</b>을 누르면, 지시를 적은 카드만 다시 쓰고
             나머지는 글자 그대로 남습니다.
           </p>
         </header>
 
+        <div class="panel worktop">
+          <div class="grid">
+            <div class="field">
+              <label for="w-keyword">키워드</label>
+              <input id="w-keyword" type="text" value="강남 임플란트 잘하는곳" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="w-request">요청사항</label>
+              <textarea id="w-request" style="min-height: 46px">
+상담 3곳 비교하는 흐름으로 / 야간진료·주차 언급 / 가격은 단정하지 말 것</textarea>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn" type="button" id="btn-regen">이 조건으로 전체 다시 생성</button>
+            <span class="spacer"></span>
+            <span class="badge edited" id="worktop-note">키워드 · 요청사항 변경 없음</span>
+          </div>
+        </div>
+
         <div class="versions" id="version-tabs"></div>
-        <div id="pieces"></div>
+
+        <div id="head-pieces"></div>
+
+        <div class="section-bar">
+          <h3>댓글 세트</h3>
+          <span class="badge cmt" id="comment-count">4개 · 티키타카 포함</span>
+          <span class="spacer"></span>
+          <button class="btn small" type="button" id="btn-import">다른 원고에서 가져오기</button>
+          <button class="btn small" type="button" id="btn-reset-set" hidden>
+            새로 생성으로 되돌리기
+          </button>
+        </div>
+
+        <div class="picker" id="picker" hidden></div>
+
+        <div id="comment-pieces"></div>
 
         <div class="sticky-action">
           <p id="revise-status">수정 지시를 적은 카드: <b>0개</b></p>
@@ -1189,9 +1448,9 @@
               <button class="btn small" type="button" data-toast="본문을 복사했습니다">복사</button>
             </div>
             <div class="card">
-              <b>댓글만 복사</b>
-              <p>댓글 1~4를 순서대로.</p>
-              <button class="btn small" type="button" data-toast="댓글 4개를 복사했습니다">
+              <b>댓글 세트 복사</b>
+              <p>티키타카 순서대로, 작성자 답글까지.</p>
+              <button class="btn small" type="button" data-toast="댓글 세트를 복사했습니다">
                 복사
               </button>
             </div>
@@ -1309,7 +1568,7 @@
                 <input
                   id="p-cmt"
                   type="text"
-                  value="본문 등록 후 댓글 4개를 3~20분 간격으로 순차 등록"
+                  value="본문 등록 후 티키타카 순서대로, 3~20분 간격으로 순차 등록"
                   readonly
                 />
               </div>
@@ -1331,15 +1590,16 @@
 <script>
   const VIEWS = [
     { id: 'write', no: '1', label: '원고 생성', short: '생성' },
-    { id: 'refs', no: '2', label: '학습자료', short: '학습' },
+    { id: 'refs', no: '2', label: '학습자료', short: '보관함' },
     { id: 'result', no: '3', label: '결과 · 버전', short: '결과' },
     { id: 'export', no: '4', label: '내보내기', short: '내보내기' },
     { id: 'publish', no: '5', label: '네이버 업로드', short: '업로드' },
   ];
 
-  const SAMPLE = {
-    title: '강남 임플란트 잘하는곳 세 군데 상담받고 결정하기까지 (견적 비교 포함)',
-    body: `작년 가을부터 오른쪽 아래 어금니가 계속 시큰거렸어요. 찬물만 닿아도 찌릿해서 한동안 반대쪽으로만 씹었는데, 결국 치과에서 발치하고 임플란트를 해야 한다는 얘기를 들었습니다.
+  const TITLE_V1 = '강남 임플란트 잘하는곳 세 군데 상담받고 결정하기까지 (견적 비교 포함)';
+  const TITLE_V2 = '어금니 시큰거려서 강남 임플란트 잘하는곳 세 군데 상담받아 봤어요';
+
+  const BODY = `작년 가을부터 오른쪽 아래 어금니가 계속 시큰거렸어요. 찬물만 닿아도 찌릿해서 한동안 반대쪽으로만 씹었는데, 결국 치과에서 발치하고 임플란트를 해야 한다는 얘기를 들었습니다.
 
 문제는 그다음이었어요. 검색해 보니 강남 임플란트 잘하는곳이라고 나오는 데가 너무 많아서 어디를 기준으로 봐야 할지 감이 안 오더라고요. 그래서 그냥 세 군데를 직접 상담 받아보기로 했습니다.
 
@@ -1349,73 +1609,158 @@
 
 비용은 세 군데 중 중간이었고, 상담은 예약제라 기다리는 시간이 거의 없었습니다. 주차도 2시간 무료라 차 가져가기 편했고, 저는 평일에 시간 내기가 어려워서 목요일 야간진료를 주로 이용하고 있어요.
 
-지금 상부 보철 올리기 전 단계인데, 씹는 느낌이 확실히 돌아왔습니다. 물론 사람마다 잇몸이랑 뼈 상태가 달라서 기간도 비용도 차이가 날 거예요. 저처럼 한 군데만 보고 결정하지 마시고, 최소 두세 군데는 상담 받아보시길 권합니다.`,
-    comments: [
+지금 상부 보철 올리기 전 단계인데, 씹는 느낌이 확실히 돌아왔습니다. 물론 사람마다 잇몸이랑 뼈 상태가 달라서 기간도 비용도 차이가 날 거예요. 저처럼 한 군데만 보고 결정하지 마시고, 최소 두세 군데는 상담 받아보시길 권합니다.`;
+
+  const COMMENTS_V1 = [
+    {
+      who: '40대 직장인 남성',
+      thread: [
+        {
+          by: 'c',
+          text: '저도 지금 딱 그 고민 중인데, 세 군데 상담받으실 때 비용은 따로 들었나요?',
+        },
+        {
+          by: 'a',
+          text: '저는 세 곳 다 상담이랑 CT는 따로 안 받았어요. 미리 전화로 확인해 보시면 좋아요!',
+        },
+        { by: 'c', text: '아 그렇군요. 혹시 견적은 세 곳이 많이 차이 났나요?' },
+        {
+          by: 'a',
+          text: '제일 싼 곳이랑 중간이 백 단위로 차이 났어요. 쓰는 재료가 달라서 그런 것 같더라고요.',
+        },
+      ],
+    },
+    {
+      who: '30대 워킹맘',
+      thread: [
+        {
+          by: 'c',
+          text: '글 잘 봤습니다~ 혹시 점심시간에 잠깐 다녀올 수 있는 거리인가요? 회사가 역삼이라서요.',
+        },
+        { by: 'a', text: '역삼역에서 걸어서 5분 정도예요. 저도 점심시간에 몇 번 다녀왔어요.' },
+      ],
+    },
+    {
+      who: '50대 주부',
+      thread: [
+        {
+          by: 'c',
+          text: '저는 3년 전에 왼쪽에 했는데 끝나고 관리가 진짜 반이에요. 스케일링 때 꼭 챙겨 보세요.',
+        },
+      ],
+    },
+    {
+      who: '20대 후반 직장인',
+      thread: [
+        {
+          by: 'c',
+          text: '뼈이식까지 설명해 주는 곳이 생각보다 드물더라고요. 상담 예약은 어떻게 하셨는지 쪽지 좀 부탁드려도 될까요?',
+        },
+        { by: 'a', text: '쪽지 보냈어요~ 전화로 예약하시면 대기 거의 없어요.' },
+      ],
+    },
+  ];
+
+  // v2 = 제목을 다듬고, 댓글3의 티키타카를 1턴 → 3턴으로 늘린 결과
+  const COMMENT3_V2 = {
+    who: '50대 주부',
+    edited: true,
+    thread: [
+      { by: 'c', text: '저는 3년 전에 왼쪽에 했는데 끝나고 관리가 진짜 반이에요.' },
+      { by: 'a', text: '맞아요, 저도 그 얘기 많이 들었어요. 어떤 거 제일 신경 쓰세요?' },
       {
-        who: '40대 직장인 남성',
-        text: '저도 지금 딱 그 고민 중인데, 상담 세 군데 받으실 때 비용은 따로 들었나요? CT 값만 해도 부담될 것 같아서요.',
-        reply:
-          '└ 작성자: 저는 세 곳 다 상담이랑 CT는 따로 안 받으셨어요. 미리 전화로 확인해 보세요!',
-      },
-      {
-        who: '30대 워킹맘',
-        text: '글 잘 봤습니다~ 혹시 점심시간에 잠깐 다녀올 수 있는 거리인가요? 회사가 역삼이라서요.',
-      },
-      {
-        who: '50대 주부',
-        text: '저는 3년 전에 왼쪽에 했는데 끝나고 관리가 진짜 반이에요. 스케일링 때 꼭 챙겨 보세요.',
-      },
-      {
-        who: '20대 후반 직장인',
-        text: '뼈이식까지 설명해 주는 곳이 생각보다 드물더라고요. 혹시 상담 예약은 어떻게 하셨는지 쪽지 좀 부탁드려도 될까요?',
+        by: 'c',
+        text: '치실이랑 워터픽이요. 6개월마다 체크도 꼭 받고요. 처음에만 귀찮지 금방 익숙해져요~',
       },
     ],
   };
 
-  const V2_PATCH = {
-    1: {
-      who: '40대 직장인 남성',
-      text: '상담만 세 군데 받으신 거 대단하네요. 비용은 어느 정도 차이 났는지도 궁금합니다.',
-      reply: '└ 작성자: 제일 싼 곳이랑 중간이 백 단위로 차이 났어요. 재료가 달라서 그런 것 같아요.',
-      edited: true,
-    },
-    3: {
-      who: '50대 주부',
-      text: '관리가 반이에요 진짜. 저도 3년 됐는데 6개월마다 꼭 체크받습니다.',
-      edited: true,
-    },
+  const IMPORT_SET = {
+    from: '브라질리언 왁싱 모낭염 원고 (2026.07)',
+    comments: [
+      {
+        who: '20대 여성',
+        kept: true,
+        thread: [
+          { by: 'c', text: '저도 왁싱하고 나서 좁쌀 같은 게 올라와서 며칠 고생했어요…' },
+          { by: 'a', text: '저는 진정 제품 바르면서 며칠 뒀더니 가라앉더라고요.' },
+          { by: 'c', text: '며칠이나 걸렸어요? 지금 3일째인데 계속 올라와서요 ㅠㅠ' },
+          { by: 'a', text: '저는 4~5일쯤 됐던 것 같아요. 그래도 안 가라앉으면 꼭 병원 가보세요!' },
+        ],
+      },
+      {
+        who: '30대 직장인',
+        kept: true,
+        thread: [
+          { by: 'c', text: '애프터 케어까지 알려주는 곳으로 가야겠네요. 정보 감사합니다.' },
+          { by: 'a', text: '네 처음 가시는 거면 그거 꼭 물어보세요~' },
+        ],
+      },
+      {
+        who: '20대 후반 여성',
+        kept: true,
+        thread: [
+          { by: 'c', text: '처음 받을 때 아팠나요? 아프다는 얘기가 많아서 계속 미루고 있어요.' },
+          { by: 'a', text: '첫 회는 좀 따끔했는데 두 번째부터는 확실히 덜했어요.' },
+        ],
+      },
+      {
+        who: '30대 주부',
+        kept: true,
+        thread: [{ by: 'c', text: '저장해두고 볼게요. 후기 너무 잘 봤습니다!' }],
+      },
+    ],
   };
 
   const REFS = [
     {
       on: true,
-      name: '역삼_치과_후기원고_최종.docx',
-      meta: '파일 · 1,420자',
-      desc: '작년에 직접 작성하신 원고. 문단이 짧고 "~더라고요" 어미가 자주 쓰임. 댓글 4개 포함.',
+      name: '브라질리언 왁싱 모낭염 원고_최종.docx',
+      meta: '파일 · 댓글 4 · 티키타카 포함',
+      desc: '본문은 업종이 달라 못 쓰지만 댓글 세트는 그대로 재사용 가능.',
+      set: true,
     },
     {
       on: true,
-      name: '맘카페_피부과_원고_v3.txt',
-      meta: '파일 · 1,180자',
-      desc: '질문형 도입 + 경험 공유 흐름. 댓글에 작성자 대댓글이 붙는 구성.',
+      name: '역삼_치과_후기원고_최종.docx',
+      meta: '파일 · 1,420자',
+      desc: '문단이 짧고 "~더라고요" 어미가 자주 쓰임. 어투 학습용.',
+      set: true,
     },
     {
       on: true,
       name: 'cafe.naver.com/example/1234567',
       meta: '카페 수집 · 댓글 12개',
-      desc: '조회수 높은 지역 카페 후기 글. 사진 설명 없이 텍스트만 수집됨.',
+      desc: '조회수 높은 지역 카페 후기 글. 수집 버튼으로 가져옴.',
+      set: true,
     },
     {
       on: false,
       name: '인테리어_비교견적_원고.md',
       meta: '파일 · 1,960자',
       desc: '업종이 달라 이번 생성에서는 제외해 둔 자료.',
+      set: true,
     },
   ];
 
-  const state = { view: 'result', version: 2, revising: {} };
+  const state = { view: 'result', version: 2, revising: {}, imported: false, turns: {} };
 
   const el = (id) => document.getElementById(id);
+
+  const escapeHtml = (value) =>
+    String(value).replace(
+      /[&<>"]/g,
+      (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch],
+    );
+
+  function currentComments() {
+    if (state.imported) return IMPORT_SET.comments;
+    return COMMENTS_V1.map((c, i) => (state.version === 2 && i === 2 ? COMMENT3_V2 : c));
+  }
+
+  function currentTitle() {
+    return state.version === 2 ? TITLE_V2 : TITLE_V1;
+  }
 
   function renderNav() {
     el('nav-desktop').innerHTML = VIEWS.map(
@@ -1445,64 +1790,108 @@
     node.textContent = message;
     node.classList.add('show');
     clearTimeout(node._t);
-    node._t = setTimeout(() => node.classList.remove('show'), 2200);
-  }
-
-  function commentsFor(version) {
-    return SAMPLE.comments.map((c, i) => (version === 2 && V2_PATCH[i] ? V2_PATCH[i] : c));
+    node._t = setTimeout(() => node.classList.remove('show'), 2600);
   }
 
   function renderVersions() {
-    const tabs = [1, 2].map(
-      (n) =>
-        `<button class="vtab" type="button" data-version="${n}" aria-current="${n === state.version}">v${n}</button>`,
-    );
-    tabs.push(
-      `<span class="badge edited" style="margin-left:6px">${state.version === 2 ? '댓글1 · 댓글3 수정본' : '최초 생성본'}</span>`,
-    );
-    el('version-tabs').innerHTML = tabs.join('');
+    const label = state.version === 2 ? '제목 · 댓글3 수정본' : '최초 생성본';
+    el('version-tabs').innerHTML =
+      [1, 2]
+        .map(
+          (n) =>
+            `<button class="vtab" type="button" data-version="${n}" aria-current="${n === state.version}">v${n}</button>`,
+        )
+        .join('') + `<span class="badge edited" style="margin-left:6px">${label}</span>`;
   }
 
-  function renderPieces() {
-    const chars = SAMPLE.body.replace(/\s/g, '').length;
-    const parts = [
-      `<article class="piece is-body">
-        <div class="rail-mark"></div>
-        <div class="piece-inner">
-          <div class="piece-head"><span class="badge body">본문</span>
-            <span class="who">제목 + 본문 · 키워드 4회</span></div>
-          <h3 class="piece-title">${SAMPLE.title}</h3>
-          <p class="piece-text">${SAMPLE.body}</p>
-          <div class="counts">공백 제외 ${chars.toLocaleString()}자 · 문단 6개 · 예시라 축약됨</div>
-          <div class="revise">
-            <input type="text" data-part="body" placeholder="본문 수정 지시 — 예: 견적 비교 부분을 표처럼 정리해줘" />
-            <button class="btn small" type="button" data-clear="body">지우기</button>
-          </div>
-        </div>
-      </article>`,
-    ];
-
-    commentsFor(state.version).forEach((c, i) => {
-      parts.push(`<article class="piece is-comment">
+  function renderHeadPieces() {
+    const chars = BODY.replace(/\s/g, '').length;
+    el('head-pieces').innerHTML = `
+      <article class="piece is-title">
         <div class="rail-mark"></div>
         <div class="piece-inner">
           <div class="piece-head">
-            <span class="badge cmt">댓글${i + 1}</span>
-            <span class="who">${c.who}</span>
-            ${c.edited ? '<span class="badge edited">v2에서 수정됨</span>' : ''}
+            <span class="badge body">제목</span>
+            <span class="who">키워드 1회 포함 · 공백 포함 ${currentTitle().length}자</span>
+            ${state.version === 2 ? '<span class="badge edited">v2에서 수정됨</span>' : ''}
           </div>
-          <p class="piece-text">${c.text}${c.reply ? `<span class="reply">${c.reply}</span>` : ''}</p>
+          <h3 class="piece-title">${escapeHtml(currentTitle())}</h3>
           <div class="revise">
-            <input type="text" data-part="c${i + 1}" placeholder="댓글${i + 1} 수정 지시 — 예: 더 짧게, 살짝 의심하는 톤으로" />
-            <button class="btn small" type="button" data-clear="c${i + 1}">지우기</button>
+            <input type="text" data-part="title" placeholder="제목 수정 지시 — 예: 숫자 빼고 질문형으로" />
+            <button class="btn small" type="button" data-clear="title">지우기</button>
           </div>
         </div>
-      </article>`);
-    });
+      </article>
 
-    el('pieces').innerHTML = parts.join('');
-    el('pieces')
-      .querySelectorAll('.revise input')
+      <article class="piece is-body">
+        <div class="rail-mark"></div>
+        <div class="piece-inner">
+          <div class="piece-head">
+            <span class="badge body">본문</span>
+            <span class="who">키워드 4회 · 문단 6개</span>
+          </div>
+          <p class="piece-text">${escapeHtml(BODY)}</p>
+          <div class="counts">공백 제외 ${chars.toLocaleString()}자 · 예시라 축약됨</div>
+          <div class="revise">
+            <input type="text" data-part="body" placeholder="본문 수정 지시 — 예: 견적 비교 부분을 더 구체적으로" />
+            <button class="btn small" type="button" data-clear="body">지우기</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderCommentPieces() {
+    const comments = currentComments();
+
+    el('comment-count').textContent = `${comments.length}개 · ${
+      state.imported ? '보관함에서 가져온 세트' : '티키타카 포함'
+    }`;
+    el('btn-reset-set').hidden = !state.imported;
+    el('btn-import').textContent = state.imported ? '다른 세트로 바꾸기' : '다른 원고에서 가져오기';
+
+    el('comment-pieces').innerHTML = comments
+      .map((c, i) => {
+        const n = i + 1;
+        const turns = state.turns[n] ?? c.thread.length;
+        const thread = c.thread
+          .slice(0, turns)
+          .map(
+            (t) =>
+              `<div class="turn ${t.by === 'a' ? 'author' : ''}">
+                 <span class="tag">${t.by === 'a' ? '작성자' : '댓글'}</span>
+                 <span>${escapeHtml(t.text)}</span>
+               </div>`,
+          )
+          .join('');
+        const options = [1, 2, 3, 4, 5, 6]
+          .map(
+            (v) => `<option value="${v}"${v === turns ? ' selected' : ''}>티키타카 ${v}턴</option>`,
+          )
+          .join('');
+
+        return `<article class="piece is-comment${c.kept ? ' is-kept' : ''}">
+          <div class="rail-mark"></div>
+          <div class="piece-inner">
+            <div class="piece-head">
+              <span class="badge cmt">댓글${n}</span>
+              <span class="who">${escapeHtml(c.who)}</span>
+              <span class="badge edited">${turns}턴</span>
+              ${c.kept ? '<span class="badge kept">가져온 세트 · 재생성 안 함</span>' : ''}
+              ${c.edited ? '<span class="badge edited">v2에서 수정됨</span>' : ''}
+            </div>
+            <div class="thread">${thread}</div>
+            <div class="revise">
+              <select data-turns="${n}" aria-label="댓글${n} 티키타카 턴 수">${options}</select>
+              <input type="text" data-part="c${n}" placeholder="댓글${n} 수정 지시 — 예: 더 짧게, 살짝 의심하는 톤으로" />
+              <button class="btn small" type="button" data-clear="c${n}">지우기</button>
+            </div>
+          </div>
+        </article>`;
+      })
+      .join('');
+
+    document
+      .querySelectorAll('#comment-pieces .revise input, #head-pieces .revise input')
       .forEach((input) => {
         input.value = state.revising[input.dataset.part] || '';
         input.addEventListener('input', () => {
@@ -1510,32 +1899,75 @@
           updateReviseStatus();
         });
       });
+    document.querySelectorAll('[data-turns]').forEach((select) => {
+      select.addEventListener('change', () => {
+        const n = Number(select.dataset.turns);
+        const wanted = Number(select.value);
+        const available = currentComments()[n - 1].thread.length;
+        state.turns[n] = Math.min(wanted, available);
+        renderCommentPieces();
+        toast(
+          wanted > available
+            ? `댓글${n}은 예시에 ${available}턴까지만 들어 있습니다 — 실제로는 ${wanted}턴까지 생성됩니다`
+            : `댓글${n}을 ${wanted}턴으로 맞췄습니다`,
+        );
+      });
+    });
+
     updateReviseStatus();
+  }
+
+  function renderPieces() {
+    renderHeadPieces();
+    renderCommentPieces();
   }
 
   function updateReviseStatus() {
     const n = Object.values(state.revising).filter((v) => v && v.trim()).length;
-    el('revise-status').innerHTML = `수정 지시를 적은 카드: <b>${n}개</b>${
-      n ? ' — 나머지는 그대로 유지됩니다' : ''
-    }`;
+    el('revise-status').innerHTML =
+      `수정 지시를 적은 카드: <b>${n}개</b>` + (n ? ' — 나머지는 그대로 유지됩니다' : '');
   }
 
   function renderRefs() {
     el('ref-list').innerHTML = REFS.map(
-      (r, i) => `<label class="ref" for="ref-${i}">
-        <input type="checkbox" id="ref-${i}" ${r.on ? 'checked' : ''} />
-        <span><b>${r.name}</b><p>${r.desc}</p></span>
-        <span class="meta">${r.meta}</span>
-      </label>`,
+      (r, i) => `<div class="ref">
+        <input type="checkbox" id="ref-${i}" ${r.on ? 'checked' : ''} aria-label="${escapeHtml(r.name)} 어투 학습에 사용" />
+        <span><b>${escapeHtml(r.name)}</b><p>${escapeHtml(r.desc)}</p></span>
+        <span class="side">
+          <span class="meta">${escapeHtml(r.meta)}</span>
+          <button class="btn small" type="button" data-import-ref="${i}">댓글 세트 가져오기</button>
+        </span>
+      </div>`,
     ).join('');
+  }
+
+  function renderPicker() {
+    el('picker').innerHTML = `
+      <header>보관함에서 댓글 세트 그대로 가져오기</header>
+      <div class="pick">
+        <span>
+          <b>${IMPORT_SET.from}</b>
+          <p>댓글 4개 · 티키타카 4/2/2/1턴 · 본문은 가져오지 않습니다</p>
+        </span>
+        <button class="btn primary small" type="button" data-use-set="1">이 세트 쓰기</button>
+      </div>
+      <div class="pick">
+        <span>
+          <b>역삼 치과 후기 원고 (2026.05)</b>
+          <p>댓글 4개 · 티키타카 2/1/1/2턴</p>
+        </span>
+        <button class="btn small" type="button" data-toast="시안에서는 첫 번째 세트만 열려 있습니다">
+          이 세트 쓰기
+        </button>
+      </div>`;
   }
 
   const STREAM_TEXT =
     '[제목]\n' +
-    SAMPLE.title +
+    TITLE_V1 +
     '\n\n[본문]\n' +
-    SAMPLE.body.slice(0, 240) +
-    '…\n\n[댓글1]\n(40대 직장인 남성) 저도 지금 딱 그 고민 중인데…';
+    BODY.slice(0, 200) +
+    '…\n\n[댓글1] 티키타카 4턴\n(40대 직장인 남성) 저도 지금 딱 그 고민 중인데…\n└작성자: 저는 세 곳 다 상담이랑 CT는…';
 
   function fakeGenerate() {
     const panel = el('stream-panel');
@@ -1559,22 +1991,34 @@
         button.textContent = '원고 생성';
         state.version = 1;
         state.revising = {};
+        state.turns = {};
         renderVersions();
         renderPieces();
         show('result');
         toast('1차 원고가 만들어졌습니다 (예시)');
       }
-    }, 22);
+    }, 20);
+  }
+
+  function useImportedSet() {
+    state.imported = true;
+    state.turns = {};
+    el('picker').hidden = true;
+    renderCommentPieces();
+    toast('브라질리언 모낭염 원고의 댓글 세트를 그대로 가져왔습니다');
   }
 
   document.addEventListener('click', (event) => {
-    const target = event.target.closest('[data-go],[data-toast],[data-version],[data-clear]');
+    const target = event.target.closest(
+      '[data-go],[data-toast],[data-version],[data-clear],[data-use-set],[data-import-ref]',
+    );
     if (!target) return;
 
     if (target.dataset.go) show(target.dataset.go);
     if (target.dataset.toast) toast(target.dataset.toast);
     if (target.dataset.version) {
       state.version = Number(target.dataset.version);
+      state.turns = {};
       renderVersions();
       renderPieces();
     }
@@ -1582,12 +2026,38 @@
       delete state.revising[target.dataset.clear];
       renderPieces();
     }
+    if (target.dataset.useSet) useImportedSet();
+    if (target.dataset.importRef) {
+      useImportedSet();
+      show('result');
+    }
   });
 
   el('btn-generate').addEventListener('click', fakeGenerate);
   el('btn-fetch').addEventListener('click', () =>
     toast('시안입니다 — 실제로는 제목 · 본문 · 댓글을 수집합니다'),
   );
+  el('btn-import').addEventListener('click', () => {
+    const picker = el('picker');
+    picker.hidden = !picker.hidden;
+  });
+  el('btn-reset-set').addEventListener('click', () => {
+    state.imported = false;
+    state.turns = {};
+    renderCommentPieces();
+    toast('새로 생성하는 댓글 세트로 되돌렸습니다');
+  });
+  el('btn-regen').addEventListener('click', () => {
+    el('chip-keyword').textContent = el('w-keyword').value || '키워드 없음';
+    el('worktop-note').textContent = '이 조건으로 재생성 대기';
+    toast('시안입니다 — 실제로는 바뀐 키워드 · 요청사항으로 전체를 다시 생성합니다');
+  });
+  el('w-keyword').addEventListener('input', () => {
+    el('worktop-note').textContent = '키워드 · 요청사항 수정됨';
+  });
+  el('w-request').addEventListener('input', () => {
+    el('worktop-note').textContent = '키워드 · 요청사항 수정됨';
+  });
   el('btn-revise').addEventListener('click', () => {
     const n = Object.values(state.revising).filter((v) => v && v.trim()).length;
     if (!n) {
@@ -1605,5 +2075,6 @@
   renderVersions();
   renderPieces();
   renderRefs();
+  renderPicker();
   show('result');
 </script>
