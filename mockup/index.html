@@ -1,0 +1,1609 @@
+<title>나비효과플랜 원고 작업실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap"
+/>
+<style>
+  :root {
+    --ground: #eef0f2;
+    --surface: #ffffff;
+    --surface-sunk: #f6f7f8;
+    --line: #dfe3e6;
+    --line-strong: #c6ccd1;
+    --ink: #121a1f;
+    --ink-2: #47545c;
+    --ink-3: #75838c;
+    --accent: #1f6e43;
+    --accent-soft: #e4f0e9;
+    --accent-ink: #145334;
+    --on-accent: #ffffff;
+    --clay: #9a5220;
+    --clay-soft: #f6ebe2;
+    --warn: #8a6100;
+    --warn-soft: #f8f0da;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgb(18 26 31 / 6%), 0 8px 24px -16px rgb(18 26 31 / 30%);
+    --rail-w: 244px;
+    --font-ui:
+      'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic',
+      sans-serif;
+    --font-display: 'Gowun Batang', 'Apple SD Gothic Neo', serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --ground: #0e1316;
+      --surface: #161d21;
+      --surface-sunk: #1b2327;
+      --line: #283238;
+      --line-strong: #3a464e;
+      --ink: #e6ecef;
+      --ink-2: #a8b5bc;
+      --ink-3: #7d8c94;
+      --accent: #59b183;
+      --accent-soft: #173024;
+      --accent-ink: #8fd3ad;
+      --on-accent: #08110c;
+      --clay: #d08f5f;
+      --clay-soft: #2e231a;
+      --warn: #d8ad4a;
+      --warn-soft: #2b2515;
+      --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 26px -18px rgb(0 0 0 / 80%);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --ground: #0e1316;
+    --surface: #161d21;
+    --surface-sunk: #1b2327;
+    --line: #283238;
+    --line-strong: #3a464e;
+    --ink: #e6ecef;
+    --ink-2: #a8b5bc;
+    --ink-3: #7d8c94;
+    --accent: #59b183;
+    --accent-soft: #173024;
+    --accent-ink: #8fd3ad;
+    --on-accent: #08110c;
+    --clay: #d08f5f;
+    --clay-soft: #2e231a;
+    --warn: #d8ad4a;
+    --warn-soft: #2b2515;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 26px -18px rgb(0 0 0 / 80%);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ---------- shell ---------- */
+
+  .app {
+    display: grid;
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    min-height: 100%;
+  }
+
+  .rail {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    align-self: start;
+    height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 22px 16px;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 6px;
+  }
+
+  .brand b {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .brand span {
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav button {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-2);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .nav button em {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-style: normal;
+    color: var(--ink-3);
+  }
+
+  .nav button:hover {
+    background: var(--surface-sunk);
+    color: var(--ink);
+  }
+
+  .nav button[aria-current='true'] {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  .nav button[aria-current='true'] em {
+    color: var(--accent);
+  }
+
+  .rail-foot {
+    margin-top: auto;
+    padding: 12px 10px;
+    border-top: 1px solid var(--line);
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+
+  .main {
+    min-width: 0;
+    padding: 0 0 40px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 24px;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topbar h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .topbar .mobile-brand {
+    display: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  .keychip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px 4px 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .keychip b {
+    font-weight: 600;
+  }
+
+  .wrap {
+    max-width: 980px;
+    padding: 20px 24px 0;
+    margin: 0 auto;
+  }
+
+  .notice {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--warn-soft);
+    color: var(--ink-2);
+    font-size: 12.5px;
+  }
+
+  .notice b {
+    color: var(--warn);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ---------- typography ---------- */
+
+  .view > header {
+    margin-bottom: 18px;
+  }
+
+  .view h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .view h2 + p {
+    margin: 4px 0 0;
+    max-width: 62ch;
+    color: var(--ink-2);
+  }
+
+  .eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* ---------- panels & forms ---------- */
+
+  .panel {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .panel + .panel {
+    margin-top: 14px;
+  }
+
+  .panel h3 {
+    margin: 0 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .field.wide {
+    grid-column: 1 / -1;
+  }
+
+  .field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .field label i {
+    font-style: normal;
+    color: var(--clay);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 62px;
+  }
+
+  .field .hint {
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+
+  .field input.big {
+    padding: 12px 13px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  /* ---------- buttons ---------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    border-color: var(--ink-3);
+  }
+
+  .btn.primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.06);
+  }
+
+  .btn.ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--ink-2);
+  }
+
+  .btn.ghost:hover {
+    background: var(--surface-sunk);
+  }
+
+  .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn.small {
+    padding: 6px 11px;
+    font-size: 12px;
+  }
+
+  /* ---------- badges ---------- */
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+
+  .badge.body {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .badge.cmt {
+    background: var(--clay-soft);
+    color: var(--clay);
+  }
+
+  .badge.soon {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+
+  .badge.edited {
+    background: var(--surface-sunk);
+    color: var(--ink-3);
+    border: 1px solid var(--line);
+  }
+
+  /* ---------- manuscript cards ---------- */
+
+  .versions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 12px;
+    overflow-x: auto;
+  }
+
+  .vtab {
+    padding: 5px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .vtab[aria-current='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--ground);
+  }
+
+  .piece {
+    display: grid;
+    grid-template-columns: 4px minmax(0, 1fr);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .piece + .piece {
+    margin-top: 12px;
+  }
+
+  .piece .rail-mark {
+    background: var(--line-strong);
+  }
+
+  .piece.is-body .rail-mark {
+    background: var(--accent);
+  }
+
+  .piece.is-comment .rail-mark {
+    background: var(--clay);
+  }
+
+  .piece-inner {
+    min-width: 0;
+    padding: 14px 16px;
+  }
+
+  .piece-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .piece-head .who {
+    font-size: 12px;
+    color: var(--ink-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .piece-title {
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  .piece-text {
+    margin: 0;
+    max-width: 42em;
+    white-space: pre-wrap;
+    font-size: 14.5px;
+    line-height: 1.85;
+  }
+
+  .piece-text .reply {
+    display: block;
+    margin-top: 6px;
+    padding-left: 14px;
+    color: var(--ink-2);
+    font-size: 13.5px;
+  }
+
+  .counts {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .revise {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .revise input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-sunk);
+    font-size: 13px;
+  }
+
+  .revise input::placeholder {
+    color: var(--ink-3);
+  }
+
+  .revise input:not(:placeholder-shown) {
+    border-color: var(--clay);
+  }
+
+  .sticky-action {
+    position: sticky;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .sticky-action p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+
+  /* ---------- reference list ---------- */
+
+  .ref {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ref:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .ref input[type='checkbox'] {
+    margin-top: 4px;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+  }
+
+  .ref b {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .ref p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .ref .meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  .drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 22px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface-sunk);
+    color: var(--ink-3);
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  /* ---------- export & publish ---------- */
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .card b {
+    font-size: 13.5px;
+  }
+
+  .card p {
+    margin: 0;
+    flex: 1 1 auto;
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+
+  .card .btn {
+    margin-top: 6px;
+  }
+
+  .steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps li {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+
+  .steps li:last-child {
+    border-bottom: 0;
+  }
+
+  .steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    padding-top: 3px;
+  }
+
+  .steps b {
+    font-weight: 600;
+  }
+
+  .steps span {
+    color: var(--ink-3);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  th,
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  .locked {
+    position: relative;
+  }
+
+  .locked .panel {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  /* ---------- streaming preview ---------- */
+
+  .stream {
+    min-height: 120px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-sunk);
+    font-size: 13.5px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+  }
+
+  .caret::after {
+    content: '▌';
+    color: var(--accent);
+    animation: blink 1s steps(2) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 12px);
+    z-index: 20;
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--ground);
+    font-size: 12.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* ---------- mobile ---------- */
+
+  .tabbar {
+    display: none;
+  }
+
+  @media (max-width: 860px) {
+    .app {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rail {
+      display: none;
+    }
+
+    .topbar .mobile-brand {
+      display: block;
+    }
+
+    .topbar h1 {
+      display: none;
+    }
+
+    .wrap {
+      padding: 16px 16px 0;
+    }
+
+    .main {
+      padding-bottom: 86px;
+    }
+
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .view h2 {
+      font-size: 21px;
+    }
+
+    .sticky-action {
+      bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 9px 11px;
+    }
+
+    .sticky-action p {
+      flex: 1 1 100%;
+      font-size: 11.5px;
+    }
+
+    .sticky-action .spacer {
+      display: none;
+    }
+
+    .sticky-action .btn {
+      flex: 1 1 0;
+      padding: 8px 10px;
+    }
+
+    .tabbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+
+    .tabbar button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 9px 2px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--ink-3);
+      font-size: 10.5px;
+      cursor: pointer;
+    }
+
+    .tabbar button em {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-style: normal;
+    }
+
+    .tabbar button[aria-current='true'] {
+      color: var(--accent);
+      font-weight: 600;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <b>나비효과플랜</b>
+      <span>카페 원고 작업실</span>
+    </div>
+    <nav class="nav" id="nav-desktop" aria-label="작업 단계"></nav>
+    <div class="rail-foot">
+      화면 시안 v0.1<br />
+      2026.09.15 · 검토용
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <span class="mobile-brand">나비효과플랜</span>
+      <h1 id="view-name">결과 · 버전</h1>
+      <span class="keychip" title="작업 중인 키워드">
+        <span class="badge body">키워드</span><b>강남 임플란트 잘하는곳</b>
+      </span>
+    </div>
+
+    <div class="wrap">
+      <div class="notice">
+        <b>화면 시안</b>
+        <span
+          >버튼과 화면 전환은 동작하지만, 글은 실제로 생성되지 않고 미리 준비된 예시 원고를
+          보여줍니다. 구현 착수 전 화면 구성을 확인하는 용도입니다.</span
+        >
+      </div>
+
+      <!-- ① 원고 생성 -->
+      <section class="view" id="view-write" hidden>
+        <header>
+          <span class="eyebrow">단계 1</span>
+          <h2>키워드 하나로 원고 한 세트</h2>
+          <p>
+            키워드만 넣어도 생성됩니다. 아래 항목을 채울수록 톤과 소재가 실제 작업물에 가까워집니다.
+          </p>
+        </header>
+
+        <div class="panel">
+          <div class="grid">
+            <div class="field wide">
+              <label for="f-keyword">핵심 키워드 <i>*</i></label>
+              <input
+                id="f-keyword"
+                class="big"
+                type="text"
+                value="강남 임플란트 잘하는곳"
+                autocomplete="off"
+              />
+              <span class="hint">제목에 1회, 본문에 3~5회 자연스럽게 배치됩니다.</span>
+            </div>
+            <div class="field">
+              <label for="f-brand">업체 · 브랜드명</label>
+              <input id="f-brand" type="text" value="○○치과 강남점" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="f-region">지역</label>
+              <input id="f-region" type="text" value="서울 강남 / 역삼" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="f-target">타깃 독자</label>
+              <input id="f-target" type="text" value="30~50대 직장인" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="f-cafe">카페 성격</label>
+              <input id="f-cafe" type="text" value="지역 생활정보 카페" autocomplete="off" />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>톤 · 분량 · 댓글</h3>
+          <div class="grid">
+            <div class="field">
+              <label for="f-tone">톤앤매너</label>
+              <select id="f-tone">
+                <option selected>후기형 — 직접 겪은 사람의 솔직한 말투</option>
+                <option>정보형 — 정리해 주는 안내 말투</option>
+                <option>질문형 — 고민 털어놓고 조언 구하기</option>
+                <option>추천형 — 주변에 알려주고 싶은 말투</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-len">본문 분량</label>
+              <select id="f-len">
+                <option>짧게 · 700~1,000자</option>
+                <option selected>보통 · 1,100~1,500자</option>
+                <option>길게 · 1,600~2,200자</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-count">댓글 개수</label>
+              <select id="f-count">
+                <option>2개</option>
+                <option>3개</option>
+                <option selected>4개</option>
+                <option>6개</option>
+                <option>8개</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-refs">학습자료 사용</label>
+              <select id="f-refs">
+                <option selected>선택한 3건 사용</option>
+                <option>사용 안 함 (기본 스타일)</option>
+              </select>
+            </div>
+            <div class="field wide">
+              <label for="f-must">반드시 포함할 내용</label>
+              <textarea id="f-must">상담은 예약제 / 주차 2시간 무료 / 야간진료 목요일</textarea>
+            </div>
+            <div class="field wide">
+              <label for="f-avoid">쓰지 말 표현</label>
+              <textarea id="f-avoid">최저가, 1위, 100% 보장, 부작용 없음</textarea>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 16px">
+            <button class="btn primary" id="btn-generate" type="button">원고 생성</button>
+            <button class="btn ghost" type="button" data-go="refs">학습자료 먼저 넣기</button>
+            <span class="spacer"></span>
+            <span class="badge edited">예상 30~60초</span>
+          </div>
+        </div>
+
+        <div class="panel" id="stream-panel" hidden>
+          <h3>생성 중</h3>
+          <div class="stream" id="stream-out"></div>
+        </div>
+      </section>
+
+      <!-- ② 학습자료 -->
+      <section class="view" id="view-refs" hidden>
+        <header>
+          <span class="eyebrow">단계 2 · 선택</span>
+          <h2>내가 쓰던 어투를 그대로</h2>
+          <p>
+            기존 작업 원고나 잘 나간 카페 글을 넣어두면, 문장 길이·단락 나누기·댓글 호흡을 그대로
+            흉내 냅니다. 내용을 베끼지는 않습니다.
+          </p>
+        </header>
+
+        <div class="panel">
+          <h3>네이버 카페 글 가져오기</h3>
+          <div class="row">
+            <input
+              class="big"
+              id="f-url"
+              type="url"
+              style="
+                flex: 1 1 260px;
+                min-width: 0;
+                padding: 10px 12px;
+                border: 1px solid var(--line-strong);
+                border-radius: 8px;
+                background: var(--surface-sunk);
+                font-size: 14px;
+              "
+              value="https://cafe.naver.com/example/1234567"
+            />
+            <button class="btn primary" id="btn-fetch" type="button">가져오기</button>
+          </div>
+          <p style="margin: 10px 0 0; font-size: 12.5px; color: var(--ink-3)">
+            제목 · 본문 · 댓글을 한 번에 수집합니다. 로그인 없이 읽히는 공개 글만 가능하며, 비공개
+            카페 글은 아래 <b>직접 붙여넣기</b>를 쓰면 됩니다.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h3>파일 올리기</h3>
+          <div class="drop">
+            <b style="color: var(--ink-2)">기존 작업 원고를 여기에 끌어다 놓기</b>
+            <span>.txt · .md · .docx · 한 번에 여러 개</span>
+            <button
+              class="btn small"
+              type="button"
+              data-toast="시안에서는 업로드가 열리지 않습니다"
+            >
+              파일 선택
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="row" style="margin-bottom: 6px">
+            <h3 style="margin: 0">등록된 학습자료</h3>
+            <span class="spacer"></span>
+            <span class="badge edited">3건 선택됨 / 최대 6건 사용</span>
+          </div>
+          <div id="ref-list"></div>
+        </div>
+      </section>
+
+      <!-- ③ 결과 · 버전 -->
+      <section class="view" id="view-result" hidden>
+        <header>
+          <span class="eyebrow">단계 3</span>
+          <h2>본문과 댓글 세트</h2>
+          <p>
+            카드마다 수정 지시를 적고 <b>다음 버전 생성</b>을 누르면, 지시를 적은 카드만 다시 쓰고
+            나머지는 글자 그대로 남습니다.
+          </p>
+        </header>
+
+        <div class="versions" id="version-tabs"></div>
+        <div id="pieces"></div>
+
+        <div class="sticky-action">
+          <p id="revise-status">수정 지시를 적은 카드: <b>0개</b></p>
+          <span class="spacer"></span>
+          <button class="btn" type="button" data-go="export">내보내기</button>
+          <button class="btn primary" id="btn-revise" type="button">다음 버전 생성</button>
+        </div>
+      </section>
+
+      <!-- ④ 내보내기 -->
+      <section class="view" id="view-export" hidden>
+        <header>
+          <span class="eyebrow">단계 4</span>
+          <h2>저장하고 전달하기</h2>
+          <p>카페에 올릴 때 실제로 쓰는 단위(본문 / 댓글)로 나눠서 복사할 수 있습니다.</p>
+        </header>
+
+        <div class="panel">
+          <h3>지금 원고 · v2</h3>
+          <div class="cards">
+            <div class="card">
+              <b>전체 복사</b>
+              <p>제목 + 본문 + 댓글 4개를 한 번에.</p>
+              <button class="btn small" type="button" data-toast="전체 원고를 복사했습니다">
+                복사
+              </button>
+            </div>
+            <div class="card">
+              <b>본문만 복사</b>
+              <p>카페 글쓰기 창에 그대로 붙여넣기.</p>
+              <button class="btn small" type="button" data-toast="본문을 복사했습니다">복사</button>
+            </div>
+            <div class="card">
+              <b>댓글만 복사</b>
+              <p>댓글 1~4를 순서대로.</p>
+              <button class="btn small" type="button" data-toast="댓글 4개를 복사했습니다">
+                복사
+              </button>
+            </div>
+            <div class="card">
+              <b>파일로 저장</b>
+              <p>.txt 또는 .md 로 내려받기.</p>
+              <button class="btn small" type="button" data-toast="시안에서는 저장되지 않습니다">
+                내려받기
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Google Docs로 내보내기</h3>
+          <div class="field" style="max-width: 460px">
+            <label for="f-doctitle">문서 제목</label>
+            <input
+              id="f-doctitle"
+              type="text"
+              value="[나비효과플랜] 강남 임플란트 잘하는곳 원고 v2 (2026-09-15)"
+            />
+          </div>
+          <div class="row" style="margin-top: 14px">
+            <button
+              class="btn primary"
+              type="button"
+              data-toast="구글 계정 연결 후 문서가 열립니다"
+            >
+              구글 계정 연결하고 내보내기
+            </button>
+            <span class="badge edited">최근 내보냄 · 없음</span>
+          </div>
+          <ol class="steps" style="margin-top: 14px">
+            <li><b>구글 로그인 창</b><span>처음 한 번만 권한을 허용합니다.</span></li>
+            <li><b>새 문서 생성</b><span>제목 · 본문 · 댓글이 구분되어 들어갑니다.</span></li>
+            <li><b>문서 링크 열기</b><span>바로 공유하거나 이어서 편집합니다.</span></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ⑤ 네이버 업로드 -->
+      <section class="view" id="view-publish" hidden>
+        <header>
+          <span class="eyebrow">단계 5 · 심화</span>
+          <h2>네이버 카페에 바로 올리기 <span class="badge soon">준비 중</span></h2>
+          <p>
+            이번 단계에서는 화면과 데이터 구조만 준비합니다. 실제 업로드는 아래 방식 중 하나를
+            고르신 뒤 별도로 개발합니다.
+          </p>
+        </header>
+
+        <div class="panel">
+          <h3>어떻게 올릴지 먼저 정해야 합니다</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>방식</th>
+                  <th>동작</th>
+                  <th>계정 안전</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>A. 브라우저에서 등록</b><br /><span class="badge body">권장</span></td>
+                  <td>
+                    이미 로그인된 내 브라우저에서 글이 등록됩니다. 비밀번호를 서버가 모릅니다.
+                  </td>
+                  <td>가장 안전</td>
+                </tr>
+                <tr>
+                  <td><b>B. 로그인 세션 연결</b></td>
+                  <td>
+                    한 번 연결해 두면 서버가 대신 올립니다. 세션이 풀리면 재연결이 필요합니다.
+                  </td>
+                  <td>보통</td>
+                </tr>
+                <tr>
+                  <td><b>C. 아이디·비밀번호 저장</b></td>
+                  <td>서버가 직접 로그인합니다. 캡차·기기 인증에 자주 막힙니다.</td>
+                  <td>비권장</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="locked">
+          <div class="panel">
+            <h3>업로드 설정 (미리 배치된 화면)</h3>
+            <div class="grid">
+              <div class="field">
+                <label for="p-account">연결된 계정</label>
+                <input id="p-account" type="text" value="연결 안 됨" readonly />
+              </div>
+              <div class="field">
+                <label for="p-cafe">카페</label>
+                <select id="p-cafe">
+                  <option>계정 연결 후 선택</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="p-board">게시판</label>
+                <select id="p-board">
+                  <option>계정 연결 후 선택</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="p-when">발행 시각</label>
+                <input id="p-when" type="text" value="즉시 발행 / 예약 가능" readonly />
+              </div>
+              <div class="field wide">
+                <label for="p-cmt">댓글 등록</label>
+                <input
+                  id="p-cmt"
+                  type="text"
+                  value="본문 등록 후 댓글 4개를 3~20분 간격으로 순차 등록"
+                  readonly
+                />
+              </div>
+            </div>
+            <div class="row" style="margin-top: 14px">
+              <button class="btn primary" type="button" disabled>카페에 등록</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="tabbar" id="nav-mobile" aria-label="작업 단계"></nav>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const VIEWS = [
+    { id: 'write', no: '1', label: '원고 생성', short: '생성' },
+    { id: 'refs', no: '2', label: '학습자료', short: '학습' },
+    { id: 'result', no: '3', label: '결과 · 버전', short: '결과' },
+    { id: 'export', no: '4', label: '내보내기', short: '내보내기' },
+    { id: 'publish', no: '5', label: '네이버 업로드', short: '업로드' },
+  ];
+
+  const SAMPLE = {
+    title: '강남 임플란트 잘하는곳 세 군데 상담받고 결정하기까지 (견적 비교 포함)',
+    body: `작년 가을부터 오른쪽 아래 어금니가 계속 시큰거렸어요. 찬물만 닿아도 찌릿해서 한동안 반대쪽으로만 씹었는데, 결국 치과에서 발치하고 임플란트를 해야 한다는 얘기를 들었습니다.
+
+문제는 그다음이었어요. 검색해 보니 강남 임플란트 잘하는곳이라고 나오는 데가 너무 많아서 어디를 기준으로 봐야 할지 감이 안 오더라고요. 그래서 그냥 세 군데를 직접 상담 받아보기로 했습니다.
+
+첫 번째 곳은 집에서 가까웠는데, 상담이 5분 만에 끝났어요. CT는 찍었지만 설명은 거의 없고 바로 견적부터 나왔습니다. 두 번째 곳은 가격이 제일 쌌는데, 쓰는 픽스처 브랜드를 물어보니 그때그때 다르다는 답이 돌아와서 좀 걸렸어요.
+
+세 번째로 간 곳이 지금 치료받고 있는 ○○치과 강남점이었습니다. CT 보면서 뼈 상태를 화면으로 같이 보여주고, 왜 뼈이식이 필요한지, 안 하면 어떻게 되는지를 그림까지 그려가며 설명해 주시더라고요. 기간도 6개월 정도 걸린다고 처음부터 솔직하게 말해줘서 오히려 믿음이 갔어요.
+
+비용은 세 군데 중 중간이었고, 상담은 예약제라 기다리는 시간이 거의 없었습니다. 주차도 2시간 무료라 차 가져가기 편했고, 저는 평일에 시간 내기가 어려워서 목요일 야간진료를 주로 이용하고 있어요.
+
+지금 상부 보철 올리기 전 단계인데, 씹는 느낌이 확실히 돌아왔습니다. 물론 사람마다 잇몸이랑 뼈 상태가 달라서 기간도 비용도 차이가 날 거예요. 저처럼 한 군데만 보고 결정하지 마시고, 최소 두세 군데는 상담 받아보시길 권합니다.`,
+    comments: [
+      {
+        who: '40대 직장인 남성',
+        text: '저도 지금 딱 그 고민 중인데, 상담 세 군데 받으실 때 비용은 따로 들었나요? CT 값만 해도 부담될 것 같아서요.',
+        reply:
+          '└ 작성자: 저는 세 곳 다 상담이랑 CT는 따로 안 받으셨어요. 미리 전화로 확인해 보세요!',
+      },
+      {
+        who: '30대 워킹맘',
+        text: '글 잘 봤습니다~ 혹시 점심시간에 잠깐 다녀올 수 있는 거리인가요? 회사가 역삼이라서요.',
+      },
+      {
+        who: '50대 주부',
+        text: '저는 3년 전에 왼쪽에 했는데 끝나고 관리가 진짜 반이에요. 스케일링 때 꼭 챙겨 보세요.',
+      },
+      {
+        who: '20대 후반 직장인',
+        text: '뼈이식까지 설명해 주는 곳이 생각보다 드물더라고요. 혹시 상담 예약은 어떻게 하셨는지 쪽지 좀 부탁드려도 될까요?',
+      },
+    ],
+  };
+
+  const V2_PATCH = {
+    1: {
+      who: '40대 직장인 남성',
+      text: '상담만 세 군데 받으신 거 대단하네요. 비용은 어느 정도 차이 났는지도 궁금합니다.',
+      reply: '└ 작성자: 제일 싼 곳이랑 중간이 백 단위로 차이 났어요. 재료가 달라서 그런 것 같아요.',
+      edited: true,
+    },
+    3: {
+      who: '50대 주부',
+      text: '관리가 반이에요 진짜. 저도 3년 됐는데 6개월마다 꼭 체크받습니다.',
+      edited: true,
+    },
+  };
+
+  const REFS = [
+    {
+      on: true,
+      name: '역삼_치과_후기원고_최종.docx',
+      meta: '파일 · 1,420자',
+      desc: '작년에 직접 작성하신 원고. 문단이 짧고 "~더라고요" 어미가 자주 쓰임. 댓글 4개 포함.',
+    },
+    {
+      on: true,
+      name: '맘카페_피부과_원고_v3.txt',
+      meta: '파일 · 1,180자',
+      desc: '질문형 도입 + 경험 공유 흐름. 댓글에 작성자 대댓글이 붙는 구성.',
+    },
+    {
+      on: true,
+      name: 'cafe.naver.com/example/1234567',
+      meta: '카페 수집 · 댓글 12개',
+      desc: '조회수 높은 지역 카페 후기 글. 사진 설명 없이 텍스트만 수집됨.',
+    },
+    {
+      on: false,
+      name: '인테리어_비교견적_원고.md',
+      meta: '파일 · 1,960자',
+      desc: '업종이 달라 이번 생성에서는 제외해 둔 자료.',
+    },
+  ];
+
+  const state = { view: 'result', version: 2, revising: {} };
+
+  const el = (id) => document.getElementById(id);
+
+  function renderNav() {
+    el('nav-desktop').innerHTML = VIEWS.map(
+      (v) =>
+        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">` +
+        `<em>${v.no}</em><span>${v.label}</span></button>`,
+    ).join('');
+    el('nav-mobile').innerHTML = VIEWS.map(
+      (v) =>
+        `<button type="button" data-go="${v.id}" aria-current="${v.id === state.view}">` +
+        `<em>${v.no}</em><span>${v.short}</span></button>`,
+    ).join('');
+  }
+
+  function show(view) {
+    state.view = view;
+    VIEWS.forEach((v) => {
+      el('view-' + v.id).hidden = v.id !== view;
+    });
+    el('view-name').textContent = VIEWS.find((v) => v.id === view).label;
+    renderNav();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function toast(message) {
+    const node = el('toast');
+    node.textContent = message;
+    node.classList.add('show');
+    clearTimeout(node._t);
+    node._t = setTimeout(() => node.classList.remove('show'), 2200);
+  }
+
+  function commentsFor(version) {
+    return SAMPLE.comments.map((c, i) => (version === 2 && V2_PATCH[i] ? V2_PATCH[i] : c));
+  }
+
+  function renderVersions() {
+    const tabs = [1, 2].map(
+      (n) =>
+        `<button class="vtab" type="button" data-version="${n}" aria-current="${n === state.version}">v${n}</button>`,
+    );
+    tabs.push(
+      `<span class="badge edited" style="margin-left:6px">${state.version === 2 ? '댓글1 · 댓글3 수정본' : '최초 생성본'}</span>`,
+    );
+    el('version-tabs').innerHTML = tabs.join('');
+  }
+
+  function renderPieces() {
+    const chars = SAMPLE.body.replace(/\s/g, '').length;
+    const parts = [
+      `<article class="piece is-body">
+        <div class="rail-mark"></div>
+        <div class="piece-inner">
+          <div class="piece-head"><span class="badge body">본문</span>
+            <span class="who">제목 + 본문 · 키워드 4회</span></div>
+          <h3 class="piece-title">${SAMPLE.title}</h3>
+          <p class="piece-text">${SAMPLE.body}</p>
+          <div class="counts">공백 제외 ${chars.toLocaleString()}자 · 문단 6개 · 예시라 축약됨</div>
+          <div class="revise">
+            <input type="text" data-part="body" placeholder="본문 수정 지시 — 예: 견적 비교 부분을 표처럼 정리해줘" />
+            <button class="btn small" type="button" data-clear="body">지우기</button>
+          </div>
+        </div>
+      </article>`,
+    ];
+
+    commentsFor(state.version).forEach((c, i) => {
+      parts.push(`<article class="piece is-comment">
+        <div class="rail-mark"></div>
+        <div class="piece-inner">
+          <div class="piece-head">
+            <span class="badge cmt">댓글${i + 1}</span>
+            <span class="who">${c.who}</span>
+            ${c.edited ? '<span class="badge edited">v2에서 수정됨</span>' : ''}
+          </div>
+          <p class="piece-text">${c.text}${c.reply ? `<span class="reply">${c.reply}</span>` : ''}</p>
+          <div class="revise">
+            <input type="text" data-part="c${i + 1}" placeholder="댓글${i + 1} 수정 지시 — 예: 더 짧게, 살짝 의심하는 톤으로" />
+            <button class="btn small" type="button" data-clear="c${i + 1}">지우기</button>
+          </div>
+        </div>
+      </article>`);
+    });
+
+    el('pieces').innerHTML = parts.join('');
+    el('pieces')
+      .querySelectorAll('.revise input')
+      .forEach((input) => {
+        input.value = state.revising[input.dataset.part] || '';
+        input.addEventListener('input', () => {
+          state.revising[input.dataset.part] = input.value;
+          updateReviseStatus();
+        });
+      });
+    updateReviseStatus();
+  }
+
+  function updateReviseStatus() {
+    const n = Object.values(state.revising).filter((v) => v && v.trim()).length;
+    el('revise-status').innerHTML = `수정 지시를 적은 카드: <b>${n}개</b>${
+      n ? ' — 나머지는 그대로 유지됩니다' : ''
+    }`;
+  }
+
+  function renderRefs() {
+    el('ref-list').innerHTML = REFS.map(
+      (r, i) => `<label class="ref" for="ref-${i}">
+        <input type="checkbox" id="ref-${i}" ${r.on ? 'checked' : ''} />
+        <span><b>${r.name}</b><p>${r.desc}</p></span>
+        <span class="meta">${r.meta}</span>
+      </label>`,
+    ).join('');
+  }
+
+  const STREAM_TEXT =
+    '[제목]\n' +
+    SAMPLE.title +
+    '\n\n[본문]\n' +
+    SAMPLE.body.slice(0, 240) +
+    '…\n\n[댓글1]\n(40대 직장인 남성) 저도 지금 딱 그 고민 중인데…';
+
+  function fakeGenerate() {
+    const panel = el('stream-panel');
+    const out = el('stream-out');
+    const button = el('btn-generate');
+    panel.hidden = false;
+    out.textContent = '';
+    out.classList.add('caret');
+    button.disabled = true;
+    button.textContent = '생성 중…';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    let i = 0;
+    const timer = setInterval(() => {
+      i += 7;
+      out.textContent = STREAM_TEXT.slice(0, i);
+      if (i >= STREAM_TEXT.length) {
+        clearInterval(timer);
+        out.classList.remove('caret');
+        button.disabled = false;
+        button.textContent = '원고 생성';
+        state.version = 1;
+        state.revising = {};
+        renderVersions();
+        renderPieces();
+        show('result');
+        toast('1차 원고가 만들어졌습니다 (예시)');
+      }
+    }, 22);
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('[data-go],[data-toast],[data-version],[data-clear]');
+    if (!target) return;
+
+    if (target.dataset.go) show(target.dataset.go);
+    if (target.dataset.toast) toast(target.dataset.toast);
+    if (target.dataset.version) {
+      state.version = Number(target.dataset.version);
+      renderVersions();
+      renderPieces();
+    }
+    if (target.dataset.clear) {
+      delete state.revising[target.dataset.clear];
+      renderPieces();
+    }
+  });
+
+  el('btn-generate').addEventListener('click', fakeGenerate);
+  el('btn-fetch').addEventListener('click', () =>
+    toast('시안입니다 — 실제로는 제목 · 본문 · 댓글을 수집합니다'),
+  );
+  el('btn-revise').addEventListener('click', () => {
+    const n = Object.values(state.revising).filter((v) => v && v.trim()).length;
+    if (!n) {
+      toast('수정 지시를 한 곳 이상 적어 주세요');
+      return;
+    }
+    state.version = 2;
+    state.revising = {};
+    renderVersions();
+    renderPieces();
+    toast('v2가 만들어졌습니다 — 지시한 카드만 새로 쓰였습니다 (예시)');
+  });
+
+  renderNav();
+  renderVersions();
+  renderPieces();
+  renderRefs();
+  show('result');
+</script>

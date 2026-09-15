@@ -14,19 +14,27 @@ files:
 useGitignore: true
 ignorePaths:
   - pnpm-lock.yaml
+ignoreRegExpList:
+  # Korean (Hangul) content in the planning docs and UI mockup
+  - "/[\\uAC00-\\uD7A3\\u3131-\\u318E]+/gu"
 words:
+  - bephigh
   - cooldown
   - CVEs
   - Decap
   - esbuild
   - GHSA
+  - Gowun
   - Ghsas
   - hostnames
   - jsdoc
+  - keychip
   - kyoshino
   - PKCE
   - singleline
+  - topbar
   - Sveltia
   - undici
   - unrs
+  - vtab
   - workerd
