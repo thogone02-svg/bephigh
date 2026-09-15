@@ -24,6 +24,8 @@ words:
   - checkline
   - cooldown
   - costsub
+  - Cpath
+  - Csvg
   - CVEs
   - Decap
   - docpick
@@ -31,6 +33,7 @@ words:
   - doctabs
   - edithint
   - esbuild
+  - flymap
   - Gemini
   - GHSA
   - Ghsas
@@ -45,11 +48,13 @@ words:
   - libgrid
   - libmeta
   - libtitle
+  - lolkor
   - Luna
   - nabi
   - needfix
   - Noto
   - oprow
+  - parisienlook
   - pfoot
   - phead
   - pickcard
@@ -64,6 +69,7 @@ words:
   - setmode
   - showall
   - singleline
+  - starkart
   - stepper
   - Sveltia
   - tabbar

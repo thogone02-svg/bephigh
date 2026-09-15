@@ -754,10 +754,26 @@
 
   .turn {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 9px;
+    align-items: start;
     font-size: 14.5px;
     line-height: 1.7;
+  }
+
+  .turn .shot {
+    width: 19px;
+    height: 19px;
+    margin-top: 3px;
+    accent-color: var(--blue);
+    cursor: pointer;
+  }
+
+  .shot-hint {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+    color: var(--t500);
   }
 
   .turn .tag {
@@ -786,16 +802,44 @@
     color: var(--t700);
   }
 
+  select.sel {
+    appearance: none;
+    height: 40px;
+    min-width: 146px;
+    padding: 0 34px 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-2)
+      url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238B95A1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+      no-repeat right 11px center;
+    background-size: 16px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--t800);
+    cursor: pointer;
+  }
+
+  select.sel:focus {
+    border-color: var(--blue);
+    outline: none;
+  }
+
+  select.sel.sm {
+    height: 34px;
+    min-width: 92px;
+    font-size: 13px;
+  }
+
   .photo-slot {
     display: flex;
     align-items: center;
     gap: 7px;
-    margin-top: 12px;
+    margin: 4px 0 4px 29px;
     padding: 10px 12px;
     border-radius: var(--r-ctl);
     background: var(--blue-bg);
     color: var(--blue);
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 600;
   }
 
@@ -1135,6 +1179,48 @@
       margin-left: 0;
       text-align: left;
     }
+  }
+
+  .place {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border-radius: var(--r-ctl);
+    background: var(--blue-bg);
+    color: var(--blue);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .place .sub {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--t600);
+  }
+
+  .recent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .recent button {
+    height: 30px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--t700);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .recent button:hover {
+    border-color: var(--blue);
+    color: var(--blue);
   }
 
   table {
@@ -1709,6 +1795,25 @@
 
         <div class="card">
           <h3>
+            올릴 곳
+            <span class="sub">카페 주소를 넣으면 글쓸 수 있는 게시판을 불러와요</span>
+          </h3>
+          <div class="pfoot" style="margin-top: 0">
+            <input
+              id="p-url"
+              class="input"
+              type="url"
+              placeholder="https://cafe.naver.com/카페주소"
+              aria-label="카페 주소"
+            />
+            <button class="btn pri" type="button" id="btn-boards">게시판 불러오기</button>
+          </div>
+          <div class="recent" id="recent-cafes"></div>
+          <div id="board-zone" style="margin-top: 14px"></div>
+        </div>
+
+        <div class="card">
+          <h3>
             계정 연결 방식
             <span class="sub">댓글마다 계정이 달라서 여러 개를 다뤄야 해요</span>
           </h3>
@@ -2095,6 +2200,21 @@
     },
   ];
 
+  const CAFES = [
+    {
+      key: 'lolkor',
+      name: '리그오브레전드',
+      boards: ['자유게시판', '질문답변', '정보공유', '후기게시판'],
+    },
+    {
+      key: 'starkart',
+      name: '서울맘스러브',
+      boards: ['수다방', '정보공유', '육아용품', '지역모임'],
+    },
+    { key: 'parisienlook', name: '시크먼트', boards: ['자유게시판', '뷰티정보', '구매후기'] },
+    { key: 'flymap', name: '다낭 아지트', boards: ['자유게시판', '여행정보', '질문게시판'] },
+  ];
+
   const ACCOUNTS = [
     { id: 'a1', alias: '본문용', login: 'nabi_main', role: '본문 · 글쓴이 답글' },
     { id: 'a2', alias: '댓글용1', login: 'nabi_c1', role: '댓글1' },
@@ -2122,7 +2242,9 @@
     uploadWay: 'a',
     revising: {},
     turns: {},
-    photos: {},
+    shots: {},
+    cafe: null,
+    board: '',
     edits: {},
     imported: null,
     libQuery: '',
@@ -2214,7 +2336,7 @@
       }
     } else if (state.view === 'publish') {
       inner.innerHTML =
-        '<p>계정 연결 방식을 정하면 만들 수 있어요</p>' +
+        `<p>${state.cafe ? `${state.cafe.name} · ${state.board}` : '올릴 카페를 먼저 정해 주세요'}</p>` +
         '<button class="btn pri lg" type="button" disabled>카페에 올리기</button>';
     } else {
       inner.innerHTML = '';
@@ -2285,7 +2407,7 @@
           state.upgrade
             ? `<div class="pfoot" style="margin-top:10px">
                 <span class="desc" style="align-self:center">다시 쓸 모델</span>
-                <select id="f-upmodel" style="padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)">
+                <select id="f-upmodel" class="sel" aria-label="다시 쓸 모델">
                   ${MODELS.filter((m) => !m.over)
                     .map(
                       (m) =>
@@ -2390,17 +2512,20 @@
     el('comment-pieces').innerHTML = COMMENTS.map((c, i) => {
       const n = i + 1;
       const turns = state.turns[n] ?? c.thread.length;
-      const photo = state.photos[n] ?? c.photo;
       const hand = Object.keys(state.edits).some((k) => k.startsWith(`c${n}-`));
       const thread = c.thread
         .slice(0, turns)
         .map((t, ti) => {
           const key = `c${n}-${ti}`;
+          const shot = state.shots[key];
 
           return `<div class="turn ${t.by === 'a' ? 'author' : ''}">
             <span class="tag">${t.by === 'a' ? '글쓴이' : `댓글${n}`}</span>
             <span data-edit="${key}" title="두 번 누르면 고칠 수 있어요">${esc(edited(key, t.text))}</span>
-          </div>`;
+            <input type="checkbox" class="shot" data-shot="${key}" ${shot ? 'checked' : ''}
+              title="이 줄에 사진 자리 넣기" aria-label="${t.by === 'a' ? '글쓴이' : `댓글${n}`} ${ti + 1}번째 줄에 사진 자리 넣기" />
+          </div>
+          ${shot ? `<div class="photo-slot">${icon('image', 16)}댓글 사진 여기에 첨부해주세요</div>` : ''}`;
         })
         .join('');
       const options = [1, 2, 3, 4, 5, 6, 7]
@@ -2413,14 +2538,13 @@
           ${turns > 1 ? `<span class="chip">티키타카 ${turns}턴</span>` : ''}
           ${hand ? '<span class="chip warn">직접 고침</span>' : ''}
         </div>
+        ${n === 1 ? '<span class="shot-hint">사진을 넣을 줄에 오른쪽 체크를 켜 주세요</span>' : ''}
         <div class="thread">${thread}</div>
-        ${photo ? `<div class="photo-slot">${icon('image', 18)}댓글 사진 여기에 첨부해주세요</div>` : ''}
         <div class="pfoot">
           <input class="input" type="text" data-part="c${n}" placeholder="댓글${n}에서 고칠 곳" />
         </div>
         <div class="opts">
-          <label>티키타카 <select data-turns="${n}" aria-label="댓글${n} 턴 수">${options}</select></label>
-          <label class="check"><input type="checkbox" data-photo="${n}" ${photo ? 'checked' : ''} />사진 자리 넣기</label>
+          <label>티키타카 <select class="sel sm" data-turns="${n}" aria-label="댓글${n} 턴 수">${options}</select></label>
         </div>
       </article>`;
     }).join('');
@@ -2451,14 +2575,12 @@
         );
       });
     });
-    document.querySelectorAll('[data-photo]').forEach((box) => {
+    document.querySelectorAll('[data-shot]').forEach((box) => {
       box.addEventListener('change', () => {
-        const n = Number(box.dataset.photo);
-
-        state.photos[n] = box.checked;
+        state.shots[box.dataset.shot] = box.checked;
         renderComments();
         markSaved();
-        toast(box.checked ? `댓글${n}에 사진 자리를 넣었어요` : `댓글${n}의 사진 자리를 뺐어요`);
+        toast(box.checked ? '이 줄에 사진 자리를 넣었어요' : '사진 자리를 뺐어요');
       });
     });
 
@@ -2795,7 +2917,7 @@
       .map(
         (r) => `<div class="row">
         <span class="txt"><b>${r.label}</b></span>
-        <select data-assign="${r.key}" aria-label="${r.label} 계정">
+        <select class="sel" data-assign="${r.key}" aria-label="${r.label} 계정">
           <option value="">계정 고르기</option>
           ${ACCOUNTS.map((a) => `<option value="${a.id}"${state.assign[r.key] === a.id ? ' selected' : ''}>${esc(a.alias)}</option>`).join('')}
         </select>
@@ -2814,6 +2936,7 @@
       </div>`,
     ).join('');
 
+    renderPlace();
     document.querySelectorAll('[name="uway"]').forEach((radio) => {
       radio.addEventListener('change', () => {
         state.uploadWay = radio.value;
@@ -2845,6 +2968,47 @@
         renderPublish();
       });
     });
+  }
+
+  function renderPlace() {
+    el('recent-cafes').innerHTML =
+      '<span class="desc" style="align-self:center;margin-right:2px">최근 올린 카페</span>' +
+      CAFES.map((c) => `<button type="button" data-cafe="${c.key}">${c.name}</button>`).join('');
+
+    el('board-zone').innerHTML = state.cafe
+      ? `<div class="place">
+          ${icon('check', 18)}
+          <span class="grow">${esc(state.cafe.name)}<span class="sub">cafe.naver.com/${state.cafe.key} · 글쓸 수 있는 게시판 ${state.cafe.boards.length}개</span></span>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <span class="txt"><b>게시판</b></span>
+          <select class="sel" id="p-board" aria-label="게시판">
+            ${state.cafe.boards.map((b) => `<option${state.board === b ? ' selected' : ''}>${b}</option>`).join('')}
+          </select>
+        </div>`
+      : '<p class="desc" style="margin:0">주소를 넣고 불러오면 게시판 목록이 여기에 떠요.</p>';
+
+    const board = el('p-board');
+
+    if (board) {
+      board.addEventListener('change', () => {
+        state.board = board.value;
+      });
+    }
+    document.querySelectorAll('[data-cafe]').forEach((button) => {
+      button.addEventListener('click', () => {
+        pickCafe(button.dataset.cafe);
+      });
+    });
+  }
+
+  function pickCafe(key) {
+    state.cafe = CAFES.find((c) => c.key === key) ?? CAFES[0];
+    state.board = state.cafe.boards[0];
+    el('p-url').value = `https://cafe.naver.com/${state.cafe.key}`;
+    renderPlace();
+    renderDock();
+    toast(`${state.cafe.name}의 게시판 ${state.cafe.boards.length}개를 불러왔어요`);
   }
 
   // ---------- 생성 ----------
@@ -2930,6 +3094,16 @@
     }
   });
 
+  el('btn-boards').addEventListener('click', () => {
+    const url = el('p-url').value.trim();
+    const hit = CAFES.find((c) => url.includes(c.key));
+
+    if (!url) {
+      toast('카페 주소를 넣어 주세요');
+      return;
+    }
+    pickCafe((hit ?? CAFES[0]).key);
+  });
   el('btn-model').addEventListener('click', () => {
     state.modelOpen = !state.modelOpen;
     renderModel();
