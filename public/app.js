@@ -1,3 +1,4 @@
+import { connect, createDoc } from './gdocs.js';
 import { download, load, save, streamPost, uid } from './store.js';
 
 const AUTHOR = '작성자';
@@ -250,6 +251,7 @@ function show(view) {
   if (view === 'refs') renderLibrary();
   if (view === 'export') renderExport();
   if (view === 'result') renderResult();
+  if (view === 'publish') renderPublish();
   renderNav();
   renderDock();
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1139,7 +1141,12 @@ function renderExport() {
       <div class="doctabs">
         ${names.length ? names.map((k) => `<span class="doctab">${esc(k)}</span>`).join('') : '<span class="doctab dim">원고를 고르면 탭이 만들어져요</span>'}
       </div>
-      <p class="desc" style="margin:10px 0 0">문서 하나에 탭 ${names.length}개로 들어가요. 구글 계정 연결은 준비 중이라, 지금은 txt로 받아서 문서에 붙여넣어 주세요.</p>`;
+      <p class="desc" style="margin:10px 0 0">문서 하나에 키워드 ${names.length}개가 제목으로 구분되어 들어가요. 구글 문서 왼쪽 개요에서 키워드를 눌러 바로 이동할 수 있어요.</p>
+      ${
+        store.settings.lastDoc
+          ? `<p class="desc" style="margin:8px 0 0">최근 만든 문서 · <a href="${esc(store.settings.lastDoc.url)}" target="_blank" rel="noopener">${esc(store.settings.lastDoc.title)}</a></p>`
+          : ''
+      }`;
   } else if (state.way === 'txt') {
     zone.innerHTML = `
       <div class="rows">
@@ -1203,16 +1210,211 @@ function runExport() {
     return;
   }
 
-  const joined = picked
-    .map((d) => `=== ${d.keyword} ===\n\n${toText(d.versions[d.versions.length - 1])}`)
-    .join('\n\n\n');
+  exportToDocs(picked);
+}
+
+/**
+ * Send the chosen manuscripts to a new Google Doc.
+ * @param {any[]} picked - Chosen documents.
+ */
+async function exportToDocs(picked) {
+  const button = el('btn-export');
 
   const title =
     el('f-doctitle')?.value.trim() ||
     `${new Date().toISOString().slice(0, 10)} ${picked[0].keyword}${picked.length > 1 ? ` 외 ${picked.length - 1}건` : ''}`;
 
-  download(`${title}.txt`, joined);
-  toast('구글 계정 연결은 준비 중이라 txt로 받았어요. 문서에 붙여넣어 주세요.');
+  button.disabled = true;
+  button.textContent = '내보내는 중…';
+
+  try {
+    await connect(store.settings.googleClientId);
+
+    const { url } = await createDoc(
+      title,
+      picked.map((d) => ({
+        keyword: d.keyword,
+        text: toText(d.versions[d.versions.length - 1]),
+      })),
+    );
+
+    store.settings.lastDoc = { title, url, at: Date.now() };
+    persist();
+    window.open(url, '_blank', 'noopener');
+    renderExport();
+    toast('구글 문서를 만들었어요');
+  } catch (error) {
+    toast(error.message);
+
+    if (/클라이언트 ID/.test(error.message)) {
+      show('settings');
+    }
+  } finally {
+    button.disabled = false;
+    renderDock();
+  }
+}
+
+/* ---------------- 카페에 올리기 ---------------- */
+
+const GAPS = [
+  { id: 'first', label: '본문 올린 뒤 첫 댓글까지' },
+  { id: 'between', label: '댓글과 댓글 사이' },
+  { id: 'reply', label: '댓글 달린 뒤 작성자 답글까지' },
+];
+
+/**
+ * Add up minutes and format the running clock offset.
+ * @param {number} minutes - Minutes from the start.
+ * @returns {string} Label such as `+12분`.
+ */
+const atLabel = (minutes) => (minutes ? `+${minutes}분` : '바로');
+
+/**
+ * Build the ordered list of things to post, with the waiting time before each.
+ * @param {Record<string, any>} v - Manuscript version.
+ * @returns {{ who: string, what: string, text: string, at: number }[]} Steps.
+ */
+function buildSteps(v) {
+  const { gaps } = store.settings;
+  const steps = [{ who: '본문 계정', what: '본문 올리기', text: toText(v, 'body'), at: 0 }];
+  let clock = 0;
+
+  (v.comments ?? []).forEach((comment, index) => {
+    const n = comment.index ?? index + 1;
+    const label = `댓글${n}`;
+
+    (comment.thread ?? []).forEach((turn, position) => {
+      if (position === 0) {
+        clock += index === 0 ? gaps.first : gaps.between;
+      } else {
+        clock += gaps.reply;
+      }
+
+      const photo = comment.photoAt === position ? '\n(댓글 사진 여기에 첨부해주세요)' : '';
+      let what = `${label} 달기`;
+
+      if (turn.by === 'author') {
+        what = `${label}에 작성자 답글`;
+      } else if (position > 0) {
+        what = `${label} 다시 달기`;
+      }
+
+      steps.push({
+        who: turn.by === 'author' ? '본문 계정' : `${label} 계정`,
+        what,
+        text: turn.text + photo,
+        at: clock,
+      });
+    });
+  });
+
+  return steps;
+}
+
+/**
+ * Draw the publish screen.
+ */
+function renderPublish() {
+  const s = store.settings;
+
+  el('p-url').value = s.cafeUrl ?? '';
+  el('p-board').value = s.board ?? '';
+  el('up-list').innerHTML = store.docs.length
+    ? store.docs
+        .slice(0, 20)
+        .map(
+          (d) => `<label class="row" style="cursor:pointer">
+            <input type="radio" name="uppick" value="${d.id}" ${state.upPick === d.id ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--blue)" />
+            <span class="txt"><b>${esc(d.keyword)}</b><span>댓글 ${d.versions[d.versions.length - 1].comments?.length ?? 0}개</span></span>
+            <span class="when">${new Date(d.createdAt).toLocaleDateString('ko-KR')}</span>
+          </label>`,
+        )
+        .join('')
+    : '<div class="empty">아직 만든 원고가 없어요</div>';
+
+  el('acct-list').innerHTML = (s.accounts ?? []).length
+    ? s.accounts
+        .map(
+          (name, index) => `<div class="row">
+            <span class="txt"><b>${esc(name)}</b></span>
+            <button class="btn sm ghost" type="button" data-acct-del="${index}">지우기</button>
+          </div>`,
+        )
+        .join('')
+    : '<div class="empty" style="padding:14px">아직 없어요</div>';
+
+  el('gap-list').innerHTML = GAPS.map(
+    (g) => `<div class="row">
+      <span class="txt"><b>${g.label}</b></span>
+      <span class="stepper">
+        <button type="button" data-gap="${g.id}" data-delta="-1" aria-label="${g.label} 줄이기">−</button>
+        <span>${s.gaps[g.id]}분</span>
+        <button type="button" data-gap="${g.id}" data-delta="1" aria-label="${g.label} 늘리기">+</button>
+      </span>
+    </div>`,
+  ).join('');
+
+  const target = store.docs.find((d) => d.id === state.upPick) ?? store.docs[0];
+  const v = target?.versions[target.versions.length - 1];
+
+  el('step-list').innerHTML = v
+    ? buildSteps(v)
+        .map(
+          (step, index) => `<div class="row">
+            <span class="chip blue">${index + 1}</span>
+            <span class="txt">
+              <b>${esc(step.what)}</b>
+              <span>${atLabel(step.at)} · ${esc(step.who)}</span>
+            </span>
+            <button class="btn sm" type="button" data-step-copy="${index}">복사</button>
+          </div>`,
+        )
+        .join('') +
+      (s.cafeUrl
+        ? `<div class="row"><span class="txt"><b>카페 열기</b><span>${esc(s.board || '게시판')}</span></span>
+           <a class="btn sm pri" href="${esc(s.cafeUrl)}" target="_blank" rel="noopener">열기</a></div>`
+        : '')
+    : '<div class="empty">원고를 먼저 골라 주세요</div>';
+
+  document.querySelectorAll('[name="uppick"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      state.upPick = radio.value;
+      renderPublish();
+    });
+  });
+  document.querySelectorAll('[data-acct-del]').forEach((button) => {
+    button.addEventListener('click', () => {
+      store.settings.accounts.splice(Number(button.dataset.acctDel), 1);
+      persist();
+      renderPublish();
+      renderSettings();
+    });
+  });
+  document.querySelectorAll('[data-gap]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.dataset.gap;
+      const next = store.settings.gaps[id] + Number(button.dataset.delta);
+
+      if (next < 1 || next > 5) {
+        toast('1분부터 5분까지 정할 수 있어요');
+
+        return;
+      }
+
+      store.settings.gaps[id] = next;
+      persist();
+      renderPublish();
+    });
+  });
+  document.querySelectorAll('[data-step-copy]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const steps = buildSteps(v);
+      const step = steps[Number(button.dataset.stepCopy)];
+
+      copy(step.text, step.what);
+    });
+  });
 }
 
 /* ---------------- 설정 ---------------- */
@@ -1228,6 +1430,43 @@ function renderSettings() {
   el('set-upper').textContent = upper
     ? `${upper.name} · ${store.settings.upgrade ? '켜짐' : '꺼짐'}`
     : '';
+
+  const gid = store.settings.googleClientId ?? '';
+
+  el('google-state').innerHTML = gid
+    ? `<span class="chip ok">연결 준비됨</span><button class="btn sm ghost" type="button" id="btn-gid-del">지우기</button>`
+    : `<input class="input" type="text" id="f-gid" placeholder="000000-xxxx.apps.googleusercontent.com" aria-label="구글 클라이언트 ID" style="max-width:300px;padding:10px 12px" />
+       <button class="btn sm pri" type="button" id="btn-gid-save">저장</button>`;
+
+  const gidSave = el('btn-gid-save');
+  const gidDel = el('btn-gid-del');
+
+  if (gidSave) {
+    gidSave.addEventListener('click', () => {
+      const value = el('f-gid').value.trim();
+
+      if (!value) {
+        toast('클라이언트 ID를 붙여넣어 주세요');
+
+        return;
+      }
+
+      store.settings.googleClientId = value;
+      persist();
+      renderSettings();
+      toast('구글 클라이언트 ID를 저장했어요');
+    });
+  }
+
+  if (gidDel) {
+    gidDel.addEventListener('click', () => {
+      store.settings.googleClientId = '';
+      persist();
+      renderSettings();
+    });
+  }
+
+  el('naver-count').textContent = `${(store.settings.accounts ?? []).length}개`;
   el('key-list').innerHTML = Object.keys(MAKERS)
     .map((maker) => {
       const saved = store.settings.keys[maker];
@@ -1423,6 +1662,30 @@ async function start() {
       toast('보관함에 넣었어요');
     }
   });
+  el('p-url').addEventListener('change', () => {
+    store.settings.cafeUrl = el('p-url').value.trim();
+    persist();
+    renderPublish();
+  });
+  el('p-board').addEventListener('change', () => {
+    store.settings.board = el('p-board').value.trim();
+    persist();
+  });
+  el('btn-acct-add').addEventListener('click', () => {
+    const name = el('f-acct').value.trim();
+
+    if (!name) {
+      toast('별칭을 적어 주세요');
+
+      return;
+    }
+
+    store.settings.accounts = [...(store.settings.accounts ?? []), name];
+    persist();
+    el('f-acct').value = '';
+    renderPublish();
+    renderSettings();
+  });
   buildBookmarklet();
   el('btn-regen').addEventListener('click', () => {
     const target = doc();
@@ -1455,6 +1718,7 @@ async function start() {
   });
   el('btn-upload').addEventListener('click', () => picker.click());
 
+  state.upPick = store.docs[0]?.id ?? null;
   state.docId = store.docs[0]?.id ?? null;
   state.version = state.docId ? store.docs[0].versions.length - 1 : 0;
   renderNav();

@@ -41,10 +41,13 @@ words:
   - edithint
   - esbuild
   - flymap
+  - gdocs
   - Gemini
   - GHSA
   - Ghsas
+  - googleusercontent
   - Gowun
+  - gsi
   - hostnames
   - iconbtn
   - jsdoc
@@ -63,6 +66,7 @@ words:
   - needfix
   - Noto
   - nums
+  - oauth
   - oprow
   - parisienlook
   - pfoot

@@ -432,31 +432,75 @@
           <!-- ⑤ 업로드 -->
           <section class="view" id="view-publish" hidden>
             <header>
-              <h2>네이버 카페에 올리기 <span class="chip warn">준비 중</span></h2>
-              <p>원고 만들기가 자리를 잡으면 이어서 붙일 기능이에요.</p>
+              <h2>카페에 올리기</h2>
+              <p>
+                순서와 간격을 짜 드릴게요. 각 단계에서 복사해서 카페에 붙여넣으면 됩니다. 계정
+                정보는 저장하지 않아요.
+              </p>
             </header>
 
             <div class="card">
-              <h3>먼저 정해야 하는 것</h3>
-              <div class="rows">
-                <div class="row">
-                  <span class="txt"
-                    ><b>계정 연결 방식</b
-                    ><span>서버에 저장 / 크롬 로그인 / 그때그때 로그인</span></span
-                  >
-                  <span class="chip warn">미정</span>
-                </div>
-                <div class="row">
-                  <span class="txt"
-                    ><b>댓글 계정 개수</b><span>댓글마다 다른 계정이 필요해요</span></span
-                  >
-                  <span class="chip warn">미정</span>
-                </div>
+              <h3>올릴 원고</h3>
+              <div class="rows" id="up-list"></div>
+            </div>
+
+            <div class="card">
+              <h3>
+                올릴 곳
+                <span class="sub">카페 주소를 넣어 두면 단계마다 바로 열 수 있어요</span>
+              </h3>
+              <div class="pfoot" style="margin-top: 0">
+                <input
+                  id="p-url"
+                  class="input"
+                  type="url"
+                  placeholder="https://cafe.naver.com/카페주소"
+                  aria-label="카페 주소"
+                />
+                <input
+                  id="p-board"
+                  class="input"
+                  type="text"
+                  placeholder="게시판 이름 (메모용)"
+                  aria-label="게시판"
+                  style="flex: 0 1 200px"
+                />
               </div>
-              <p class="desc" style="margin: 14px 0 0">
-                지금은 내보내기에서 txt로 받아 직접 올려 주세요. 올릴 카페와 게시판 고르기, 계정
-                배정, 1~5분 간격 설정까지 설계는 끝나 있어요.
+            </div>
+
+            <div class="card">
+              <h3>
+                계정 메모
+                <span class="sub">어느 단계에 어느 계정을 쓸지 적어 두면 헷갈리지 않아요</span>
+              </h3>
+              <div class="rows" id="acct-list"></div>
+              <div class="pfoot">
+                <input
+                  id="f-acct"
+                  class="input"
+                  type="text"
+                  placeholder="계정 별칭 (예: 댓글용1)"
+                  aria-label="계정 별칭"
+                  style="flex: 1 1 200px"
+                />
+                <button class="btn pri" id="btn-acct-add" type="button">추가</button>
+              </div>
+              <p class="desc" style="margin: 10px 0 0">
+                별칭만 저장해요. 아이디와 비밀번호는 넣지 마세요.
               </p>
+            </div>
+
+            <div class="card">
+              <h3>올리는 간격 <span class="sub">1분부터 5분까지 정할 수 있어요</span></h3>
+              <div class="rows" id="gap-list"></div>
+            </div>
+
+            <div class="card">
+              <h3>
+                올리는 순서
+                <span class="sub">위에서부터 하나씩 복사해서 올려 주세요</span>
+              </h3>
+              <div class="rows" id="step-list"></div>
             </div>
           </section>
 
@@ -497,15 +541,15 @@
               <h3>연결된 계정</h3>
               <div class="rows">
                 <div class="row">
-                  <span class="txt"><b>구글 계정</b><span>문서로 내보낼 때 써요</span></span>
-                  <span class="chip warn">미연결</span>
-                  <button class="btn sm" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
-                    연결하기
-                  </button>
+                  <span class="txt">
+                    <b>구글 클라이언트 ID</b>
+                    <span>문서로 내보낼 때 한 번만 넣으면 돼요</span>
+                  </span>
+                  <span id="google-state" class="pfoot" style="margin-top: 0"></span>
                 </div>
                 <div class="row">
                   <span class="txt"><b>네이버 계정</b><span>카페에 올릴 때 써요</span></span>
-                  <span class="chip ok">3개</span>
+                  <span class="chip" id="naver-count">0개</span>
                   <button class="btn sm" type="button" data-go="publish">관리하기</button>
                 </div>
               </div>
