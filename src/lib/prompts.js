@@ -147,7 +147,7 @@ const renderReference = (doc, order) => {
   return [
     `<참고원고 ${order + 1}${doc.keyword ? ` 키워드="${doc.keyword}"` : ''}>`,
     `제목: ${doc.title ?? ''}`,
-    (doc.body ?? '').slice(0, 3000),
+    (doc.body ?? '').slice(0, 1800),
     comments,
     '</참고원고>',
   ]
@@ -232,9 +232,10 @@ const shapeExample = (tone) =>
  * Build the user prompt for a first draft.
  * @param {Record<string, any>} options - Options collected from the generate screen.
  * @param {any[]} [references] - Reference manuscripts used for style.
+ * @param {string} [card] - Measured writing habits from the whole library.
  * @returns {string} User prompt.
  */
-export const generatePrompt = (options, references = []) => {
+export const generatePrompt = (options, references = [], card = '') => {
   const {
     keyword,
     brand = '',
@@ -256,14 +257,18 @@ export const generatePrompt = (options, references = []) => {
   }).join(' / ');
 
   return [
+    card,
     references.length
       ? [
           '아래는 같은 담당자가 전에 쓴 원고입니다.',
-          '**이 원고들의 문장 길이, 줄바꿈 습관, 자주 쓰는 어미, 댓글 호흡을 그대로 흉내 내세요.**',
+          '**문장 길이, 줄바꿈 습관, 자주 쓰는 어미, 댓글 호흡을 그대로 흉내 내세요.**',
           '내용은 베끼지 말고 말투만 가져옵니다. 이게 이번 작업에서 가장 중요합니다.',
+          card ? '위 말투 카드와 아래 원고가 다르면 말투 카드를 따릅니다.' : '',
           '',
-          references.slice(0, 4).map(renderReference).join('\n\n'),
-        ].join('\n')
+          references.slice(0, 3).map(renderReference).join('\n\n'),
+        ]
+          .filter(Boolean)
+          .join('\n')
       : shapeExample(tone),
     '<요청서>',
     `핵심 키워드: ${keyword}`,
@@ -295,6 +300,7 @@ export const generatePrompt = (options, references = []) => {
       tone === '질문형' ? '본문이 물음표로 끝나는가.' : '실패했던 경험이 들어갔는가.',
       '같은 어미가 세 문장 연속 나오지 않는가.',
       '광고체 표현이 하나도 없는가.',
+      card ? '말투 카드의 어미 비율과 문단 길이를 지켰는가.' : '',
     ]
       .filter(Boolean)
       .join(' '),

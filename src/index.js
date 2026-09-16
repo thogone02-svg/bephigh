@@ -54,7 +54,7 @@ const generate = async (request) => {
     return fail('키워드를 넣어 주세요.');
   }
 
-  return sse(run(body, generatePrompt(body.options, body.references ?? [])));
+  return sse(run(body, generatePrompt(body.options, body.references ?? [], body.styleCard ?? '')));
 };
 
 /**

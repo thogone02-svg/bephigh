@@ -1,5 +1,6 @@
 import { connect, createDoc } from './gdocs.js';
 import { download, load, readableSize, save, streamPost, uid, usage } from './store.js';
+import { learnedFrom, pickReferences, styleCard } from './style.js';
 
 const AUTHOR = '작성자';
 const WON = 1400;
@@ -477,6 +478,7 @@ async function generate() {
   }
 
   const keep = state.keepSet ? store.library.find((l) => l.id === state.keepSet) : null;
+  const learning = store.library.filter((l) => l.learn);
   const card = el('stream-card');
   const out = el('stream-out');
 
@@ -501,7 +503,8 @@ async function generate() {
                 .join('\n\n')
             : null,
         },
-        references: store.library.filter((l) => l.learn).slice(0, 4),
+        references: pickReferences(learning, options.keyword),
+        styleCard: styleCard(learning),
       },
       (event) => {
         if (event.type === 'delta') {
@@ -848,7 +851,9 @@ function renderLibrary() {
   if (store.library.length && state.libQuery) {
     summary = `${list.length}개 찾았어요`;
   } else if (store.library.length) {
-    summary = `원고 ${store.library.length}개 · 어투 학습 ${learning}개`;
+    summary = `원고 ${store.library.length}개 · 어투 학습 ${learning}개 — ${learnedFrom(
+      store.library.filter((i) => i.learn),
+    )}`;
   }
 
   el('lib-summary').textContent = summary;
