@@ -53,7 +53,7 @@ pnpm start          # http://127.0.0.1:8787
 
 키는 브라우저에 저장되고, 요청할 때만 서버를 거쳐 해당 회사로 전달됩니다. 서버에 보관하지 않습니다.
 
-**구글 문서 내보내기**를 쓰려면 구글 클라이언트 ID도 필요합니다. [Google Cloud Console](https://console.cloud.google.com/apis/credentials)에서 OAuth 클라이언트 ID(웹 애플리케이션)를 만들고, 승인된 자바스크립트 원본에 배포 주소를 넣은 뒤 설정 화면에 붙여넣으면 됩니다. Google Docs API도 켜야 합니다.
+**구글 문서**는 설정 없이도 씁니다. 내보내기에서 `서식 그대로 복사`를 누르고 빈 구글 문서에 붙여넣으면 키워드가 제목으로 들어갑니다. 버튼 한 번으로 문서까지 만들고 싶을 때만 아래를 합니다. [Google Cloud Console](https://console.cloud.google.com/apis/credentials)에서 OAuth 클라이언트 ID(웹 애플리케이션)를 만들고, 승인된 자바스크립트 원본에 배포 주소를 넣은 뒤 설정 화면에 붙여넣으면 됩니다. Google Docs API도 켜야 합니다.
 
 ## 구조
 

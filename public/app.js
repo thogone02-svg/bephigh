@@ -1146,7 +1146,20 @@ function renderExport() {
         store.settings.lastDoc
           ? `<p class="desc" style="margin:8px 0 0">최근 만든 문서 · <a href="${esc(store.settings.lastDoc.url)}" target="_blank" rel="noopener">${esc(store.settings.lastDoc.title)}</a></p>`
           : ''
-      }`;
+      }
+      <div class="way fallback" style="margin-top:14px">
+        <span class="mark">＋</span>
+        <div>
+          <b>설정 없이 하려면</b>
+          <p>
+            서식 그대로 복사한 뒤 빈 구글 문서에 붙여넣어도 됩니다. 키워드가 제목으로 들어가요.
+            ${store.settings.googleClientId ? '' : '<b>지금은 이 방법만 됩니다.</b> 바로 만들기는 설정에서 클라이언트 ID를 넣어야 해요.'}
+          </p>
+          <p style="margin-top:8px">
+            <button class="btn sm" type="button" id="btn-rich">서식 그대로 복사</button>
+          </p>
+        </div>
+      </div>`;
   } else if (state.way === 'txt') {
     zone.innerHTML = `
       <div class="rows">
@@ -1161,6 +1174,18 @@ function renderExport() {
         <button class="btn" type="button" data-copy="comments">댓글만</button>
       </div>
       <p class="desc" style="margin:10px 0 0">고른 원고 중 첫 번째를 복사해요. 사진 자리 표시도 같이 들어가요.</p>`;
+  }
+
+  const rich = el('btn-rich');
+
+  if (rich) {
+    rich.addEventListener('click', () => {
+      const picked = state.picks.map((id) => store.docs.find((d) => d.id === id)).filter(Boolean);
+
+      if (picked.length) {
+        copyRich(picked);
+      }
+    });
   }
 
   document.querySelectorAll('[data-doc]').forEach((box) => {
@@ -1210,6 +1235,13 @@ function runExport() {
     return;
   }
 
+  if (!store.settings.googleClientId) {
+    copyRich(picked);
+    toast('클라이언트 ID가 없어 서식 복사로 했어요. 구글 문서에 붙여넣어 주세요.');
+
+    return;
+  }
+
   exportToDocs(picked);
 }
 
@@ -1252,6 +1284,53 @@ async function exportToDocs(picked) {
   } finally {
     button.disabled = false;
     renderDock();
+  }
+}
+
+/**
+ * Build a rich-text version of the chosen manuscripts.
+ * Pasting this into Google Docs keeps the keyword headings.
+ * @param {any[]} picked - Chosen documents.
+ * @returns {{ html: string, text: string }} Both clipboard flavours.
+ */
+function toRich(picked) {
+  const parts = picked.map((d) => {
+    const body = toText(d.versions[d.versions.length - 1]);
+
+    const paragraphs = body
+      .split('\n')
+      .map((line) => (line.trim() ? `<p>${esc(line)}</p>` : '<p><br></p>'))
+      .join('');
+
+    return `<h1>${esc(d.keyword)}</h1>${paragraphs}`;
+  });
+
+  return {
+    html: `<meta charset="utf-8">${parts.join('<p><br></p>')}`,
+    text: picked
+      .map((d) => `${d.keyword}\n\n${toText(d.versions[d.versions.length - 1])}`)
+      .join('\n\n\n'),
+  };
+}
+
+/**
+ * Copy the chosen manuscripts with formatting, so a paste into Google Docs
+ * arrives with the keyword headings already applied.
+ * @param {any[]} picked - Chosen documents.
+ */
+async function copyRich(picked) {
+  const { html, text } = toRich(picked);
+
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      }),
+    ]);
+    toast(`${picked.length}개를 서식 그대로 복사했어요. 구글 문서에 붙여넣어 주세요.`);
+  } catch {
+    await copy(text, '원고');
   }
 }
 
@@ -1437,6 +1516,35 @@ function renderSettings() {
     ? `<span class="chip ok">연결 준비됨</span><button class="btn sm ghost" type="button" id="btn-gid-del">지우기</button>`
     : `<input class="input" type="text" id="f-gid" placeholder="000000-xxxx.apps.googleusercontent.com" aria-label="구글 클라이언트 ID" style="max-width:300px;padding:10px 12px" />
        <button class="btn sm pri" type="button" id="btn-gid-save">저장</button>`;
+
+  el('google-help').innerHTML = gid
+    ? ''
+    : `<div class="way fallback" style="margin-top:10px">
+        <span class="mark">?</span>
+        <div>
+          <b>클라이언트 ID 만드는 법</b>
+          <p>
+            안 넣어도 됩니다. 넣으면 <b>버튼 한 번으로 구글 문서가 만들어져요.</b>
+            안 넣으면 서식 복사 → 붙여넣기로 씁니다.
+          </p>
+          <p style="margin-top:6px">
+            ① <a href="https://console.cloud.google.com/apis/library/docs.googleapis.com" target="_blank" rel="noopener">Google Docs API 켜기</a><br />
+            ② <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">사용자 인증 정보</a> → OAuth 클라이언트 ID 만들기 → <b>웹 애플리케이션</b><br />
+            ③ <b>승인된 자바스크립트 원본</b>에 아래 주소를 넣기<br />
+            ④ 만들어진 ID를 위 칸에 붙여넣기
+          </p>
+          <p class="pfoot" style="margin-top:8px">
+            <code style="font-family:var(--font-mono,monospace);font-size:12.5px;color:var(--t800)">${esc(window.location.origin)}</code>
+            <button class="btn sm" type="button" id="btn-origin">주소 복사</button>
+          </p>
+        </div>
+      </div>`;
+
+  const origin = el('btn-origin');
+
+  if (origin) {
+    origin.addEventListener('click', () => copy(window.location.origin, '주소'));
+  }
 
   const gidSave = el('btn-gid-save');
   const gidDel = el('btn-gid-del');
