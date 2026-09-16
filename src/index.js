@@ -27,7 +27,19 @@ async function* run(body, user) {
     yield { type: 'delta', text: delta };
   }
 
-  yield { type: 'done', manuscript: parseManuscript(text), raw: text };
+  const manuscript = parseManuscript(text);
+
+  // A model that declines the request sends prose back, not a manuscript.
+  if (!manuscript.title || !(manuscript.comments ?? []).length) {
+    yield {
+      type: 'error',
+      message: `모델이 원고 대신 다른 답을 보냈어요. 설정에서 다른 모델로 바꿔 보세요.\n\n받은 답: ${text.trim().slice(0, 300)}`,
+    };
+
+    return;
+  }
+
+  yield { type: 'done', manuscript, raw: text };
 }
 
 /**

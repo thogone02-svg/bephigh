@@ -558,21 +558,24 @@
 
             <div class="card">
               <h3>
-                저장
+                저장 공간
                 <span class="sub">원고와 보관함은 이 브라우저에 저장돼요</span>
               </h3>
-              <div class="pfoot" style="margin-top: 0">
-                <button class="btn" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
-                  백업 파일 내려받기
-                </button>
-                <button
-                  class="btn ghost"
-                  type="button"
-                  data-soon="아직 준비 중이에요. 곧 붙일게요."
-                >
-                  백업 불러오기
-                </button>
+              <div id="storage-meter"></div>
+              <div class="pfoot" style="margin-top: 12px">
+                <button class="btn" type="button" id="btn-backup">백업 파일 내려받기</button>
+                <button class="btn ghost" type="button" id="btn-restore">백업 불러오기</button>
+                <input
+                  type="file"
+                  id="f-restore"
+                  accept="application/json,.json"
+                  hidden
+                  aria-label="백업 파일 고르기"
+                />
               </div>
+              <p class="desc" style="margin: 12px 0 0">
+                브라우저 기록을 지우면 원고도 같이 지워져요. 가끔 백업 파일을 내려받아 두세요.
+              </p>
             </div>
           </section>
         </div>

@@ -1479,3 +1479,27 @@ th {
   text-decoration: none;
   cursor: grab;
 }
+
+/* 저장 공간 막대 */
+.meter {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--blue);
+  transition: width 0.3s ease;
+}
+
+.meter.mid span {
+  background: var(--yellow);
+}
+
+.meter.warn span {
+  background: var(--red);
+}

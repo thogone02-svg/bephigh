@@ -47,14 +47,47 @@ export const load = () => {
 /**
  * Write the state back to the browser.
  * @param {typeof EMPTY} state - State to save.
+ * @returns {boolean} False when the browser refused to save, usually because it is full.
  */
 export const save = (state) => {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
+
+    return true;
   } catch {
-    // Storage can be full or blocked; the app keeps working in memory.
+    return false;
   }
 };
+
+/** Browsers give one site about 5MB of this kind of storage. */
+const LIMIT = 5 * 1024 * 1024;
+
+/**
+ * Measure how much of the browser storage the app is using.
+ * @returns {{ bytes: number, limit: number, ratio: number }} Usage in bytes.
+ */
+export const usage = () => {
+  let bytes = 0;
+
+  try {
+    // Browsers count this storage in UTF-16 code units, so two bytes per character.
+    bytes = (localStorage.getItem(KEY) ?? '').length * 2;
+  } catch {
+    bytes = 0;
+  }
+
+  return { bytes, limit: LIMIT, ratio: Math.min(1, bytes / LIMIT) };
+};
+
+/**
+ * Turn a byte count into something readable.
+ * @param {number} bytes - Byte count.
+ * @returns {string} Readable size.
+ */
+export const readableSize = (bytes) =>
+  bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)}MB`
+    : `${Math.max(1, Math.round(bytes / 1024))}KB`;
 
 /**
  * Make a short unique id.

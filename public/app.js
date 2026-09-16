@@ -1,5 +1,5 @@
 import { connect, createDoc } from './gdocs.js';
-import { download, load, save, streamPost, uid } from './store.js';
+import { download, load, readableSize, save, streamPost, uid, usage } from './store.js';
 
 const AUTHOR = '작성자';
 const WON = 1400;
@@ -147,7 +147,15 @@ function applied(target, at) {
 /**
  *
  */
-const persist = () => save(store);
+const persist = () => {
+  if (save(store)) {
+    return true;
+  }
+
+  toast('저장 공간이 꽉 찼어요. 설정에서 백업을 내려받고 오래된 원고를 지워 주세요.');
+
+  return false;
+};
 
 /**
  * Show a short message at the bottom of the screen.
@@ -1248,10 +1256,7 @@ function renderExport() {
       const labels = { all: '전체', body: '본문', comments: '댓글' };
 
       if (first) {
-        copy(
-          toText(applied(first), button.dataset.copy),
-          labels[button.dataset.copy],
-        );
+        copy(toText(applied(first), button.dataset.copy), labels[button.dataset.copy]);
       }
     });
   });
@@ -1352,9 +1357,7 @@ function toRich(picked) {
 
   return {
     html: `<meta charset="utf-8">${parts.join('<p><br></p>')}`,
-    text: picked
-      .map((d) => `${d.keyword}\n\n${toText(applied(d))}`)
-      .join('\n\n\n'),
+    text: picked.map((d) => `${d.keyword}\n\n${toText(applied(d))}`).join('\n\n\n'),
   };
 }
 
@@ -1663,6 +1666,81 @@ function renderSettings() {
       renderModel();
       toast(`${MAKERS[button.dataset.keyDel]} 키를 지웠어요`);
     });
+  });
+  renderStorage();
+}
+
+/**
+ * Draw the storage meter and wire up backup and restore.
+ */
+function renderStorage() {
+  const { bytes, limit, ratio } = usage();
+  const percent = Math.round(ratio * 100);
+  const docs = store.docs.length;
+  const saved = store.library.length;
+  let tone = 'ok';
+
+  if (ratio > 0.9) {
+    tone = 'warn';
+  } else if (ratio > 0.7) {
+    tone = 'mid';
+  }
+
+  const note = {
+    warn: '거의 다 찼어요. 백업을 내려받고 오래된 원고를 지워 주세요.',
+    mid: '절반을 넘었어요. 슬슬 백업을 한 번 받아 두세요.',
+    ok: '아직 넉넉해요.',
+  }[tone];
+
+  el('storage-meter').innerHTML = `
+    <div class="meter ${tone}"><span style="width:${Math.max(2, percent)}%"></span></div>
+    <p class="desc" style="margin:8px 0 0">
+      ${readableSize(bytes)} / 약 ${readableSize(limit)} 씀 (${percent}%) ·
+      만든 원고 ${docs}개 · 보관함 ${saved}개<br />${note}
+    </p>`;
+
+  el('btn-backup').addEventListener('click', () => {
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    download(`나비효과플랜-원고백업-${stamp}.json`, JSON.stringify(store, null, 2));
+    toast('백업 파일을 내려받았어요');
+  });
+
+  el('btn-restore').addEventListener('click', () => el('f-restore').click());
+  el('f-restore').addEventListener('change', async (event) => {
+    const [file] = event.target.files ?? [];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const incoming = JSON.parse(await file.text());
+
+      if (!Array.isArray(incoming.docs) || !Array.isArray(incoming.library)) {
+        throw new Error('원고 백업 파일이 아니에요.');
+      }
+
+      const ids = new Set(store.docs.map((d) => d.id));
+      const libIds = new Set(store.library.map((l) => l.id));
+      const addedDocs = incoming.docs.filter((d) => d?.id && !ids.has(d.id));
+      const addedLib = incoming.library.filter((l) => l?.id && !libIds.has(l.id));
+
+      store.docs = [...addedDocs, ...store.docs];
+      store.library = [...addedLib, ...store.library];
+
+      if (persist()) {
+        toast(`원고 ${addedDocs.length}개, 보관함 ${addedLib.length}개를 더했어요`);
+      }
+
+      renderLibrary();
+      renderExport();
+      renderSettings();
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      event.target.value = '';
+    }
   });
 }
 
