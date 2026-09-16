@@ -33,6 +33,7 @@ words:
   - Csvg
   - CVEs
   - Decap
+  - dev
   - doclink
   - docpick
   - doctab
@@ -40,6 +41,7 @@ words:
   - doctitle
   - edithint
   - esbuild
+  - fewgpa
   - flymap
   - gdocs
   - Gemini
@@ -68,6 +70,7 @@ words:
   - nums
   - oauth
   - oprow
+  - outdir
   - parisienlook
   - pfoot
   - phead
@@ -90,6 +93,7 @@ words:
   - Sveltia
   - tabbar
   - Terra
+  - thogone
   - topbar
   - undici
   - unrs
@@ -98,3 +102,4 @@ words:
   - uway
   - vtab
   - workerd
+  - workers
