@@ -209,7 +209,9 @@ const CALLS = {
       body: JSON.stringify({
         model,
         max_tokens: maxTokens,
-        system,
+        // The rules never change between manuscripts, so let Anthropic keep them
+        // cached. A cached read costs about a tenth of a fresh one.
+        system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
         stream: true,
         messages: [{ role: 'user', content: user }],
       }),
