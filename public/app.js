@@ -54,6 +54,7 @@ const state = {
   modelOpen: false,
   maker: '전체',
   setMode: 'new',
+  carried: '',
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -285,14 +286,28 @@ function renderCarry() {
     return;
   }
 
-  const carried = el('f-keyword')?.value.trim();
+  const typed = el('f-keyword')?.value.trim() ?? '';
+  const set = state.keepSet ? store.library.find((l) => l.id === state.keepSet) : null;
+  // 키워드를 직접 바꾸면 더 이상 이어받은 게 아니에요.
+  const carried = state.carried && typed === state.carried ? typed : '';
 
-  bar.innerHTML = carried
-    ? `<div class="banner">${icon('write', 18)}
-        <span class="grow"><b>${esc(carried)}</b> 조건이 들어와 있어요</span>
-        <button class="btn sm" type="button" id="btn-clear-carry">비우고 새로</button>
-      </div>`
-    : '';
+  if (!carried && !set) {
+    bar.innerHTML = '';
+
+    return;
+  }
+
+  const what = [
+    carried ? `<b>${esc(carried)}</b> 조건` : '',
+    set ? `<b>${esc(set.keyword)}</b> 댓글 세트` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  bar.innerHTML = `<div class="banner">${icon('write', 18)}
+      <span class="grow">${what}이 들어와 있어요</span>
+      <button class="btn sm" type="button" id="btn-clear-carry">비우고 새로</button>
+    </div>`;
 
   el('btn-clear-carry')?.addEventListener('click', startNew);
 }
@@ -314,6 +329,7 @@ function startNew() {
 
   state.keepSet = null;
   state.setMode = 'new';
+  state.carried = '';
   show('write');
   renderSetZone();
   el('f-keyword')?.focus();
@@ -371,6 +387,20 @@ function show(view) {
     el(`view-${v.id}`).hidden = v.id !== view;
   });
   el('view-name').textContent = VIEWS.find((v) => v.id === view).label;
+
+  // 지난번에 쓴 글이 생성 화면에 그대로 남아 있으면 새로 쓰려는 건지
+  // 아까 것이 아직 도는 건지 알 수 없어요. 쓰는 중이 아니면 치웁니다.
+  if (view === 'write' && !state.busy) {
+    el('stream-card').hidden = true;
+    el('stream-out').textContent = '';
+  }
+
+  // 한 번 연 세트 목록이 계속 열려 있으면 또 골라야 하는 것처럼 보여요.
+  if (view !== 'result') {
+    state.pickOpen = false;
+    el('picker-zone').innerHTML = '';
+  }
+
   if (view === 'settings') renderSettings();
   if (view === 'refs') renderLibrary();
   if (view === 'export') renderExport();
@@ -744,6 +774,9 @@ function renderResult() {
     </article>`;
 
   const locked = (v.comments ?? []).some((c) => c.locked);
+
+  // 이미 가져와 둔 상태에서 「가져오기」라고 쓰여 있으면 또 골라야 하는 줄 알아요.
+  el('btn-import').textContent = locked ? '다른 세트로 바꾸기' : '기존 세트 가져오기';
 
   el('import-banner').innerHTML = locked
     ? `<div class="banner">${icon('lock', 18)}<span class="grow">보관함에서 가져온 댓글이에요. 다시 만들어도 그대로 있어요.</span></div>`
@@ -2225,6 +2258,7 @@ async function start() {
     persist();
     el('f-keyword').value = target.keyword;
     el('f-request').value = target.request;
+    state.carried = target.keyword;
     show('write');
     toast('생성 화면에서 조건을 확인하고 다시 만들어 주세요');
   });
