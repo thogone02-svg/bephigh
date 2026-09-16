@@ -271,6 +271,54 @@ function renderNav() {
 }
 
 /**
+ * Say which keyword the generate screen is holding, if it carried one over.
+ *
+ * 결과 화면에서 조건을 들고 넘어오면 칸이 채워진 채로 열려요.
+ * 그대로 두면 같은 원고를 또 만들게 되니 무엇이 들어 있는지 알려줘요.
+ */
+function renderCarry() {
+  const bar = el('carry-bar');
+
+  if (!bar) {
+    return;
+  }
+
+  const carried = el('f-keyword')?.value.trim();
+
+  bar.innerHTML = carried
+    ? `<div class="banner">${icon('write', 18)}
+        <span class="grow"><b>${esc(carried)}</b> 조건이 들어와 있어요</span>
+        <button class="btn sm" type="button" id="btn-clear-carry">비우고 새로</button>
+      </div>`
+    : '';
+
+  el('btn-clear-carry')?.addEventListener('click', startNew);
+}
+
+/**
+ * Clear the generate screen and start a fresh keyword.
+ *
+ * 다 만든 원고에서 다음 키워드로 넘어가는 길이에요. 이게 없으면 생성 화면에
+ * 이전 키워드가 남아 있어서 같은 원고를 또 만들게 돼요.
+ */
+function startNew() {
+  ['f-keyword', 'f-brand', 'f-product', 'f-request', 'f-avoid'].forEach((id) => {
+    const field = el(id);
+
+    if (field) {
+      field.value = '';
+    }
+  });
+
+  state.keepSet = null;
+  state.setMode = 'new';
+  show('write');
+  renderSetZone();
+  el('f-keyword')?.focus();
+  toast('새 원고를 시작해요. 키워드를 넣어 주세요');
+}
+
+/**
  * Draw the bottom action bar for the current screen.
  */
 function renderDock() {
@@ -280,13 +328,15 @@ function renderDock() {
   if (state.view === 'write') {
     const m = model(store.settings.model);
 
+    renderCarry();
+
     inner.innerHTML =
       `<p>${m ? `${m.name} · 원고 1건 ${wonDoc(m)}원` : ''}</p>` +
       `<button class="btn pri lg" id="btn-generate" type="button"${state.busy ? ' disabled' : ''}>${state.busy ? '쓰는 중…' : '원고 만들기'}</button>`;
     el('btn-generate').addEventListener('click', generate);
   } else if (state.view === 'result' && doc()) {
     inner.innerHTML =
-      `<p>${pending ? `고칠 곳 ${pending}군데를 적었어요` : '고칠 곳을 적거나 글을 두 번 눌러 보세요'}</p>` +
+      `<p>${pending ? `고칠 곳 ${pending}군데를 적었어요` : '다 됐으면 맨 아래에서 내보내거나 새로 시작하세요'}</p>` +
       '<button class="btn" type="button" data-go="export">내보내기</button>' +
       `<button class="btn pri" id="btn-revise" type="button"${state.busy ? ' disabled' : ''}>${state.busy ? '고치는 중…' : '다음 버전 만들기'}</button>`;
     el('btn-revise').addEventListener('click', revise);
@@ -649,6 +699,7 @@ function renderResult() {
       '<div class="card"><p class="desc" style="margin:0">아직 만든 원고가 없어요. 생성 화면에서 키워드를 넣고 원고를 만들어 주세요.</p></div>';
     el('comment-pieces').innerHTML = '';
     el('import-banner').innerHTML = '';
+    el('result-done').innerHTML = '';
 
     return;
   }
@@ -755,6 +806,17 @@ function renderResult() {
       toast(on ? '이 줄에 사진 자리를 넣었어요' : '사진 자리를 뺐어요');
     });
   });
+
+  el('result-done').innerHTML = `<div class="done">
+    <b>이 원고는 여기까지예요</b>
+    <p>고칠 게 없으면 내보내거나, 다음 키워드로 새 원고를 시작하세요.</p>
+    <div class="act">
+      <button class="btn" type="button" data-go="export">내보내기</button>
+      <button class="btn" type="button" data-go="publish">카페에 올리기</button>
+      <button class="btn pri" type="button" id="btn-new">새 키워드로 시작</button>
+    </div>
+  </div>`;
+  el('btn-new').addEventListener('click', startNew);
 
   el('save-state').textContent = '저장됨';
 }

@@ -1678,3 +1678,43 @@ th {
   background: var(--blue-bg);
   color: var(--blue);
 }
+
+/* ---------- 원고를 다 본 뒤 ---------- */
+
+/*
+ * 원고를 다 읽고 나면 다음에 뭘 눌러야 할지 알려주는 자리예요.
+ * 이게 없으면 새 키워드로 넘어가는 길을 못 찾아요.
+ */
+.done {
+  margin-top: 18px;
+  padding: 22px 20px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-card);
+  text-align: center;
+}
+
+.done b {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.done p {
+  margin: 6px 0 16px;
+  color: var(--t600);
+  font-size: 14px;
+}
+
+.done .act {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .done .act .btn {
+    flex: 1 1 100%;
+  }
+}
