@@ -12,7 +12,7 @@ import { generatePrompt, revisePrompt, systemPrompt } from './lib/prompts.js';
  * @yields {Record<string, any>} Stream event.
  */
 async function* run(body, user) {
-  const system = systemPrompt(body.options?.mobileShape !== false);
+  const system = systemPrompt(body.options?.mobileShape !== false, body.options?.tone);
   let text = '';
 
   yield { type: 'start', model: body.modelId };

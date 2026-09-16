@@ -99,6 +99,51 @@ const doc = () => store.docs.find((d) => d.id === state.docId) ?? null;
  *
  */
 const version = () => doc()?.versions[state.version] ?? null;
+
+/**
+ * Take one version with the hand edits already merged in.
+ * 화면뿐 아니라 복사·내보내기·다시 쓰기도 전부 이걸 씁니다.
+ * @param {Record<string, any>} target - Document.
+ * @param {number} [at] - Version index. Defaults to the last version.
+ * @returns {Record<string, any> | null} Version with edits applied.
+ */
+function applied(target, at) {
+  if (!target || !target.versions?.length) {
+    return null;
+  }
+
+  const index = at ?? target.versions.length - 1;
+  const v = target.versions[index];
+
+  if (!v) {
+    return null;
+  }
+
+  const edits = target.edits ?? {};
+  /**
+   * @param key
+   * @param fallback
+   */
+  const pick = (key, fallback) => edits[`v${index}.${key}`] ?? fallback;
+
+  return {
+    ...v,
+    title: pick('title', v.title),
+    body: pick('body', v.body),
+    comments: (v.comments ?? []).map((comment, i) => {
+      const n = comment.index ?? i + 1;
+
+      return {
+        ...comment,
+        thread: (comment.thread ?? []).map((turn, position) => ({
+          ...turn,
+          text: pick(`c${n}-${position}`, turn.text),
+        })),
+      };
+    }),
+  };
+}
+
 /**
  *
  */
@@ -522,7 +567,7 @@ async function revise() {
         modelId: store.settings.model,
         keys: store.settings.keys,
         options: target,
-        manuscript: current,
+        manuscript: applied(target, state.version),
         instructions: Object.fromEntries(asked),
       },
       (event) => {
@@ -1204,7 +1249,7 @@ function renderExport() {
 
       if (first) {
         copy(
-          toText(first.versions[first.versions.length - 1], button.dataset.copy),
+          toText(applied(first), button.dataset.copy),
           labels[button.dataset.copy],
         );
       }
@@ -1223,14 +1268,14 @@ function runExport() {
   }
 
   if (state.way === 'txt') {
-    picked.forEach((d) => download(`${d.keyword}.txt`, toText(d.versions[d.versions.length - 1])));
+    picked.forEach((d) => download(`${d.keyword}.txt`, toText(applied(d))));
     toast(`txt ${picked.length}개를 저장했어요`);
 
     return;
   }
 
   if (state.way === 'copy') {
-    copy(toText(picked[0].versions[picked[0].versions.length - 1]), '전체');
+    copy(toText(applied(picked[0])), '전체');
 
     return;
   }
@@ -1266,7 +1311,7 @@ async function exportToDocs(picked) {
       title,
       picked.map((d) => ({
         keyword: d.keyword,
-        text: toText(d.versions[d.versions.length - 1]),
+        text: toText(applied(d)),
       })),
     );
 
@@ -1295,7 +1340,7 @@ async function exportToDocs(picked) {
  */
 function toRich(picked) {
   const parts = picked.map((d) => {
-    const body = toText(d.versions[d.versions.length - 1]);
+    const body = toText(applied(d));
 
     const paragraphs = body
       .split('\n')
@@ -1308,7 +1353,7 @@ function toRich(picked) {
   return {
     html: `<meta charset="utf-8">${parts.join('<p><br></p>')}`,
     text: picked
-      .map((d) => `${d.keyword}\n\n${toText(d.versions[d.versions.length - 1])}`)
+      .map((d) => `${d.keyword}\n\n${toText(applied(d))}`)
       .join('\n\n\n'),
   };
 }
@@ -1435,7 +1480,7 @@ function renderPublish() {
   ).join('');
 
   const target = store.docs.find((d) => d.id === state.upPick) ?? store.docs[0];
-  const v = target?.versions[target.versions.length - 1];
+  const v = applied(target);
 
   el('step-list').innerHTML = v
     ? buildSteps(v)
