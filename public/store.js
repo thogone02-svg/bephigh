@@ -47,13 +47,22 @@ const openDb = () => {
   opening = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
 
+    /**
+     *
+     */
     request.onupgradeneeded = () => {
       if (!request.result.objectStoreNames.contains(DB_STORE)) {
         request.result.createObjectStore(DB_STORE);
       }
     };
 
+    /**
+     *
+     */
     request.onsuccess = () => resolve(request.result);
+    /**
+     *
+     */
     request.onerror = () => reject(request.error ?? new Error('저장소를 열지 못했어요.'));
   });
 
@@ -73,8 +82,17 @@ const tx = async (mode, run) => {
     const transaction = db.transaction(DB_STORE, mode);
     const request = run(transaction.objectStore(DB_STORE));
 
+    /**
+     *
+     */
     request.onsuccess = () => resolve(request.result);
+    /**
+     *
+     */
     transaction.onerror = () => reject(transaction.error ?? request.error);
+    /**
+     *
+     */
     transaction.onabort = () => reject(transaction.error ?? new Error('저장이 막혔어요.'));
   });
 };
@@ -138,6 +156,9 @@ export const load = async () => {
 
 let queued = null;
 let writing = false;
+/**
+ *
+ */
 let onTrouble = () => {};
 
 /**

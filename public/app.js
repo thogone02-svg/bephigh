@@ -1083,6 +1083,9 @@ function bindPicker(searchId) {
   }
 
   // 결과만 다시 그려요. 입력칸은 그대로 두어야 한글 조합이 안 끊깁니다.
+  /**
+   *
+   */
   const refresh = () => {
     state.pickQuery = search.value;
     el(`${searchId}-recs`).innerHTML = pickerRecs();
@@ -1120,39 +1123,55 @@ async function addFiles(files) {
 
       const data = await response.json();
 
-      return { name, manuscript: data.manuscript };
+      return { name, manuscripts: data.manuscripts ?? [data.manuscript] };
     }),
   );
 
   let added = 0;
   let skipped = 0;
+  let split = 0;
 
-  results.forEach(({ name, manuscript }) => {
-    const keyword = name.replace(/\.[^.]+$/, '').trim();
+  results.forEach(({ name, manuscripts }) => {
+    const base = name.replace(/\.[^.]+$/, '').trim();
 
-    if (!manuscript.title || !manuscript.comments.length) {
-      skipped += 1;
-
-      return;
+    if (manuscripts.length > 1) {
+      split += 1;
     }
 
-    store.library.unshift({
-      id: uid('lib'),
-      keyword,
-      fileName: name,
-      title: manuscript.title,
-      body: manuscript.body,
-      comments: manuscript.comments,
-      learn: store.library.length < 3,
-      uses: 0,
-      addedAt: Date.now(),
+    manuscripts.forEach((manuscript, order) => {
+      if (!manuscript?.title || !manuscript.comments.length) {
+        skipped += 1;
+
+        return;
+      }
+
+      // 한 파일에 여러 편이면 파일 이름만으로는 구분이 안 되니 제목을 씁니다.
+      const keyword = manuscripts.length > 1 ? manuscript.title.slice(0, 40) : base;
+
+      store.library.unshift({
+        id: uid('lib'),
+        keyword,
+        fileName: manuscripts.length > 1 ? `${base} (${order + 1})` : name,
+        title: manuscript.title,
+        body: manuscript.body,
+        comments: manuscript.comments,
+        learn: store.library.length < 3,
+        uses: 0,
+        addedAt: Date.now(),
+      });
+      added += 1;
     });
-    added += 1;
   });
 
   persist();
   renderLibrary();
-  toast(`${added}개를 보관함에 넣었어요${skipped ? ` · ${skipped}개는 댓글을 못 찾았어요` : ''}`);
+
+  const notes = [
+    split ? `파일 ${split}개에 원고가 여러 편이라 나눠 넣었어요` : '',
+    skipped ? `${skipped}개는 댓글을 못 찾았어요` : '',
+  ].filter(Boolean);
+
+  toast(`${added}개를 보관함에 넣었어요${notes.length ? ` · ${notes.join(' · ')}` : ''}`);
 }
 
 /* ---------------- 카페 글 가져오기 ---------------- */

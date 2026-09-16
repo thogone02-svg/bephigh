@@ -1,5 +1,5 @@
 import { fail, json, readBody, sse } from './lib/http.js';
-import { parseManuscript, renderManuscript } from './lib/manuscript.js';
+import { parseManuscript, parseManuscripts, renderManuscript } from './lib/manuscript.js';
 import { fetchCafeArticle } from './lib/naver-cafe.js';
 import { MODELS, streamCompletion } from './lib/providers.js';
 import { generatePrompt, revisePrompt, systemPrompt } from './lib/prompts.js';
@@ -76,8 +76,11 @@ const revise = async (request) => {
  */
 const parse = async (request) => {
   const body = await readBody(request);
+  const found = parseManuscripts(String(body.text ?? ''));
 
-  return json({ manuscript: parseManuscript(String(body.text ?? '')) });
+  // 파일 하나에 원고가 여러 편 들어 있는 경우가 많아서 전부 돌려줍니다.
+  // manuscript 는 예전 호출부를 위해 남겨 둡니다.
+  return json({ manuscripts: found, manuscript: found[0] ?? parseManuscript('') });
 };
 
 /**

@@ -21,14 +21,32 @@ const clean = (value) =>
     .trimEnd();
 
 /**
- * Parse a manuscript file into title, body and comment threads.
+ * Give every comment its own number.
+ *
+ * 파일에 같은 번호가 두 번 나오면 화면에 댓글1이 두 개 보여서 어느 게 어느
+ * 세트인지 알 수 없어요. 겹치는 번호가 있으면 처음부터 다시 매깁니다.
+ * @param {{ index: number, thread: any[] }[]} comments - Parsed comments.
+ * @returns {{ index: number, thread: any[] }[]} Comments with unique numbers.
+ */
+const renumber = (comments) => {
+  const numbers = comments.map((comment, order) => comment.index || order + 1);
+  const clashed = new Set(numbers).size !== numbers.length;
+
+  return comments.map((comment, order) => ({
+    ...comment,
+    index: clashed ? order + 1 : numbers[order],
+  }));
+};
+
+/**
+ * Parse one manuscript into title, body and comment threads.
  * Handles both `제목:` prefixed titles and files whose first line is the title,
  * and both `└` and `ㄴ` reply marks, inline or on their own line.
- * @param {string} raw - File contents.
+ * @param {string} raw - One manuscript.
  * @returns {{ title: string, body: string, comments: { index: number,
  *   thread: { by: 'commenter' | 'author', text: string }[] }[] }} Structured manuscript.
  */
-export const parseManuscript = (raw) => {
+const parseOne = (raw) => {
   const lines = String(raw ?? '')
     .split(/\r?\n/)
     .map(clean);
@@ -119,11 +137,60 @@ export const parseManuscript = (raw) => {
       .join('\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim(),
-    comments: comments
-      .filter((comment) => comment.thread.length)
-      .map((comment, order) => ({ ...comment, index: comment.index || order + 1 })),
+    comments: renumber(comments.filter((comment) => comment.thread.length)),
   };
 };
+
+/** A `제목:` line partway through a file starts the next manuscript. */
+const TITLE_LINE = /^\s*제목\s*[:：]\s*\S/;
+
+/**
+ * Cut a file into the manuscripts it holds.
+ *
+ * 구글 문서에서 받아온 파일에는 원고가 여러 편 들어 있는 경우가 많아요.
+ * 그냥 읽으면 두 번째 원고가 앞 원고의 댓글 안으로 딸려 들어갑니다.
+ * @param {string} raw - File contents.
+ * @returns {string[]} One string per manuscript.
+ */
+export const splitManuscripts = (raw) => {
+  /** @type {string[][]} */
+  const chunks = [];
+  /** @type {string[]} */
+  let current = [];
+
+  String(raw ?? '')
+    .split(/\r?\n/)
+    .forEach((line) => {
+      // 앞에 이미 내용이 있을 때만 새 원고로 봅니다. 파일 첫 줄은 경계가 아니에요.
+      if (TITLE_LINE.test(line) && current.some((earlier) => earlier.trim())) {
+        chunks.push(current);
+        current = [];
+      }
+
+      current.push(line);
+    });
+
+  chunks.push(current);
+
+  return chunks.map((chunk) => chunk.join('\n')).filter((chunk) => chunk.trim());
+};
+
+/**
+ * Read every manuscript a file holds.
+ * @param {string} raw - File contents.
+ * @returns {ReturnType<typeof parseOne>[]} One entry per manuscript.
+ */
+export const parseManuscripts = (raw) =>
+  splitManuscripts(raw)
+    .map(parseOne)
+    .filter((entry) => entry.title && (entry.body || entry.comments.length));
+
+/**
+ * Read the first manuscript a file holds.
+ * @param {string} raw - File contents.
+ * @returns {ReturnType<typeof parseOne>} Structured manuscript.
+ */
+export const parseManuscript = (raw) => parseManuscripts(raw)[0] ?? parseOne(raw);
 
 /**
  * Render a manuscript back into the plain text that gets copied or saved.
