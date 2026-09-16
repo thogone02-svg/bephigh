@@ -1,5 +1,6 @@
 import { fail, json, readBody, sse } from './lib/http.js';
 import { parseManuscript, renderManuscript } from './lib/manuscript.js';
+import { fetchCafeArticle } from './lib/naver-cafe.js';
 import { MODELS, streamCompletion } from './lib/providers.js';
 import { generatePrompt, revisePrompt, systemPrompt } from './lib/prompts.js';
 
@@ -67,7 +68,28 @@ const parse = async (request) => {
   return json({ manuscript: parseManuscript(String(body.text ?? '')) });
 };
 
+/**
+ * Handle `POST /api/cafe/fetch` — read a public cafe article.
+ * @param {Request} request - Incoming request.
+ * @returns {Promise<Response>} JSON response.
+ */
+const cafeFetch = async (request) => {
+  const body = await readBody(request);
+  const url = String(body.url ?? '').trim();
+
+  if (!url) {
+    return fail('카페 글 주소를 넣어 주세요.');
+  }
+
+  try {
+    return json({ article: await fetchCafeArticle(url) });
+  } catch (error) {
+    return fail(/** @type {Error} */ (error).message, 422);
+  }
+};
+
 const ROUTES = {
+  'POST /api/cafe/fetch': cafeFetch,
   'POST /api/generate': generate,
   'POST /api/revise': revise,
   'POST /api/parse': parse,

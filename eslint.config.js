@@ -5,7 +5,8 @@ import globals from 'globals';
 
 export default [
   // Ignore files (migrated from .eslintrc.yaml ignorePatterns)
-  { ignores: ['**/*.cjs'] },
+  // `collect.js` is a bookmarklet snippet that runs inlined on cafe.naver.com, not app code.
+  { ignores: ['**/*.cjs', 'public/collect.js'] },
 
   // Airbnb base rules (equivalent to eslint-config-airbnb-base), applied to all files
   ...airbnbConfigs.base.recommended.map(({ files: _f, ...c }) => c),

@@ -989,6 +989,114 @@ async function addFiles(files) {
   toast(`${added}개를 보관함에 넣었어요${skipped ? ` · ${skipped}개는 댓글을 못 찾았어요` : ''}`);
 }
 
+/* ---------------- 카페 글 가져오기 ---------------- */
+
+/**
+ * Put a collected article into the library.
+ * @param {Record<string, any>} article - Collected article.
+ * @param {string} [keyword] - Keyword override.
+ * @returns {boolean} Whether it was added.
+ */
+function addToLibrary(article, keyword) {
+  if (!article?.title || !article.comments?.length) {
+    toast('제목이나 댓글을 못 찾았어요. 붙여넣은 내용을 확인해 주세요.');
+
+    return false;
+  }
+
+  store.library.unshift({
+    id: uid('lib'),
+    keyword: (keyword || article.keyword || article.title).trim().slice(0, 60),
+    fileName: article.source ?? '',
+    title: article.title,
+    body: article.body,
+    comments: article.comments,
+    learn: store.library.length < 3,
+    uses: 0,
+    addedAt: Date.now(),
+  });
+  persist();
+  renderLibrary();
+
+  return true;
+}
+
+/**
+ * Fetch a cafe article by its address.
+ */
+async function fetchCafe() {
+  const url = el('f-url').value.trim();
+  const box = el('cafe-result');
+
+  if (!url) {
+    toast('카페 글 주소를 넣어 주세요');
+
+    return;
+  }
+
+  box.innerHTML = '<p class="desc" style="margin:0">가져오는 중이에요…</p>';
+
+  try {
+    const response = await fetch('/api/cafe/fetch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error ?? '가져오지 못했어요.');
+    }
+
+    const { article } = data;
+
+    box.innerHTML = `<div class="banner" style="background:var(--surface-2);color:var(--t700)">
+      ${icon('check', 18)}
+      <span class="grow"><b>${esc(article.title)}</b><br />${esc(article.cafeName)} · 댓글 ${article.comments.length}개</span>
+      <button class="btn sm pri" type="button" id="btn-keep-cafe">보관함에 넣기</button>
+    </div>`;
+    el('btn-keep-cafe').addEventListener('click', () => {
+      if (addToLibrary(article)) {
+        box.innerHTML = '';
+        el('f-url').value = '';
+        toast('보관함에 넣었어요');
+      }
+    });
+  } catch (error) {
+    box.innerHTML = `<div class="banner" style="background:var(--yellow-bg);color:var(--yellow)">
+      <span class="grow">${esc(error.message)}</span></div>`;
+    el('cafe-fallback').hidden = false;
+    el('btn-fallback').textContent = '접기';
+  }
+}
+
+/**
+ * Build the bookmarklet address from the collector source.
+ */
+async function buildBookmarklet() {
+  const link = el('bookmarklet');
+
+  try {
+    const source = await (await fetch('/collect.js')).text();
+
+    const compact = source
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n')
+      .map((line) => line.trim())
+      .join(' ');
+
+    link.href = `javascript:${encodeURIComponent(compact)}`;
+  } catch {
+    link.removeAttribute('href');
+  }
+
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    toast('이 버튼을 즐겨찾기 바로 끌어다 놓으세요');
+  });
+}
+
 /* ---------------- 내보내기 ---------------- */
 
 /**
@@ -1285,6 +1393,37 @@ async function start() {
       bindPicker('result-search', 'picker-zone');
     }
   });
+  el('btn-fetch').addEventListener('click', fetchCafe);
+  el('btn-fallback').addEventListener('click', () => {
+    const zone = el('cafe-fallback');
+
+    zone.hidden = !zone.hidden;
+    el('btn-fallback').textContent = zone.hidden ? '방법 보기' : '접기';
+  });
+  el('btn-paste').addEventListener('click', async () => {
+    const text = el('f-paste').value.trim();
+
+    if (!text) {
+      toast('붙여넣은 내용이 없어요');
+
+      return;
+    }
+
+    const parsed = await fetch('/api/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+
+    const data = await parsed.json();
+
+    if (addToLibrary(data.manuscript, el('f-paste-keyword').value.trim())) {
+      el('f-paste').value = '';
+      el('f-paste-keyword').value = '';
+      toast('보관함에 넣었어요');
+    }
+  });
+  buildBookmarklet();
   el('btn-regen').addEventListener('click', () => {
     const target = doc();
 

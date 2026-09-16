@@ -278,11 +278,9 @@
             <div class="card">
               <h3>
                 카페 글 가져오기
-                <span class="sub"
-                  >잘 나간 카페 글을 보관함에 넣어 두면 어투를 배우고 댓글도 재사용해요</span
-                >
+                <span class="sub">잘 나간 카페 글을 넣어 두면 어투를 배우고 댓글도 재사용해요</span>
               </h3>
-              <div class="field">
+              <div class="pfoot" style="margin-top: 0">
                 <input
                   id="f-url"
                   class="input"
@@ -290,35 +288,60 @@
                   placeholder="카페 글 주소를 붙여넣어 주세요"
                   aria-label="카페 글 주소"
                 />
-              </div>
-              <div class="pfoot" style="margin-top: 12px">
                 <button class="btn pri" id="btn-fetch" type="button">가져오기</button>
               </div>
+              <div id="cafe-result" style="margin-top: 12px"></div>
 
               <div
-                class="row"
-                style="margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 16px"
+                style="margin-top: 16px; border-top: 1px solid var(--line-soft); padding-top: 14px"
               >
-                <span class="txt">
-                  <b>열람용 계정</b>
-                  <span>멤버만 볼 수 있는 글을 읽으려면 계정 1개가 필요해요</span>
-                </span>
-                <button class="btn sm" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
-                  등록하기
-                </button>
-              </div>
-
-              <div class="row">
-                <span class="txt">
-                  <b>브라우저에 수집 버튼 넣기</b>
-                  <span>
-                    즐겨찾기에 버튼을 하나 만들어 둬요. 카페 글을 열어 둔 채로 누르면 그 글이 이
-                    보관함으로 들어와요. 주소만으로 안 읽히는 글에 써요.
+                <div class="row" style="padding-top: 0">
+                  <span class="txt">
+                    <b>주소만으로 안 읽히면</b>
+                    <span>멤버 공개 글은 아래 두 가지로 가져와요</span>
                   </span>
-                </span>
-                <button class="btn sm" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
-                  만들기
-                </button>
+                  <button class="btn sm" id="btn-fallback" type="button">방법 보기</button>
+                </div>
+                <div id="cafe-fallback" hidden>
+                  <div class="way" style="margin-top: 10px">
+                    <span class="mark">1</span>
+                    <div>
+                      <b>수집 버튼 쓰기</b>
+                      <p>
+                        아래 버튼을 즐겨찾기 바에 <b>끌어다 놓으세요</b>. 카페 글을 연 채로 누르면
+                        제목·본문·댓글이 복사돼요. 내 계정으로 읽으니 멤버 공개 글도 됩니다.
+                      </p>
+                      <p style="margin-top: 8px">
+                        <a class="btn sm" id="bookmarklet" href="#">카페 수집</a>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="way fallback" style="margin-top: 8px">
+                    <span class="mark">2</span>
+                    <div>
+                      <b>직접 붙여넣기</b>
+                      <p>복사한 내용을 그대로 붙여넣어 주세요.</p>
+                      <div class="field" style="margin-top: 10px">
+                        <textarea
+                          id="f-paste"
+                          class="area"
+                          rows="6"
+                          placeholder="제목: …&#10;&#10;본문…&#10;&#10;댓글1&#10;…"
+                        ></textarea>
+                      </div>
+                      <div class="pfoot">
+                        <input
+                          id="f-paste-keyword"
+                          class="input"
+                          type="text"
+                          placeholder="키워드 (비우면 제목에서 가져와요)"
+                          style="flex: 1 1 200px"
+                        />
+                        <button class="btn pri" id="btn-paste" type="button">보관함에 넣기</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>

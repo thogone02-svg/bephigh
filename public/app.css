@@ -1434,3 +1434,48 @@ th {
     transition: none !important;
   }
 }
+
+/* ---------- 단계 안내 (카페 수집 대안) ---------- */
+
+.way {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.way .mark {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.way.fallback .mark {
+  background: var(--line);
+  color: var(--t600);
+}
+
+.way b {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.way p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--t600);
+}
+
+.way a.btn {
+  text-decoration: none;
+  cursor: grab;
+}

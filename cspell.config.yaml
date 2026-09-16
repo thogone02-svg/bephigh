@@ -19,9 +19,14 @@ ignoreRegExpList:
   - "/[\\uAC00-\\uD7A3\\u3131-\\u318E]+/gu"
 words:
   - Anthropic
+  - apis
+  - articleid
+  - ArticleRead
   - Astra
   - bephigh
   - checkline
+  - clubid
+  - cluburl
   - cooldown
   - costsub
   - Cpath
@@ -53,6 +58,7 @@ words:
   - libtitle
   - lolkor
   - Luna
+  - mycafe
   - nabi
   - needfix
   - Noto
@@ -65,6 +71,7 @@ words:
   - picklist
   - picksearch
   - PKCE
+  - postView
   - Pretendard
   - ptext
   - ptitle
