@@ -106,20 +106,63 @@ const CALLS = {
    * @param {number} params.maxTokens - Output cap.
    * @returns {Promise<Response>} Streaming response.
    */
-  openai: ({ apiKey, model, system, user, maxTokens }) =>
-    fetch('https://api.openai.com/v1/chat/completions', {
+  openai: async ({ apiKey, model, system, user, maxTokens }) => {
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` };
+
+    /**
+     * @param tokenField
+     */
+    const chat = (tokenField) =>
+      fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          stream: true,
+          [tokenField]: maxTokens,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+          ],
+        }),
+      });
+
+    let response = await chat('max_completion_tokens');
+
+    if (response.ok) {
+      return response;
+    }
+
+    // Older models take `max_tokens` instead; newer ones only answer on /v1/responses.
+    const detail = await response
+      .clone()
+      .text()
+      .catch(() => '');
+
+    if (/max_completion_tokens|max_tokens/i.test(detail)) {
+      response = await chat('max_tokens');
+
+      if (response.ok) {
+        return response;
+      }
+    }
+
+    const viaResponses = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      headers,
       body: JSON.stringify({
         model,
         stream: true,
-        max_completion_tokens: maxTokens,
-        messages: [
+        max_output_tokens: maxTokens,
+        input: [
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
       }),
-    }),
+    });
+
+    return viaResponses.ok ? viaResponses : response;
+  },
 
   /**
    * Start a streaming completion on Google Gemini.
@@ -179,7 +222,13 @@ const PICKERS = {
    * @param {any} event - Parsed event.
    * @returns {string} Text delta.
    */
-  openai: (event) => event?.choices?.[0]?.delta?.content ?? '',
+  openai: (event) => {
+    if (event?.type === 'response.output_text.delta') {
+      return event.delta ?? '';
+    }
+
+    return event?.choices?.[0]?.delta?.content ?? '';
+  },
 
   /**
    * Pull the text delta out of a Gemini stream event.
