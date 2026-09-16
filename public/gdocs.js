@@ -32,6 +32,17 @@ const loadGis = () =>
   });
 
 /**
+ * Fetch the Google login script ahead of time.
+ *
+ * 처음 내보낼 때 이 스크립트를 그 자리에서 받아오면, 다 받고 나서야 동의 창을
+ * 띄우게 돼요. 그때는 브라우저가 "사용자가 누른 것"으로 안 쳐서 창이 막힙니다.
+ * 그래서 앱을 열 때 미리 받아 둡니다.
+ */
+export const preloadGis = () => {
+  loadGis().catch(() => {});
+};
+
+/**
  * Ask Google for an access token, showing the consent window when needed.
  * @param {string} clientId - Google OAuth client id.
  * @returns {Promise<string>} Access token.
@@ -87,8 +98,18 @@ const docsApi = async (path, body) => {
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
 
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('구글 권한이 없어요. 다시 연결해 주세요.');
+    if (response.status === 401) {
+      throw new Error('구글 연결이 풀렸어요. 한 번 더 눌러 주세요.');
+    }
+
+    if (response.status === 403) {
+      // 대부분 클라우드 프로젝트에서 Docs API를 안 켰거나, 테스트 사용자에
+      // 계정이 안 들어간 경우예요. 구글이 준 설명을 그대로 보여줘야 찾습니다.
+      const why = /has not been used|disabled/i.test(detail)
+        ? 'Google Cloud에서 Google Docs API를 사용 설정해 주세요.'
+        : '구글 인증 플랫폼 「대상」에 이 계정을 테스트 사용자로 넣어 주세요.';
+
+      throw new Error(`구글이 막았어요. ${why}`);
     }
 
     throw new Error(`구글 문서 오류(${response.status}) ${detail.slice(0, 160)}`);

@@ -1,4 +1,4 @@
-import { connect, createDoc } from './gdocs.js';
+import { connect, createDoc, preloadGis } from './gdocs.js';
 import {
   download,
   emptyState,
@@ -504,7 +504,7 @@ function renderSetZone() {
   }
 
   zone.innerHTML = pickerHtml('set-search');
-  bindPicker('set-search', 'set-zone');
+  bindPicker('set-search');
 }
 
 /**
@@ -973,7 +973,7 @@ function renderLibrary() {
  * @param {string} searchId - Id for the search input.
  * @returns {string} Markup.
  */
-function pickerHtml(searchId) {
+function pickerRecs() {
   const keyword = (el('f-keyword')?.value ?? '').trim();
   const words = keyword.split(/\s+/).filter(Boolean);
 
@@ -997,47 +997,67 @@ function pickerHtml(searchId) {
     .sort((a, b) => b.score - a.score)
     .slice(0, 3);
 
+  if (!recs.length || state.pickQuery) {
+    return '';
+  }
+
+  return `<p class="desc" style="margin:0 0 8px">추천</p><div class="rows" style="margin-bottom:6px">
+    ${recs
+      .map(
+        (r) => `<div class="row">
+          <span class="txt"><b>${esc(r.item.keyword)} <span class="chip blue">${r.reason}</span></b>
+          <span>댓글 ${r.item.comments.length}개</span></span>
+          <button class="btn sm pri" type="button" data-use="${r.item.id}">가져오기</button>
+        </div>`,
+      )
+      .join('')}
+  </div>`;
+}
+
+/**
+ * Build the matching rows for the comment-set picker.
+ * @returns {string} Markup.
+ */
+function pickerList() {
   const list = libList(state.pickQuery, 'recent');
   const shown = state.pickQuery || state.showAll ? list : [];
 
+  if (!shown.length) {
+    return emptyPick();
+  }
+
+  return `<div class="rows" style="max-height:290px;overflow-y:auto">
+    ${shown
+      .map(
+        (i) => `<div class="row">
+          <span class="txt"><b>${esc(i.keyword)}</b><span>댓글 ${i.comments.length}개</span></span>
+          <button class="btn sm" type="button" data-use="${i.id}">가져오기</button>
+        </div>`,
+      )
+      .join('')}
+  </div>`;
+}
+
+/**
+ * Build the comment-set picker, recommendations first.
+ *
+ * 검색창은 여기서 한 번만 그리고 다시 만들지 않아요. 글자를 칠 때마다 입력칸을
+ * 새로 그리면 한글이 조합되는 중에 끊겨서 자모가 따로 입력돼요.
+ * @param {string} searchId - Id for the search input.
+ * @returns {string} Markup.
+ */
+function pickerHtml(searchId) {
   if (!store.library.length) {
     return '<div class="card" style="margin-top:10px"><div class="empty">보관함이 비어 있어요. 먼저 원고를 올려 주세요.</div></div>';
   }
 
   return `<div class="card" style="margin-top:10px">
-    ${
-      recs.length && !state.pickQuery
-        ? `<p class="desc" style="margin:0 0 8px">추천</p><div class="rows" style="margin-bottom:6px">
-          ${recs
-            .map(
-              (r) => `<div class="row">
-                <span class="txt"><b>${esc(r.item.keyword)} <span class="chip blue">${r.reason}</span></b>
-                <span>댓글 ${r.item.comments.length}개</span></span>
-                <button class="btn sm pri" type="button" data-use="${r.item.id}">가져오기</button>
-              </div>`,
-            )
-            .join('')}
-        </div>`
-        : ''
-    }
+    <div id="${searchId}-recs">${pickerRecs()}</div>
     <label class="searchbar" style="margin:10px 0">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input type="search" id="${searchId}" value="${esc(state.pickQuery)}" placeholder="다른 키워드로 찾기" aria-label="원고 찾기" />
     </label>
-    ${
-      shown.length
-        ? `<div class="rows" style="max-height:290px;overflow-y:auto">
-            ${shown
-              .map(
-                (i) => `<div class="row">
-                  <span class="txt"><b>${esc(i.keyword)}</b><span>댓글 ${i.comments.length}개</span></span>
-                  <button class="btn sm" type="button" data-use="${i.id}">가져오기</button>
-                </div>`,
-              )
-              .join('')}
-          </div>`
-        : emptyPick()
-    }
+    <div id="${searchId}-list">${pickerList()}</div>
   </div>`;
 }
 
@@ -1054,21 +1074,23 @@ function emptyPick() {
 /**
  * Wire up the picker search box.
  * @param {string} searchId - Search input id.
- * @param {string} zoneId - Container id.
  */
-function bindPicker(searchId, zoneId) {
+function bindPicker(searchId) {
   const search = el(searchId);
 
   if (!search) {
     return;
   }
 
-  search.addEventListener('input', () => {
+  // 결과만 다시 그려요. 입력칸은 그대로 두어야 한글 조합이 안 끊깁니다.
+  const refresh = () => {
     state.pickQuery = search.value;
-    el(zoneId).innerHTML = pickerHtml(searchId);
-    bindPicker(searchId, zoneId);
-    el(searchId).focus();
-  });
+    el(`${searchId}-recs`).innerHTML = pickerRecs();
+    el(`${searchId}-list`).innerHTML = pickerList();
+  };
+
+  search.addEventListener('input', refresh);
+  search.addEventListener('compositionend', refresh);
 }
 
 /**
@@ -2025,7 +2047,7 @@ document.addEventListener('click', (event) => {
   if (t.dataset.showall) {
     state.showAll = true;
     el('set-zone').innerHTML = pickerHtml('set-search');
-    bindPicker('set-search', 'set-zone');
+    bindPicker('set-search');
   }
 
   if (t.dataset.pick) {
@@ -2072,6 +2094,10 @@ document.addEventListener('click', (event) => {
 async function start() {
   Object.assign(store, await load());
 
+  if (store.settings.googleClientId) {
+    preloadGis();
+  }
+
   onSaveError((error) => {
     toast(`저장하지 못했어요. ${error.message ?? '설정에서 백업을 내려받아 두세요.'}`);
   });
@@ -2110,7 +2136,7 @@ async function start() {
     el('picker-zone').innerHTML = state.pickOpen ? pickerHtml('result-search') : '';
 
     if (state.pickOpen) {
-      bindPicker('result-search', 'picker-zone');
+      bindPicker('result-search');
     }
   });
   el('btn-fetch').addEventListener('click', fetchCafe);
