@@ -80,8 +80,27 @@ export default [
           tabWidth: 2,
           ignoreUrls: true,
           ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+          ignoreRegExpLiterals: true,
         },
       ],
+      // Streaming (async generators, for-await-of) is the natural shape for Workers code.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'WithStatement',
+          message:
+            '`with` is disallowed in strict mode because it makes code impossible to predict.',
+        },
+        {
+          selector: 'LabeledStatement',
+          message:
+            'Labels are a form of GOTO; using them makes code confusing and hard to maintain.',
+        },
+      ],
+      'jsdoc/reject-any-type': 'off',
+      // Function declarations are hoisted, so render helpers may be defined below their use.
+      'no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
       'no-param-reassign': 'off',
       'no-underscore-dangle': 'off',
       // https://github.com/airbnb/javascript/issues/1660#issuecomment-353018874 + small tweaks

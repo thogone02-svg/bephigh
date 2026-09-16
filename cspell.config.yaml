@@ -28,9 +28,11 @@ words:
   - Csvg
   - CVEs
   - Decap
+  - doclink
   - docpick
   - doctab
   - doctabs
+  - doctitle
   - edithint
   - esbuild
   - flymap
@@ -54,6 +56,7 @@ words:
   - nabi
   - needfix
   - Noto
+  - nums
   - oprow
   - parisienlook
   - pfoot

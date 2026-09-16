@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <title>나비효과플랜 원고 작업실</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    />
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="rail">
+        <div class="brand">
+          <span class="mark">나</span>
+          <b>나비효과플랜</b>
+        </div>
+        <nav class="nav" id="nav-desktop" aria-label="작업 단계"></nav>
+        <div class="rail-foot">
+          <button class="railset" type="button" data-go="settings" id="rail-settings"></button>
+          <span>v1.0</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <h1 id="view-name">결과</h1>
+          <span class="grow"></span>
+          <button
+            class="iconbtn"
+            type="button"
+            data-go="settings"
+            aria-label="설정"
+            id="btn-settings"
+          ></button>
+        </div>
+
+        <div class="wrap">
+          <!-- ① 생성 -->
+          <section class="view" id="view-write" hidden>
+            <header>
+              <h2>어떤 키워드로 쓸까요?</h2>
+              <p>키워드만 넣어도 돼요. 브랜드와 제품을 적으면 본문에 자연스럽게 넣어드려요.</p>
+            </header>
+
+            <div class="card">
+              <div class="stack">
+                <div class="field">
+                  <label class="label" for="f-keyword">키워드</label>
+                  <input
+                    id="f-keyword"
+                    class="input lg"
+                    type="text"
+                    placeholder="예: 브라질리언 왁싱 모낭염"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="two">
+                  <div class="field">
+                    <label class="label" for="f-brand">브랜드</label>
+                    <input
+                      id="f-brand"
+                      class="input"
+                      type="text"
+                      placeholder="선택"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="f-product">제품</label>
+                    <input
+                      id="f-product"
+                      class="input"
+                      type="text"
+                      placeholder="선택"
+                      autocomplete="off"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label" for="f-request">요청사항</label>
+                  <textarea
+                    id="f-request"
+                    class="area"
+                    placeholder="이번 원고에 꼭 넣고 싶은 내용이나 흐름을 적어 주세요"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>원고 설정</h3>
+              <div class="stack">
+                <div class="switch-row">
+                  <span class="txt">
+                    <b>AI 모델</b>
+                    <span class="desc" id="model-now"></span>
+                  </span>
+                  <button class="btn sm" type="button" id="btn-model">바꾸기</button>
+                </div>
+                <div id="model-zone"></div>
+
+                <div class="field">
+                  <span class="label">글 성격</span>
+                  <div class="seg" role="group" aria-label="글 성격">
+                    <button type="button" data-seg="tone" data-value="후기형" aria-pressed="true">
+                      후기형
+                    </button>
+                    <button type="button" data-seg="tone" data-value="질문형" aria-pressed="false">
+                      질문형
+                    </button>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="label">본문 분량</span>
+                  <div class="seg" role="group" aria-label="본문 분량">
+                    <button type="button" data-seg="len" data-value="짧게" aria-pressed="false">
+                      짧게
+                    </button>
+                    <button type="button" data-seg="len" data-value="보통" aria-pressed="true">
+                      보통
+                    </button>
+                    <button type="button" data-seg="len" data-value="길게" aria-pressed="false">
+                      길게
+                    </button>
+                  </div>
+                </div>
+
+                <div class="switch-row">
+                  <span class="txt">
+                    <b>댓글 개수</b>
+                    <span class="desc">1개부터 8개까지 고를 수 있어요</span>
+                  </span>
+                  <span class="stepper">
+                    <button
+                      type="button"
+                      data-step="count"
+                      data-delta="-1"
+                      aria-label="댓글 줄이기"
+                    >
+                      −
+                    </button>
+                    <span id="cnt-value">4개</span>
+                    <button type="button" data-step="count" data-delta="1" aria-label="댓글 늘리기">
+                      +
+                    </button>
+                  </span>
+                </div>
+
+                <div class="switch-row">
+                  <span class="txt">
+                    <b>모바일에서 세로로 길게</b>
+                    <span class="desc">문단을 2~3줄로 끊어서 써요. 끄면 문단을 길게 써요.</span>
+                  </span>
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      id="f-mobile"
+                      checked
+                      aria-label="모바일에서 세로로 길게"
+                    />
+                    <i></i>
+                  </label>
+                </div>
+
+                <div class="field">
+                  <span class="label">댓글 세트</span>
+                  <div class="seg" role="group" aria-label="댓글 세트">
+                    <button type="button" data-seg="set" data-value="new" aria-pressed="true">
+                      새로 만들기
+                    </button>
+                    <button type="button" data-seg="set" data-value="load" aria-pressed="false">
+                      기존 세트 가져오기
+                    </button>
+                  </div>
+                  <div id="set-zone"></div>
+                </div>
+
+                <div class="field">
+                  <label class="label" for="f-avoid">쓰지 않을 표현</label>
+                  <input
+                    id="f-avoid"
+                    class="input"
+                    type="text"
+                    placeholder="예: 완치, 부작용 없음, 100% 보장"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="card" id="stream-card" hidden>
+              <h3>쓰는 중이에요</h3>
+              <div class="stream" id="stream-out"></div>
+            </div>
+          </section>
+
+          <!-- ② 보관함 -->
+          <section class="view" id="view-refs" hidden>
+            <header>
+              <h2>원고 보관함</h2>
+              <p>
+                <b>키워드.txt</b> 파일을 폴더째 올리면 파일명이 그대로 키워드가 돼요. 원하는 원고의
+                댓글 세트만 바로 가져다 쓸 수 있어요.
+              </p>
+            </header>
+
+            <div class="card">
+              <h3>
+                원고 올리기
+                <span class="sub">첫 줄은 제목, 댓글 번호가 나오는 줄부터는 댓글로 읽어요</span>
+              </h3>
+              <div class="drop">
+                <b>원고 파일을 골라 주세요</b>
+                <span>키워드.txt 파일을 한 번에 여러 개 고를 수 있어요</span>
+                <button class="btn sm" id="btn-upload" type="button">파일 고르기</button>
+              </div>
+
+              <div class="field" style="margin-top: 16px">
+                <label class="label" for="f-doclink">구글 문서로 올리기</label>
+                <div class="pfoot" style="margin-top: 0">
+                  <input
+                    id="f-doclink"
+                    class="input"
+                    type="url"
+                    placeholder="구글 문서 · 스프레드시트 · 폴더 주소를 붙여넣어 주세요"
+                  />
+                  <button class="btn" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
+                    불러오기
+                  </button>
+                </div>
+                <span class="desc">
+                  폴더 주소를 넣으면 안에 있는 문서를 한 번에 읽어요. 문서 1개 주소도 돼요.
+                </span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <label class="searchbar">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                  </svg>
+                  <input
+                    id="lib-search"
+                    type="search"
+                    placeholder="키워드 검색"
+                    aria-label="보관함 검색"
+                  />
+                </label>
+                <select id="lib-sort" aria-label="정렬">
+                  <option value="recent">최근 순</option>
+                  <option value="name">가나다순</option>
+                  <option value="comments">댓글 많은 순</option>
+                  <option value="used">많이 쓴 순</option>
+                </select>
+              </div>
+              <p class="desc" id="lib-summary" style="margin: 0 0 12px"></p>
+              <div class="libgrid" id="lib-grid"></div>
+              <div class="empty" id="lib-empty" hidden>찾는 키워드가 없어요</div>
+            </div>
+
+            <div class="card">
+              <h3>
+                카페 글 가져오기
+                <span class="sub"
+                  >잘 나간 카페 글을 보관함에 넣어 두면 어투를 배우고 댓글도 재사용해요</span
+                >
+              </h3>
+              <div class="field">
+                <input
+                  id="f-url"
+                  class="input"
+                  type="url"
+                  placeholder="카페 글 주소를 붙여넣어 주세요"
+                  aria-label="카페 글 주소"
+                />
+              </div>
+              <div class="pfoot" style="margin-top: 12px">
+                <button class="btn pri" id="btn-fetch" type="button">가져오기</button>
+              </div>
+
+              <div
+                class="row"
+                style="margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 16px"
+              >
+                <span class="txt">
+                  <b>열람용 계정</b>
+                  <span>멤버만 볼 수 있는 글을 읽으려면 계정 1개가 필요해요</span>
+                </span>
+                <button class="btn sm" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
+                  등록하기
+                </button>
+              </div>
+
+              <div class="row">
+                <span class="txt">
+                  <b>브라우저에 수집 버튼 넣기</b>
+                  <span>
+                    즐겨찾기에 버튼을 하나 만들어 둬요. 카페 글을 열어 둔 채로 누르면 그 글이 이
+                    보관함으로 들어와요. 주소만으로 안 읽히는 글에 써요.
+                  </span>
+                </span>
+                <button class="btn sm" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
+                  만들기
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ③ 결과 -->
+          <section class="view" id="view-result" hidden>
+            <header>
+              <h2>제목 · 본문 · 댓글</h2>
+              <p>고칠 곳을 적어서 다시 만들거나, 글을 두 번 눌러 직접 고칠 수 있어요.</p>
+            </header>
+
+            <div class="card">
+              <div class="two">
+                <div class="field">
+                  <label class="label" for="w-keyword">키워드</label>
+                  <input
+                    id="w-keyword"
+                    class="input"
+                    type="text"
+                    placeholder="생성 화면에서 넣은 키워드가 들어와요"
+                  />
+                </div>
+                <div class="field">
+                  <label class="label" for="w-request">요청사항</label>
+                  <input
+                    id="w-request"
+                    class="input"
+                    type="text"
+                    placeholder="여기서 바꿔서 다시 만들 수 있어요"
+                  />
+                </div>
+              </div>
+              <div class="pfoot">
+                <button class="btn" type="button" id="btn-regen">이 조건으로 다시 만들기</button>
+                <span class="grow"></span>
+                <span class="chip ok" id="save-state">저장됨</span>
+              </div>
+            </div>
+
+            <div class="vrow" id="version-tabs"></div>
+
+            <div id="head-pieces"></div>
+
+            <div class="sec">
+              <h3>댓글</h3>
+              <span class="grow"></span>
+              <button class="btn sm" type="button" id="btn-import">기존 세트 가져오기</button>
+            </div>
+
+            <div id="import-banner"></div>
+            <div id="picker-zone"></div>
+            <div id="comment-pieces"></div>
+          </section>
+
+          <!-- ④ 내보내기 -->
+          <section class="view" id="view-export" hidden>
+            <header>
+              <h2>어떤 원고를 내보낼까요?</h2>
+              <p>여러 번 만든 원고를 골라 한 번에 넘길 수 있어요.</p>
+            </header>
+
+            <div class="card">
+              <h3>만든 원고 <span class="sub" id="doc-count"></span></h3>
+              <div class="rows" id="doc-list"></div>
+              <div class="pfoot">
+                <button class="btn sm" type="button" data-pick="all">전체 고르기</button>
+                <button class="btn sm ghost" type="button" data-pick="none">전체 해제</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>내보내는 방법</h3>
+              <div class="seg" role="group" aria-label="내보내는 방법">
+                <button type="button" data-seg="way" data-value="docs" aria-pressed="true">
+                  구글 문서
+                </button>
+                <button type="button" data-seg="way" data-value="txt" aria-pressed="false">
+                  txt 파일
+                </button>
+                <button type="button" data-seg="way" data-value="copy" aria-pressed="false">
+                  복사하기
+                </button>
+              </div>
+              <div id="way-zone" style="margin-top: 18px"></div>
+            </div>
+          </section>
+
+          <!-- ⑤ 업로드 -->
+          <section class="view" id="view-publish" hidden>
+            <header>
+              <h2>네이버 카페에 올리기 <span class="chip warn">준비 중</span></h2>
+              <p>원고 만들기가 자리를 잡으면 이어서 붙일 기능이에요.</p>
+            </header>
+
+            <div class="card">
+              <h3>먼저 정해야 하는 것</h3>
+              <div class="rows">
+                <div class="row">
+                  <span class="txt"
+                    ><b>계정 연결 방식</b
+                    ><span>서버에 저장 / 크롬 로그인 / 그때그때 로그인</span></span
+                  >
+                  <span class="chip warn">미정</span>
+                </div>
+                <div class="row">
+                  <span class="txt"
+                    ><b>댓글 계정 개수</b><span>댓글마다 다른 계정이 필요해요</span></span
+                  >
+                  <span class="chip warn">미정</span>
+                </div>
+              </div>
+              <p class="desc" style="margin: 14px 0 0">
+                지금은 내보내기에서 txt로 받아 직접 올려 주세요. 올릴 카페와 게시판 고르기, 계정
+                배정, 1~5분 간격 설정까지 설계는 끝나 있어요.
+              </p>
+            </div>
+          </section>
+
+          <!-- ⑥ 설정 -->
+          <section class="view" id="view-settings" hidden>
+            <header>
+              <h2>설정</h2>
+              <p>API 키와 연결된 계정을 여기서 관리해요.</p>
+            </header>
+
+            <div class="card">
+              <h3>
+                API 키
+                <span class="sub">회사별로 한 번만 넣어두면 돼요</span>
+              </h3>
+              <div class="rows" id="key-list"></div>
+              <p class="desc" style="margin: 12px 0 0">
+                키는 암호화해서 보관하고 화면에는 뒷자리만 보여줘요. 지우면 그 회사 모델은 목록에서
+                빠져요.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>기본 모델</h3>
+              <div class="rows">
+                <div class="row">
+                  <span class="txt"><b>기본 생성</b><span id="set-base"></span></span>
+                  <button class="btn sm" type="button" data-go="write">바꾸기</button>
+                </div>
+                <div class="row">
+                  <span class="txt"><b>이상할 때 다시 쓰기</b><span id="set-upper"></span></span>
+                  <button class="btn sm" type="button" data-go="write">바꾸기</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>연결된 계정</h3>
+              <div class="rows">
+                <div class="row">
+                  <span class="txt"><b>구글 계정</b><span>문서로 내보낼 때 써요</span></span>
+                  <span class="chip warn">미연결</span>
+                  <button class="btn sm" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
+                    연결하기
+                  </button>
+                </div>
+                <div class="row">
+                  <span class="txt"><b>네이버 계정</b><span>카페에 올릴 때 써요</span></span>
+                  <span class="chip ok">3개</span>
+                  <button class="btn sm" type="button" data-go="publish">관리하기</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>
+                저장
+                <span class="sub">원고와 보관함은 이 브라우저에 저장돼요</span>
+              </h3>
+              <div class="pfoot" style="margin-top: 0">
+                <button class="btn" type="button" data-soon="아직 준비 중이에요. 곧 붙일게요.">
+                  백업 파일 내려받기
+                </button>
+                <button
+                  class="btn ghost"
+                  type="button"
+                  data-soon="아직 준비 중이에요. 곧 붙일게요."
+                >
+                  백업 불러오기
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="dock" id="dock"><div class="inner" id="dock-inner"></div></div>
+      </main>
+
+      <nav class="tabbar" id="nav-mobile" aria-label="작업 단계"></nav>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
