@@ -33,10 +33,7 @@ pnpm start          # http://127.0.0.1:8787
 
 ## 배포
 
-```sh
-npx wrangler login
-pnpm deploy
-```
+[`docs/배포.md`](docs/배포.md)를 보세요. 브라우저만으로 하는 방법과 터미널로 하는 방법이 둘 다 적혀 있습니다.
 
 ## 카페 자동 업로드를 안 만든 이유
 
