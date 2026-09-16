@@ -1398,13 +1398,54 @@ const GAPS = [
 const atLabel = (minutes) => (minutes ? `+${minutes}분` : '바로');
 
 /**
+ * List every seat a manuscript needs filled, body first.
+ * @param {Record<string, any>} v - Manuscript version.
+ * @returns {{ role: string, label: string }[]} Seats.
+ */
+function roles(v) {
+  return [
+    { role: 'body', label: '본문 · 작성자 답글' },
+    ...(v?.comments ?? []).map((comment, index) => {
+      const n = comment.index ?? index + 1;
+
+      return { role: `c${n}`, label: `댓글${n}` };
+    }),
+  ];
+}
+
+/**
+ * Find which account alias sits on a seat.
+ * @param {string} role - Seat id such as `body` or `c2`.
+ * @returns {string} Alias, or a placeholder when nothing is assigned yet.
+ */
+function account(role) {
+  const picked = (store.settings.assign ?? {})[role];
+
+  return (store.settings.accounts ?? []).includes(picked)
+    ? picked
+    : `${role === 'body' ? '본문' : `댓글${role.slice(1)}`} 계정`;
+}
+
+/**
  * Build the ordered list of things to post, with the waiting time before each.
  * @param {Record<string, any>} v - Manuscript version.
- * @returns {{ who: string, what: string, text: string, at: number }[]} Steps.
+ * @returns {Record<string, any>[]} Steps.
  */
 function buildSteps(v) {
   const { gaps } = store.settings;
-  const steps = [{ who: '본문 계정', what: '본문 올리기', text: toText(v, 'body'), at: 0 }];
+
+  const steps = [
+    {
+      role: 'body',
+      who: account('body'),
+      what: '본문 올리기',
+      kind: 'post',
+      title: v.title,
+      text: v.body,
+      at: 0,
+    },
+  ];
+
   let clock = 0;
 
   (v.comments ?? []).forEach((comment, index) => {
@@ -1427,9 +1468,14 @@ function buildSteps(v) {
         what = `${label} 다시 달기`;
       }
 
+      const role = turn.by === 'author' ? 'body' : `c${n}`;
+
       steps.push({
-        who: turn.by === 'author' ? '본문 계정' : `${label} 계정`,
+        role,
+        who: account(role),
         what,
+        kind: turn.by === 'author' || position > 0 ? 'reply' : 'comment',
+        thread: n,
         text: turn.text + photo,
         at: clock,
       });
@@ -1539,8 +1585,106 @@ function renderPublish() {
       const steps = buildSteps(v);
       const step = steps[Number(button.dataset.stepCopy)];
 
-      copy(step.text, step.what);
+      copy(step.kind === 'post' ? `제목: ${step.title}\n\n${step.text}` : step.text, step.what);
     });
+  });
+
+  el('assign-list').innerHTML = v
+    ? roles(v)
+        .map((seat) => {
+          const picked = (s.assign ?? {})[seat.role] ?? '';
+
+          return `<div class="row">
+            <span class="txt"><b>${esc(seat.label)}</b><span>${seat.role === 'body' ? '글을 올리고 답글도 다는 계정이에요' : '이 댓글을 다는 계정이에요'}</span></span>
+            <select class="input" data-assign="${seat.role}" aria-label="${esc(seat.label)} 계정"
+              style="max-width:200px;padding:10px 12px">
+              <option value="">고르지 않음</option>
+              ${(s.accounts ?? [])
+                .map(
+                  (name) =>
+                    `<option value="${esc(name)}" ${name === picked ? 'selected' : ''}>${esc(name)}</option>`,
+                )
+                .join('')}
+            </select>
+          </div>`;
+        })
+        .join('')
+    : '<div class="empty" style="padding:14px">원고를 먼저 골라 주세요</div>';
+
+  document.querySelectorAll('[data-assign]').forEach((select) => {
+    select.addEventListener('change', () => {
+      store.settings.assign = { ...(store.settings.assign ?? {}) };
+      store.settings.assign[select.dataset.assign] = select.value;
+      persist();
+      renderPublish();
+    });
+  });
+
+  el('btn-plan').addEventListener('click', () => {
+    if (!v || !target) {
+      toast('원고를 먼저 골라 주세요');
+
+      return;
+    }
+
+    if (!s.cafeUrl) {
+      toast('올릴 카페 주소를 먼저 넣어 주세요');
+
+      return;
+    }
+
+    const missing = roles(v).filter((seat) => !(s.assign ?? {})[seat.role]);
+
+    if (missing.length) {
+      toast(`${missing[0].label}에 쓸 계정을 골라 주세요`);
+
+      return;
+    }
+
+    const plan = {
+      version: 1,
+      keyword: target.keyword,
+      cafeUrl: s.cafeUrl,
+      board: s.board ?? '',
+      steps: buildSteps(v).map((step, index) => ({
+        no: index + 1,
+        kind: step.kind,
+        profile: step.who,
+        thread: step.thread ?? null,
+        at: step.at,
+        what: step.what,
+        title: step.title ?? null,
+        text: step.text,
+      })),
+    };
+
+    download(`${target.keyword} 업로드.json`, JSON.stringify(plan, null, 2));
+    toast('자동 업로드 파일을 내려받았어요');
+  });
+
+  el('btn-plan-help').addEventListener('click', () => {
+    const box = el('plan-help');
+
+    box.hidden = !box.hidden;
+    box.innerHTML = box.hidden
+      ? ''
+      : `<div class="way fallback" style="margin-top:12px">
+          <span class="mark">?</span>
+          <div>
+            <b>자동으로 올리는 법</b>
+            <p>브라우저에서는 네이버에 대신 글을 못 올려요. 컴퓨터에서 도는 작은 프로그램이 대신 올려 줍니다.</p>
+            <p style="margin-top:6px">
+              ① 프로그램을 받아서 <code>npm install</code> 한 번<br />
+              ② 계정마다 <code>npm run login -- 별칭</code> — 창이 뜨면 그 계정으로 직접 로그인하고 닫기<br />
+              ③ 여기서 받은 파일을 <code>npm start -- 받은파일.json</code><br />
+              ④ 정해둔 간격대로 알아서 올라가요
+            </p>
+            <p style="margin-top:6px">
+              별칭은 위 <b>자리 배정</b>에서 고른 이름과 똑같이 맞춰 주세요.
+              비밀번호는 저장하지 않고, 처음 한 번 직접 로그인한 기록만 컴퓨터에 남습니다.
+            </p>
+          </div>
+        </div>`;
   });
 }
 

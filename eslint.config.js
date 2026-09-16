@@ -146,4 +146,10 @@ export default [
       ],
     },
   },
+
+  // The uploader is a command line tool, so printing is how it talks to the user.
+  {
+    files: ['automation/**/*.mjs'],
+    rules: { 'no-console': 'off' },
+  },
 ];

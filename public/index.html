@@ -470,8 +470,8 @@
 
             <div class="card">
               <h3>
-                계정 메모
-                <span class="sub">어느 단계에 어느 계정을 쓸지 적어 두면 헷갈리지 않아요</span>
+                계정
+                <span class="sub">별칭을 만들고 어느 자리에 쓸지 정해 주세요</span>
               </h3>
               <div class="rows" id="acct-list"></div>
               <div class="pfoot">
@@ -491,6 +491,14 @@
             </div>
 
             <div class="card">
+              <h3>
+                자리 배정
+                <span class="sub">본문과 댓글마다 어느 계정이 올릴지 정해요</span>
+              </h3>
+              <div class="rows" id="assign-list"></div>
+            </div>
+
+            <div class="card">
               <h3>올리는 간격 <span class="sub">1분부터 5분까지 정할 수 있어요</span></h3>
               <div class="rows" id="gap-list"></div>
             </div>
@@ -498,9 +506,16 @@
             <div class="card">
               <h3>
                 올리는 순서
-                <span class="sub">위에서부터 하나씩 복사해서 올려 주세요</span>
+                <span class="sub">자동으로 올리거나, 하나씩 복사해서 올려도 돼요</span>
               </h3>
               <div class="rows" id="step-list"></div>
+              <div class="pfoot" style="margin-top: 12px">
+                <button class="btn pri" type="button" id="btn-plan">
+                  자동 업로드 파일 내려받기
+                </button>
+                <button class="btn ghost" type="button" id="btn-plan-help">쓰는 법</button>
+              </div>
+              <div id="plan-help" hidden></div>
             </div>
           </section>
 

@@ -16,6 +16,7 @@ const EMPTY = {
     cafeUrl: '',
     board: '',
     accounts: [],
+    assign: {},
     gaps: { first: 3, between: 2, reply: 1 },
   },
   docs: [],

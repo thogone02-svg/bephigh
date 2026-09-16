@@ -1,0 +1,15 @@
+{
+  "name": "nabi-cafe-uploader",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "나비효과플랜 카페 원고 자동 업로드",
+  "scripts": {
+    "login": "node login.mjs",
+    "start": "node upload.mjs",
+    "setup": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}
