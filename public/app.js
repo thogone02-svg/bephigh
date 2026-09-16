@@ -1,5 +1,15 @@
 import { connect, createDoc } from './gdocs.js';
-import { download, load, readableSize, save, streamPost, uid, usage } from './store.js';
+import {
+  download,
+  emptyState,
+  load,
+  onSaveError,
+  readableSize,
+  save,
+  streamPost,
+  uid,
+  usage,
+} from './store.js';
 import { learnedFrom, pickReferences, styleCard } from './style.js';
 
 const AUTHOR = '작성자';
@@ -33,7 +43,7 @@ const VIEWS = [
 
 const MAKERS = { openai: 'OpenAI', google: 'Google', anthropic: 'Anthropic' };
 const EXPORT_LABEL = { docs: '구글 문서로 내보내기', txt: 'txt로 저장하기', copy: '복사하기' };
-const store = load();
+const store = emptyState();
 
 const state = {
   view: 'write',
@@ -166,15 +176,7 @@ function applied(target, at) {
 /**
  *
  */
-const persist = () => {
-  if (save(store)) {
-    return true;
-  }
-
-  toast('저장 공간이 꽉 찼어요. 설정에서 백업을 내려받고 오래된 원고를 지워 주세요.');
-
-  return false;
-};
+const persist = () => save(store);
 
 /**
  * Show a short message at the bottom of the screen.
@@ -1912,8 +1914,8 @@ function renderSettings() {
 /**
  * Draw the storage meter and wire up backup and restore.
  */
-function renderStorage() {
-  const { bytes, limit, ratio } = usage();
+async function renderStorage() {
+  const { bytes, limit, ratio, known } = await usage();
   const percent = Math.round(ratio * 100);
   const docs = store.docs.length;
   const saved = store.library.length;
@@ -1927,15 +1929,18 @@ function renderStorage() {
 
   const note = {
     warn: '거의 다 찼어요. 백업을 내려받고 오래된 원고를 지워 주세요.',
-    mid: '절반을 넘었어요. 슬슬 백업을 한 번 받아 두세요.',
-    ok: '아직 넉넉해요.',
+    mid: '절반쯤 썼어요. 백업을 한 번 받아 두세요.',
+    ok: '넉넉해요. 원고 수만 개까지 들어가요.',
   }[tone];
+
+  const amount = known
+    ? `${readableSize(bytes)} 씀 · 쓸 수 있는 공간 ${readableSize(limit)}`
+    : `${readableSize(bytes)} 씀`;
 
   el('storage-meter').innerHTML = `
     <div class="meter ${tone}"><span style="width:${Math.max(2, percent)}%"></span></div>
     <p class="desc" style="margin:8px 0 0">
-      ${readableSize(bytes)} / 약 ${readableSize(limit)} 씀 (${percent}%) ·
-      만든 원고 ${docs}개 · 보관함 ${saved}개<br />${note}
+      ${amount} · 만든 원고 ${docs}개 · 보관함 ${saved}개<br />${note}
     </p>`;
 
   el('btn-backup').addEventListener('click', () => {
@@ -2065,6 +2070,12 @@ document.addEventListener('click', (event) => {
  * Start the app.
  */
 async function start() {
+  Object.assign(store, await load());
+
+  onSaveError((error) => {
+    toast(`저장하지 못했어요. ${error.message ?? '설정에서 백업을 내려받아 두세요.'}`);
+  });
+
   const response = await fetch('/api/models').catch(() => null);
 
   state.models = response?.ok ? (await response.json()).models : [];

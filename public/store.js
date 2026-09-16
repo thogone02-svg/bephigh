@@ -23,61 +23,199 @@ const EMPTY = {
   library: [],
 };
 
+const DB_NAME = 'nabi.workbench';
+const DB_STORE = 'state';
+const DB_KEY = 'current';
+
+/** Handed out so the app can start from a blank slate before the saved data arrives. */
+export const emptyState = () => structuredClone(EMPTY);
+
+let opening = null;
+
 /**
- * Read the saved state, falling back to an empty one.
- * @returns {typeof EMPTY} Saved state.
+ * Open the database the app keeps its work in.
+ *
+ * localStorage only gives a site about 5MB, which ran out at a few hundred
+ * manuscripts. This store is limited by free disk space instead.
+ * @returns {Promise<IDBDatabase>} Open database.
  */
-export const load = () => {
-  try {
-    const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null');
+const openDb = () => {
+  if (opening) {
+    return opening;
+  }
 
-    if (!saved) {
-      return structuredClone(EMPTY);
-    }
+  opening = new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
 
-    return {
-      ...structuredClone(EMPTY),
-      ...saved,
-      settings: { ...EMPTY.settings, ...(saved.settings ?? {}) },
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(DB_STORE)) {
+        request.result.createObjectStore(DB_STORE);
+      }
     };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error ?? new Error('저장소를 열지 못했어요.'));
+  });
+
+  return opening;
+};
+
+/**
+ * Run one read or write against the store.
+ * @param {'readonly' | 'readwrite'} mode - Transaction mode.
+ * @param {(store: IDBObjectStore) => IDBRequest} run - What to do with the store.
+ * @returns {Promise<any>} Whatever the request returned.
+ */
+const tx = async (mode, run) => {
+  const db = await openDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(DB_STORE, mode);
+    const request = run(transaction.objectStore(DB_STORE));
+
+    request.onsuccess = () => resolve(request.result);
+    transaction.onerror = () => reject(transaction.error ?? request.error);
+    transaction.onabort = () => reject(transaction.error ?? new Error('저장이 막혔어요.'));
+  });
+};
+
+/**
+ * Fill in anything a saved state is missing, so older saves keep working.
+ * @param {Record<string, any>} saved - State read back from storage.
+ * @returns {typeof EMPTY} Complete state.
+ */
+const withDefaults = (saved) => ({
+  ...structuredClone(EMPTY),
+  ...saved,
+  settings: { ...EMPTY.settings, ...(saved.settings ?? {}) },
+});
+
+/**
+ * Read whatever the old localStorage version of the app left behind.
+ * @returns {Record<string, any> | null} Saved state, or null when there is none.
+ */
+const readLegacy = () => {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) ?? 'null');
   } catch {
-    return structuredClone(EMPTY);
+    return null;
   }
 };
 
 /**
- * Write the state back to the browser.
+ * Read the saved state, falling back to an empty one.
+ *
+ * Work saved by the earlier localStorage version is carried over the first
+ * time this runs. The old copy is left alone so nothing is lost if the
+ * browser refuses the new store.
+ * @returns {Promise<typeof EMPTY>} Saved state.
+ */
+export const load = async () => {
+  try {
+    const saved = await tx('readonly', (store) => store.get(DB_KEY));
+
+    if (saved) {
+      return withDefaults(saved);
+    }
+
+    const legacy = readLegacy();
+
+    if (legacy) {
+      await tx('readwrite', (store) => store.put(legacy, DB_KEY));
+
+      return withDefaults(legacy);
+    }
+
+    return structuredClone(EMPTY);
+  } catch {
+    // No database available (private window, blocked storage). Fall back to
+    // the old store so the app still opens with the work that is there.
+    const legacy = readLegacy();
+
+    return legacy ? withDefaults(legacy) : structuredClone(EMPTY);
+  }
+};
+
+let queued = null;
+let writing = false;
+let onTrouble = () => {};
+
+/**
+ * Say what to do when a save fails, so the app can tell the user.
+ * @param {(error: Error) => void} handler - Called with the failure.
+ */
+export const onSaveError = (handler) => {
+  onTrouble = handler;
+};
+
+/**
+ * Write whatever is queued, then whatever arrived while that was happening.
+ * @returns {Promise<void>} Resolves once the queue is empty.
+ */
+const flush = async () => {
+  if (writing || !queued) {
+    return;
+  }
+
+  writing = true;
+
+  while (queued) {
+    const next = queued;
+
+    queued = null;
+
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      await tx('readwrite', (store) => store.put(next, DB_KEY));
+    } catch (error) {
+      writing = false;
+      onTrouble(/** @type {Error} */ (error));
+
+      return;
+    }
+  }
+
+  writing = false;
+};
+
+/**
+ * Save the state.
+ *
+ * Writing happens just after the call returns, and only the newest state is
+ * written when several changes land together. A failure is reported through
+ * `onSaveError` rather than here.
  * @param {typeof EMPTY} state - State to save.
- * @returns {boolean} False when the browser refused to save, usually because it is full.
+ * @returns {boolean} True once the save is queued.
  */
 export const save = (state) => {
   try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-
-    return true;
+    queued = structuredClone(state);
   } catch {
-    return false;
+    queued = JSON.parse(JSON.stringify(state));
   }
+
+  flush();
+
+  return true;
 };
 
-/** Browsers give one site about 5MB of this kind of storage. */
-const LIMIT = 5 * 1024 * 1024;
-
 /**
- * Measure how much of the browser storage the app is using.
- * @returns {{ bytes: number, limit: number, ratio: number }} Usage in bytes.
+ * Measure how much room the app is using and how much it has.
+ * @returns {Promise<{ bytes: number, limit: number, ratio: number, known: boolean }>} Usage.
  */
-export const usage = () => {
-  let bytes = 0;
-
+export const usage = async () => {
   try {
-    // Browsers count this storage in UTF-16 code units, so two bytes per character.
-    bytes = (localStorage.getItem(KEY) ?? '').length * 2;
-  } catch {
-    bytes = 0;
-  }
+    const { usage: bytes = 0, quota = 0 } = await navigator.storage.estimate();
 
-  return { bytes, limit: LIMIT, ratio: Math.min(1, bytes / LIMIT) };
+    return {
+      bytes,
+      limit: quota,
+      ratio: quota ? Math.min(1, bytes / quota) : 0,
+      known: quota > 0,
+    };
+  } catch {
+    return { bytes: 0, limit: 0, ratio: 0, known: false };
+  }
 };
 
 /**
@@ -85,10 +223,17 @@ export const usage = () => {
  * @param {number} bytes - Byte count.
  * @returns {string} Readable size.
  */
-export const readableSize = (bytes) =>
-  bytes >= 1024 * 1024
-    ? `${(bytes / 1024 / 1024).toFixed(1)}MB`
-    : `${Math.max(1, Math.round(bytes / 1024))}KB`;
+export const readableSize = (bytes) => {
+  if (bytes >= 1024 * 1024 * 1024) {
+    return `${(bytes / 1024 / 1024 / 1024).toFixed(1)}GB`;
+  }
+
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
+  }
+
+  return `${Math.max(1, Math.round(bytes / 1024))}KB`;
+};
 
 /**
  * Make a short unique id.
