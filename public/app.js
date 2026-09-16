@@ -77,6 +77,24 @@ const icon = (name, size = 20) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
 
 /**
+ * Draw a checkbox that looks the same in every browser.
+ * @param {Record<string, string>} attrs - Attributes for the real input, such as `data-doc`.
+ * @param {boolean} checked - Whether it starts ticked.
+ * @param {string} label - Screen reader label.
+ * @param {boolean} [round] - Draw it as a circle, for pick-one lists.
+ * @returns {string} Markup.
+ */
+const checkbox = (attrs, checked, label, round = false) =>
+  `<span class="pick${round ? ' round' : ''}">
+    <input type="checkbox" ${Object.entries(attrs)
+      .map(([key, value]) => `${key}="${value}"`)
+      .join(' ')} ${checked ? 'checked' : ''} aria-label="${esc(label)}" />
+    <span class="box"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true"><path d="m5 13 4.5 4.5L19 7" /></svg></span>
+  </span>`;
+
+/**
  * @param n
  */
 const comma = (n) => Math.round(n).toLocaleString('ko-KR');
@@ -692,8 +710,9 @@ function renderResult() {
           return `<div class="turn ${turn.by === 'author' ? 'author' : ''}">
             <span class="tag">${turn.by === 'author' ? AUTHOR : label}</span>
             <span data-edit="${key}" title="두 번 누르면 고칠 수 있어요">${esc(text)}</span>
-            <input type="checkbox" class="shot" data-shot="${n}:${position}" ${shot ? 'checked' : ''}
-              title="이 줄에 사진 자리 넣기" aria-label="${label} ${position + 1}번째 줄에 사진 자리 넣기" />
+            <button type="button" class="shotbtn" data-shot="${n}:${position}"
+              aria-pressed="${shot}" title="${shot ? '사진 자리 빼기' : '이 줄에 사진 자리 넣기'}"
+              aria-label="${label} ${position + 1}번째 줄에 사진 자리 ${shot ? '빼기' : '넣기'}">${icon('image', 17)}</button>
           </div>
           ${shot ? `<div class="photo-slot">${icon('image', 16)}댓글 사진 여기에 첨부해주세요</div>` : ''}`;
         })
@@ -708,7 +727,7 @@ function renderResult() {
           ${comment.locked ? `<span class="chip">가져온 댓글</span>` : ''}
           ${hand ? '<span class="chip warn">직접 고침</span>' : ''}
         </div>
-        ${index === 0 ? '<span class="shot-hint">사진을 넣을 줄에 오른쪽 체크를 켜 주세요</span>' : ''}
+        ${index === 0 ? '<span class="shot-hint">사진을 넣을 줄에서 오른쪽 사진 단추를 눌러 주세요</span>' : ''}
         <div class="thread">${thread}</div>
         <div class="pfoot">
           <input class="input" type="text" data-part="c${n}" placeholder="${label}에서 고칠 곳" />
@@ -724,15 +743,16 @@ function renderResult() {
       renderDock();
     });
   });
-  document.querySelectorAll('[data-shot]').forEach((box) => {
-    box.addEventListener('change', () => {
-      const [n, position] = box.dataset.shot.split(':').map(Number);
+  document.querySelectorAll('[data-shot]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const [n, position] = button.dataset.shot.split(':').map(Number);
       const comment = v.comments.find((c, i) => (c.index ?? i + 1) === n);
+      const on = comment.photoAt !== position;
 
-      comment.photoAt = box.checked ? position : null;
+      comment.photoAt = on ? position : null;
       persist();
       renderResult();
-      toast(box.checked ? '이 줄에 사진 자리를 넣었어요' : '사진 자리를 뺐어요');
+      toast(on ? '이 줄에 사진 자리를 넣었어요' : '사진 자리를 뺐어요');
     });
   });
 
@@ -851,7 +871,7 @@ function renderLibrary() {
   if (store.library.length && state.libQuery) {
     summary = `${list.length}개 찾았어요`;
   } else if (store.library.length) {
-    summary = `원고 ${store.library.length}개 · 어투 학습 ${learning}개 — ${learnedFrom(
+    summary = `원고 ${store.library.length}개 · 학습 ${learning}개 · ${learnedFrom(
       store.library.filter((i) => i.learn),
     )}`;
   }
@@ -1167,17 +1187,18 @@ function renderExport() {
     state.picks = [store.docs[0].id];
   }
 
-  el('doc-count').textContent = `${state.picks.length}개 골랐어요`;
   el('doc-list').innerHTML = store.docs.length
     ? store.docs
         .slice(0, 30)
         .map((d) => {
           const last = d.versions[d.versions.length - 1];
+          const on = state.picks.includes(d.id);
+          const when = new Date(d.createdAt).toLocaleDateString('ko-KR');
 
-          return `<label class="row" style="cursor:pointer">
-            <input type="checkbox" data-doc="${d.id}" ${state.picks.includes(d.id) ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--blue)" />
-            <span class="txt"><b>${esc(d.keyword)}</b><span>댓글 ${last.comments?.length ?? 0}개 · ${d.versions.length}차</span></span>
-            <span class="when">${new Date(d.createdAt).toLocaleDateString('ko-KR')}</span>
+          // 날짜를 오른쪽 끝에 두면 제목과 사이가 너무 벌어져서 설명 줄에 붙였어요.
+          return `<label class="row pickable${on ? ' on' : ''}">
+            ${checkbox({ 'data-doc': d.id }, on, `${d.keyword} 고르기`)}
+            <span class="txt"><b>${esc(d.keyword)}</b><span>댓글 ${last.comments?.length ?? 0}개 · ${d.versions.length}차 · ${when}</span></span>
           </label>`;
         })
         .join('')
@@ -1201,8 +1222,8 @@ function renderExport() {
       </div>
       <p class="desc" style="margin:10px 0 0">문서 하나에 키워드 ${names.length}개가 제목으로 구분되어 들어가요. 구글 문서 왼쪽 개요에서 키워드를 눌러 바로 이동할 수 있어요.</p>
       ${
-        store.settings.lastDoc
-          ? `<p class="desc" style="margin:8px 0 0">최근 만든 문서 · <a href="${esc(store.settings.lastDoc.url)}" target="_blank" rel="noopener">${esc(store.settings.lastDoc.title)}</a></p>`
+        store.settings.lastDoc?.url
+          ? `<p class="desc" style="margin:8px 0 0">최근 만든 문서 · <a href="${esc(store.settings.lastDoc.url)}" target="_blank" rel="noopener">${esc(store.settings.lastDoc.title ?? '문서 열기')}</a></p>`
           : ''
       }
       <div class="way fallback" style="margin-top:14px">
@@ -1501,13 +1522,20 @@ function renderPublish() {
   el('up-list').innerHTML = store.docs.length
     ? store.docs
         .slice(0, 20)
-        .map(
-          (d) => `<label class="row" style="cursor:pointer">
-            <input type="radio" name="uppick" value="${d.id}" ${state.upPick === d.id ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--blue)" />
-            <span class="txt"><b>${esc(d.keyword)}</b><span>댓글 ${d.versions[d.versions.length - 1].comments?.length ?? 0}개</span></span>
-            <span class="when">${new Date(d.createdAt).toLocaleDateString('ko-KR')}</span>
-          </label>`,
-        )
+        .map((d) => {
+          const on = state.upPick === d.id;
+          const when = new Date(d.createdAt).toLocaleDateString('ko-KR');
+
+          return `<label class="row pickable${on ? ' on' : ''}">
+              <span class="pick round">
+                <input type="radio" name="uppick" value="${d.id}" ${on ? 'checked' : ''} aria-label="${esc(d.keyword)} 고르기" />
+                <span class="box"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"
+                  aria-hidden="true"><path d="m5 13 4.5 4.5L19 7" /></svg></span>
+              </span>
+              <span class="txt"><b>${esc(d.keyword)}</b><span>댓글 ${d.versions[d.versions.length - 1].comments?.length ?? 0}개 · ${when}</span></span>
+            </label>`;
+        })
         .join('')
     : '<div class="empty">아직 만든 원고가 없어요</div>';
 

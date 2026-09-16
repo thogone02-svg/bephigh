@@ -404,12 +404,15 @@
             </header>
 
             <div class="card">
-              <h3>만든 원고 <span class="sub" id="doc-count"></span></h3>
-              <div class="rows" id="doc-list"></div>
-              <div class="pfoot">
-                <button class="btn sm" type="button" data-pick="all">전체 고르기</button>
-                <button class="btn sm ghost" type="button" data-pick="none">전체 해제</button>
+              <div class="cardhead">
+                <h3>만든 원고</h3>
+                <span class="grow"></span>
+                <span class="act">
+                  <button type="button" data-pick="all">전체</button>
+                  <button type="button" data-pick="none">해제</button>
+                </span>
               </div>
+              <div class="rows" id="doc-list"></div>
             </div>
 
             <div class="card">

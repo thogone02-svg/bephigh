@@ -237,8 +237,8 @@ export function learnedFrom(library) {
   const endings = endingMix(entries.map((item) => String(item.body))).length;
 
   if (entries.length < 5) {
-    return `말투를 배우는 중이에요 (${endings}가지 어미)`;
+    return `말투 배우는 중 (어미 ${endings}가지)`;
   }
 
-  return `말투를 잘 배웠어요 (${endings}가지 어미)`;
+  return `말투 잘 배웠어요 (어미 ${endings}가지)`;
 }
