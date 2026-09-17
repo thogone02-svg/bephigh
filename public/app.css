@@ -559,16 +559,21 @@ svg {
 
 /* buttons */
 
+/*
+ * 기본 단추는 카드 위에도, 회색 배경이나 아래 막대 위에도 놓여요.
+ * 예전 채움색이 배경색과 똑같아서 그런 자리에서는 단추가 안 보이고
+ * 글자만 떠 있었어요. 테두리를 줘서 어디에 놓든 단추로 보이게 합니다.
+ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   height: 44px;
-  padding: 0 18px;
-  border: 0;
+  padding: 0 17px;
+  border: 1px solid var(--line);
   border-radius: var(--r-ctl);
-  background: var(--line-soft);
+  background: var(--surface);
   color: var(--t700);
   font-size: 14.5px;
   font-weight: 600;
@@ -580,6 +585,7 @@ svg {
 }
 
 .btn.pri {
+  border-color: var(--blue);
   background: var(--blue);
   color: #fff;
 }
@@ -597,12 +603,13 @@ svg {
 
 .btn.sm {
   height: 34px;
-  padding: 0 12px;
+  padding: 0 11px;
   font-size: 13px;
   border-radius: 10px;
 }
 
 .btn.ghost {
+  border-color: transparent;
   background: transparent;
   color: var(--t600);
 }
