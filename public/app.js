@@ -1947,7 +1947,9 @@ function renderSettings() {
         <span class="txt"><b>${MAKERS[maker]}</b><span>모델 ${count}개${saved ? ` · ${esc(saved.slice(0, 7))}…${esc(saved.slice(-4))}` : ''}</span></span>
         ${
           saved
-            ? `<span class="chip ok">등록됨</span><button class="btn sm ghost" type="button" data-key-del="${maker}">지우기</button>`
+            ? `<span class="chip ok" id="key-state-${maker}">등록됨</span>
+               <button class="btn sm" type="button" data-key-test="${maker}">확인</button>
+               <button class="btn sm ghost" type="button" data-key-del="${maker}">지우기</button>`
             : `<input class="input" type="password" data-key="${maker}" placeholder="API 키 붙여넣기" autocomplete="off" aria-label="${MAKERS[maker]} API 키" style="max-width:260px;padding:10px 12px" />
                <button class="btn sm pri" type="button" data-key-save="${maker}">저장</button>`
         }
@@ -1971,6 +1973,46 @@ function renderSettings() {
       renderSettings();
       renderModel();
       toast(`${MAKERS[maker]} 키를 저장했어요`);
+    });
+  });
+  document.querySelectorAll('[data-key-test]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const maker = button.dataset.keyTest;
+      const cheapest = state.models.filter((m) => m.maker === maker)[0];
+      const chip = el(`key-state-${maker}`);
+
+      if (!cheapest) {
+        toast('쓸 수 있는 모델이 없어요');
+
+        return;
+      }
+
+      button.disabled = true;
+      chip.className = 'chip';
+      chip.textContent = '확인 중…';
+
+      try {
+        const response = await fetch('/api/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ modelId: cheapest.id, keys: store.settings.keys }),
+        });
+
+        const data = await response.json();
+
+        chip.className = data.ok ? 'chip ok' : 'chip warn';
+        chip.textContent = data.ok ? '잘 됩니다' : '안 돼요';
+
+        if (!data.ok) {
+          toast(`${MAKERS[maker]} · ${data.error}`);
+        }
+      } catch (error) {
+        chip.className = 'chip warn';
+        chip.textContent = '안 돼요';
+        toast(error.message);
+      } finally {
+        button.disabled = false;
+      }
     });
   });
   document.querySelectorAll('[data-key-del]').forEach((button) => {

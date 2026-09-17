@@ -103,8 +103,43 @@ const cafeFetch = async (request) => {
   }
 };
 
+/**
+ * Handle `POST /api/check` — try one model with the saved key.
+ *
+ * 원고를 쓰다가 키가 틀린 걸 알게 되면 늦어요. 아주 짧은 요청을 한 번 보내
+ * 되는지 미리 봅니다.
+ * @param {Request} request - Incoming request.
+ * @returns {Promise<Response>} JSON response.
+ */
+const check = async (request) => {
+  const body = await readBody(request);
+
+  try {
+    let got = '';
+
+    for await (const delta of streamCompletion({
+      modelId: body.modelId,
+      keys: body.keys ?? {},
+      system: '한 글자로만 답하세요.',
+      user: '안녕',
+      maxTokens: 16,
+    })) {
+      got += delta;
+
+      if (got.trim()) {
+        break;
+      }
+    }
+
+    return json({ ok: true });
+  } catch (error) {
+    return json({ ok: false, error: /** @type {Error} */ (error).message });
+  }
+};
+
 const ROUTES = {
   'POST /api/cafe/fetch': cafeFetch,
+  'POST /api/check': check,
   'POST /api/generate': generate,
   'POST /api/revise': revise,
   'POST /api/parse': parse,

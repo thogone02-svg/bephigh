@@ -80,12 +80,19 @@ const describe = async (response, maker) => {
   const text = await response.text().catch(() => '');
   const detail = text.slice(0, 300);
 
-  if (response.status === 401 || response.status === 403) {
+  // 구글은 키가 틀려도 400으로 답하고, 이유는 본문 안에만 적어 줍니다.
+  const badKey = /API_KEY_INVALID|API key not valid|invalid[_ ]api[_ ]key/i.test(detail);
+
+  if (response.status === 401 || response.status === 403 || badKey) {
     return `${name} API 키가 올바르지 않아요. 설정에서 키를 다시 넣어 주세요.`;
   }
 
-  if (response.status === 404) {
-    return `${name}에 그 모델이 없어요. 설정에서 다른 모델을 골라 주세요. (${detail})`;
+  if (/billing|quota|insufficient|credit/i.test(detail)) {
+    return `${name} 잔액이나 사용 한도가 부족해요. ${name} 콘솔에서 결제를 확인해 주세요.`;
+  }
+
+  if (response.status === 404 || /not found|does not exist|unknown model/i.test(detail)) {
+    return `${name}에 그 모델이 없어요. 설정에서 다른 모델을 골라 주세요.`;
   }
 
   if (response.status === 429) {
