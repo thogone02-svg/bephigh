@@ -1,4 +1,5 @@
 import { fail, json, readBody, sse } from './lib/http.js';
+import { BUILD } from './version.js';
 import { parseManuscript, parseManuscripts, renderManuscript } from './lib/manuscript.js';
 import { fetchCafeArticle } from './lib/naver-cafe.js';
 import { MODELS, streamCompletion } from './lib/providers.js';
@@ -147,7 +148,7 @@ const ROUTES = {
    * Handle `GET /api/models`.
    * @returns {Response} JSON response listing the models the app can use.
    */
-  'GET /api/models': () => json({ models: MODELS }),
+  'GET /api/models': () => json({ models: MODELS, build: BUILD }),
 };
 
 export default {
@@ -161,7 +162,26 @@ export default {
     const url = new URL(request.url);
 
     if (!url.pathname.startsWith('/api/')) {
-      return env.ASSETS.fetch(request);
+      const asset = await env.ASSETS.fetch(request);
+
+      if (!asset.headers.get('content-type')?.includes('text/html')) {
+        return asset;
+      }
+
+      // 화면 파일은 늘 새로 받아오고, 그 안의 주소에 판 번호를 붙여서
+      // 브라우저가 옛 app.js 를 계속 쓰지 않게 합니다.
+      const html = (await asset.text()).replace(
+        /(href|src)="\/(app\.(?:js|css))"/g,
+        `$1="/$2?v=${BUILD}"`,
+      );
+
+      return new Response(html, {
+        status: asset.status,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     const route = ROUTES[`${request.method} ${url.pathname}`];

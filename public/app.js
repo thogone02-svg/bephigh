@@ -846,8 +846,13 @@ function renderResult() {
   // 이게 없으면 새로 만드는 순간 앞의 원고는 결과 화면에서 다시 못 엽니다.
   const many = store.docs.length > 1;
 
-  el('doc-switch').hidden = !many;
-  el('doc-now').textContent = target.keyword ?? '원고';
+  // 하나뿐일 때도 몇 개인지 보여줘요. 아무것도 안 보이면
+  // 원고가 하나인 건지 고르개가 없는 건지 알 수 없어요.
+  el('doc-switch').hidden = false;
+  el('doc-now').textContent = many
+    ? `만든 원고 ${store.docs.length}개`
+    : `만든 원고 1개 · ${target.keyword ?? '원고'}`;
+  el('doc-pick').hidden = !many;
 
   if (many) {
     el('doc-pick').innerHTML = store.docs
@@ -2343,8 +2348,14 @@ async function start() {
   });
 
   const response = await fetch('/api/models').catch(() => null);
+  const meta = response?.ok ? await response.json() : null;
 
-  state.models = response?.ok ? (await response.json()).models : [];
+  state.models = meta?.models ?? [];
+
+  // 지금 어떤 판이 도는지 보여줍니다. 고친 게 반영됐는지 여기서 확인해요.
+  if (meta?.build) {
+    el('build-tag').textContent = meta.build;
+  }
 
   const s = store.settings;
 

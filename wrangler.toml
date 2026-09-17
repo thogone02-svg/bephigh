@@ -2,8 +2,10 @@ name = "bephighcafe"
 main = "src/index.js"
 compatibility_date = "2026-07-21"
 
-# `/api/*` is handled by the Worker; everything else comes from `public/`.
+# Every request goes through the Worker. `/api/*` is answered there; the rest
+# comes from `public/`, but the Worker still stamps the html so browsers stop
+# serving an old app.js after a deploy.
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*"]
+run_worker_first = true
