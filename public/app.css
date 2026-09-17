@@ -1718,3 +1718,18 @@ th {
     flex: 1 1 100%;
   }
 }
+
+/* 끊긴 원고 알림은 눈에 띄어야 해요 */
+.banner.warn {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+}
+
+.banner.warn .grow {
+  color: var(--t800);
+  font-weight: 500;
+}
+
+.banner .grow b {
+  color: var(--t900);
+}

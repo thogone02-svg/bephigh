@@ -274,6 +274,81 @@ function renderNav() {
 }
 
 /**
+ * Offer back whatever was on screen when the last run was cut off.
+ *
+ * 쓰는 도중에 창이 닫히면 돈은 나갔는데 글은 사라졌어요.
+ * 흘러온 만큼을 적어 뒀다가 다시 열 때 돌려줍니다.
+ */
+function renderDraft() {
+  const bar = el('draft-bar');
+  const { draft } = store;
+
+  if (!bar) {
+    return;
+  }
+
+  if (!draft?.raw?.trim()) {
+    bar.innerHTML = '';
+
+    return;
+  }
+
+  const size = draft.raw.replace(/\s/g, '').length;
+
+  bar.innerHTML = `<div class="banner warn">${icon('result', 18)}
+      <span class="grow">
+        <b>${esc(draft.keyword || '원고')}</b> 쓰다가 끊겼어요 · ${size}자까지 받았어요
+      </span>
+      <button class="btn sm pri" type="button" id="btn-draft-keep">살리기</button>
+      <button class="btn sm ghost" type="button" id="btn-draft-drop">버리기</button>
+    </div>`;
+
+  el('btn-draft-keep').addEventListener('click', async () => {
+    const response = await fetch('/api/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: draft.raw }),
+    }).catch(() => null);
+
+    const data = await response?.json().catch(() => null);
+    const manuscript = data?.manuscripts?.[0] ?? data?.manuscript;
+
+    if (!manuscript?.title) {
+      toast('받은 만큼으로는 원고를 못 만들었어요. 글은 아래에 그대로 있어요.');
+      el('stream-card').hidden = false;
+      el('stream-out').textContent = draft.raw;
+
+      return;
+    }
+
+    const created = {
+      id: uid('doc'),
+      ...(draft.options ?? {}),
+      keyword: draft.keyword,
+      createdAt: draft.at ?? Date.now(),
+      edits: {},
+      versions: [{ no: 1, ...manuscript, at: draft.at ?? Date.now() }],
+    };
+
+    store.docs.unshift(created);
+    store.draft = null;
+    persist();
+    state.docId = created.id;
+    state.version = 0;
+    renderDraft();
+    show('result');
+    toast('끊긴 원고를 살렸어요. 빠진 곳은 다음 버전에서 채워 주세요.');
+  });
+
+  el('btn-draft-drop').addEventListener('click', () => {
+    store.draft = null;
+    persist();
+    renderDraft();
+    toast('버렸어요');
+  });
+}
+
+/**
  * Say which keyword the generate screen is holding, if it carried one over.
  *
  * 결과 화면에서 조건을 들고 넘어오면 칸이 채워진 채로 열려요.
@@ -346,6 +421,7 @@ function renderDock() {
   if (state.view === 'write') {
     const m = model(store.settings.model);
 
+    renderDraft();
     renderCarry();
 
     inner.innerHTML =
@@ -589,6 +665,23 @@ async function generate() {
   renderDock();
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+  // 흘러오는 글을 이따금 적어 둡니다. 여기서 창이 닫혀도 쓴 만큼은 남아요.
+  let lastKept = 0;
+
+  /**
+   * @param raw
+   * @param force
+   */
+  const keepDraft = (raw, force = false) => {
+    if (!force && Date.now() - lastKept < 1200) {
+      return;
+    }
+
+    lastKept = Date.now();
+    store.draft = { keyword: options.keyword, options, raw, at: Date.now() };
+    persist();
+  };
+
   try {
     await streamPost(
       '/api/generate',
@@ -610,6 +703,7 @@ async function generate() {
         if (event.type === 'delta') {
           out.textContent += event.text;
           out.scrollTop = out.scrollHeight;
+          keepDraft(out.textContent);
         }
 
         if (event.type === 'error') {
@@ -631,6 +725,7 @@ async function generate() {
           }
 
           store.docs.unshift(created);
+          store.draft = null;
           persist();
           state.docId = created.id;
           state.version = 0;
@@ -643,9 +738,16 @@ async function generate() {
   } catch (error) {
     toast(error.message);
   } finally {
+    // 끊겼든 끝났든, 받은 마지막 조각까지 한 번 더 적어 둡니다.
+    // 시간 간격 때문에 마지막 몇 줄이 빠지면 살릴 때 그만큼 사라져요.
+    if (store.draft) {
+      keepDraft(out.textContent, true);
+    }
+
     state.busy = false;
     out.classList.remove('caret');
     renderDock();
+    renderDraft();
   }
 }
 
@@ -732,12 +834,31 @@ function renderResult() {
     el('comment-pieces').innerHTML = '';
     el('import-banner').innerHTML = '';
     el('result-done').innerHTML = '';
+    el('doc-switch').hidden = true;
 
     return;
   }
 
   el('w-keyword').value = target.keyword ?? '';
   el('w-request').value = target.request ?? '';
+
+  // 만든 원고가 여러 개면 여기서 골라 열 수 있어야 해요.
+  // 이게 없으면 새로 만드는 순간 앞의 원고는 결과 화면에서 다시 못 엽니다.
+  const many = store.docs.length > 1;
+
+  el('doc-switch').hidden = !many;
+  el('doc-now').textContent = target.keyword ?? '원고';
+
+  if (many) {
+    el('doc-pick').innerHTML = store.docs
+      .slice(0, 50)
+      .map(
+        (d) =>
+          `<option value="${d.id}" ${d.id === target.id ? 'selected' : ''}>${esc(d.keyword || '이름 없음')} · ${d.versions.length}차</option>`,
+      )
+      .join('');
+  }
+
   el('version-tabs').innerHTML = target.versions
     .map(
       (entry, index) =>
@@ -841,6 +962,24 @@ function renderResult() {
       toast(on ? '이 줄에 사진 자리를 넣었어요' : '사진 자리를 뺐어요');
     });
   });
+
+  /**
+   *
+   */
+  el('doc-pick').onchange = () => {
+    const next = store.docs.find((d) => d.id === el('doc-pick').value);
+
+    if (!next) {
+      return;
+    }
+
+    state.docId = next.id;
+    state.version = next.versions.length - 1;
+    state.revising = {};
+    renderResult();
+    renderDock();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   el('result-done').innerHTML = `<div class="done">
     <b>이 원고는 여기까지예요</b>
@@ -2191,6 +2330,13 @@ async function start() {
   if (store.settings.googleClientId) {
     preloadGis();
   }
+
+  window.addEventListener('beforeunload', (event) => {
+    if (state.busy) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
 
   onSaveError((error) => {
     toast(`저장하지 못했어요. ${error.message ?? '설정에서 백업을 내려받아 두세요.'}`);

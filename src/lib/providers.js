@@ -79,7 +79,6 @@ const describe = async (response, maker) => {
   const name = MAKER_NAMES[maker] ?? maker;
   const text = await response.text().catch(() => '');
   const detail = text.slice(0, 300);
-
   // 구글은 키가 틀려도 400으로 답하고, 이유는 본문 안에만 적어 줍니다.
   const badKey = /API_KEY_INVALID|API key not valid|invalid[_ ]api[_ ]key/i.test(detail);
 

@@ -21,6 +21,8 @@ const EMPTY = {
   },
   docs: [],
   library: [],
+  /** 쓰는 도중에 창이 닫혀도 남도록, 흘러오는 글을 여기에 계속 적어 둬요. */
+  draft: null,
 };
 
 const DB_NAME = 'nabi.workbench';
