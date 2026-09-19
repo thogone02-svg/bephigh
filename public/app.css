@@ -1920,3 +1920,16 @@ th {
   color: var(--red);
   font-weight: 600;
 }
+
+.runlog .seen {
+  max-height: 200px;
+  margin: 8px 0 0;
+  padding: 12px 14px;
+  overflow: auto;
+  border-radius: var(--r-ctl);
+  background: #1b1d22;
+  color: #cfd6e4;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  line-height: 1.6;
+}

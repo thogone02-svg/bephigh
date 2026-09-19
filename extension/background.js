@@ -5,6 +5,8 @@
  * 계정이 바뀌어야 하면 로그인 화면으로 보내 바꾸고 이어서 합니다.
  */
 
+import { readBoard, articleUrl, articleIdFrom } from './board.js';
+
 /** 지금 돌고 있는 작업. 한 번에 하나만 돌려요. */
 let running = null;
 
@@ -119,10 +121,11 @@ async function signIn(tabId, account) {
  * @param {Record<string, any>} plan - Plan from the app.
  */
 async function runPlan(plan) {
+  const board = readBoard(plan.cafeUrl);
   const tab = await chrome.tabs.create({ url: plan.cafeUrl, active: true });
   const accounts = plan.accounts ?? [];
 
-  let articleUrl = null;
+  let article = '';
   let signedAs = null;
 
   for (const [index, step] of plan.steps.entries()) {
@@ -158,18 +161,56 @@ async function runPlan(plan) {
       signedAs = step.profile;
     }
 
-    // eslint-disable-next-line no-await-in-loop
-    await chrome.tabs.update(tab.id, {
-      url: step.kind === 'post' ? plan.cafeUrl : (articleUrl ?? plan.cafeUrl),
-    });
-    // eslint-disable-next-line no-await-in-loop
-    await rest(3000);
+    // 새 카페는 글쓰기 주소로 바로 갈 수 있어요. 단추를 찾을 필요가 없습니다.
+    let goTo = plan.cafeUrl;
+
+    if (step.kind === 'post') {
+      goTo = board.write ?? plan.cafeUrl;
+    } else if (article) {
+      goTo = article;
+    }
 
     // eslint-disable-next-line no-await-in-loop
-    const filled = await ask(tab.id, { type: 'nabi-do', step });
+    await chrome.tabs.update(tab.id, { url: goTo });
+    // eslint-disable-next-line no-await-in-loop
+    await rest(3500);
+
+    // 옛 카페이거나 글쓰기 주소를 모르면 단추를 눌러서 들어가요.
+    if (step.kind === 'post' && !board.write) {
+      // eslint-disable-next-line no-await-in-loop
+      const opened = await chrome.scripting
+        .executeScript({
+          target: { tabId: tab.id },
+          func: () => {
+            const write = [...document.querySelectorAll('a, button')].find((n) =>
+              /^글쓰기$/.test((n.textContent ?? '').replace(/\s+/g, '')),
+            );
+
+            write?.click();
+
+            return Boolean(write);
+          },
+        })
+        .catch(() => [{ result: false }]);
+
+      if (!opened?.[0]?.result) {
+        say({ type: 'needs-you', no: step.no, message: '글쓰기 단추를 못 찾았어요.' });
+
+        return;
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      await rest(3000);
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const filled = await ask(tab.id, { type: 'nabi-fill', step });
 
     if (!filled.ok) {
-      say({ type: 'needs-you', no: step.no, message: filled.reason });
+      // eslint-disable-next-line no-await-in-loop
+      const seen = await ask(tab.id, { type: 'nabi-look' });
+
+      say({ type: 'needs-you', no: step.no, message: filled.reason, seen });
 
       return;
     }
@@ -191,21 +232,31 @@ async function runPlan(plan) {
       return;
     }
 
-    // eslint-disable-next-line no-await-in-loop
-    await rest(4000);
-
     if (step.kind === 'post') {
       // eslint-disable-next-line no-await-in-loop
+      await rest(2500);
+      // eslint-disable-next-line no-await-in-loop
       const now = await chrome.tabs.get(tab.id);
+      const id = articleIdFrom(now.url);
 
-      articleUrl = now.url;
+      article = id && board.clubId ? articleUrl(board.clubId, id) : now.url;
+
+      if (!id) {
+        say({
+          type: 'needs-you',
+          no: step.no,
+          message: '글은 올라갔는데 글 주소를 못 읽었어요. 댓글은 그 글을 열어 두고 이어서 해주세요.',
+        });
+
+        return;
+      }
     }
 
-    say({ type: 'done-step', no: step.no, url: articleUrl });
+    say({ type: 'done-step', no: step.no, url: article });
   }
 
   running = null;
-  say({ type: 'finished', url: articleUrl, dry: Boolean(plan.dry) });
+  say({ type: 'finished', url: article, dry: Boolean(plan.dry) });
 }
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {

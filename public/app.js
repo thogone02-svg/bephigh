@@ -62,6 +62,7 @@ const state = {
   editLib: null,
   runLog: [],
   hasExtension: '',
+  stuckSeen: null,
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -386,7 +387,18 @@ function renderRunLog(dry) {
         )
         .join('')}
     </ol>
+    ${
+      state.stuckSeen
+        ? `<p class="desc" style="margin:12px 0 0">막힌 화면에서 이런 게 보였어요. 이걸 그대로 알려주시면 고칠 수 있어요.</p>
+           <pre class="seen">${esc(JSON.stringify(state.stuckSeen, null, 1))}</pre>
+           <div class="pfoot"><button class="btn sm" type="button" id="btn-copy-seen">이 내용 복사</button></div>`
+        : ''
+    }
   </div>`;
+
+  el('btn-copy-seen')?.addEventListener('click', () =>
+    copy(JSON.stringify(state.stuckSeen, null, 1), '화면 정보'),
+  );
 
   el('btn-run-stop').onclick = async () => {
     await stopCafe();
@@ -2872,6 +2884,11 @@ async function start() {
     if (event.type === 'needs-you') {
       mark(event.no, 'stuck', event.message);
       toast(event.message ?? '확인이 필요해요');
+
+      // 왜 막혔는지 알려면 그 화면에 뭐가 있었는지가 필요해요.
+      if (event.seen) {
+        state.stuckSeen = event.seen;
+      }
     }
 
     if (event.type === 'finished') {

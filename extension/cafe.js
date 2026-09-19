@@ -1,35 +1,61 @@
 /*
- * 카페 화면에서 실제로 글과 댓글을 넣는 일을 하는 쪽.
+ * 카페 화면에서 실제로 글과 댓글을 넣는 쪽.
  *
- * 네이버 카페는 화면 구조가 가끔 바뀌어요. 찾는 자리를 여기 한곳에 모아 두었으니
- * 안 되면 이 파일만 고치면 됩니다.
+ * 네이버는 클래스 이름을 자주 바꿔요. 그래서 클래스보다 먼저
+ * 「칸에 적힌 안내말」과 「단추에 쓰인 글자」로 찾습니다. 그게 훨씬 오래 갑니다.
  */
 
+/** 클래스로도 한 번 찾아봐요. 안 맞으면 여기만 고치면 됩니다. */
 const SELECTORS = {
-  writeButton: ['a.cafe-write-btn', 'a[href*="ArticleWrite"]', '.btn_write', 'button.write'],
-  titleInput: ['textarea.textarea_input', 'input.textarea_input', '.article_header textarea'],
-  bodyEditor: ['.se-content .se-text-paragraph', '.se-component-content', 'div.ProseMirror'],
-  submitArticle: ['.BaseButton--skinGreen', 'a.BaseButton', 'button[class*="publish"]'],
-  commentBox: ['textarea#cmtinput', 'textarea.comment_inbox_text', '.comment_inbox textarea'],
-  commentSubmit: ['.btn_register', 'a.button[class*="register"]', 'button[class*="register"]'],
-  commentItem: ['li.CommentItem', '.comment_list li'],
-  replyButton: ['.comment_info_button', 'a[class*="reply"]'],
+  title: ['textarea.textarea_input', 'input.textarea_input', '.article_header textarea'],
+  body: ['.se-content .se-text-paragraph', 'div.se-text-paragraph', 'div[contenteditable="true"]'],
+  comment: ['textarea#cmtinput', 'textarea.comment_inbox_text', '.comment_inbox textarea'],
+  commentItem: ['li.CommentItem', '.comment_list li', 'ul.comment_list > li'],
 };
 
 /**
- * Wait until one of the given selectors shows up.
- * @param {string[]} list - Selectors to try, best first.
- * @param {number} [waitMs] - How long to keep looking.
- * @returns {Promise<Element|null>} The element, or null when it never appeared.
+ * Wait a while.
+ * @param {number} ms - Milliseconds.
+ * @returns {Promise<void>} Resolves after the wait.
  */
-async function find(list, waitMs = 12000) {
+const rest = (ms) =>
+  new Promise((wait) => {
+    setTimeout(wait, ms);
+  });
+
+/**
+ * Is this thing actually on screen?
+ * @param {Element} node - Element to check.
+ * @returns {boolean} True when visible.
+ */
+const onScreen = (node) =>
+  Boolean(node) && (node.offsetParent !== null || node.getClientRects().length > 0);
+
+/**
+ * Look for a writing box by what its placeholder says, then by class.
+ * @param {RegExp} hint - Words the placeholder should contain.
+ * @param {string[]} classes - Class selectors to fall back on.
+ * @param {number} [waitMs] - How long to keep looking.
+ * @returns {Promise<Element|null>} The box, or null.
+ */
+async function findBox(hint, classes, waitMs = 15000) {
   const until = Date.now() + waitMs;
 
   while (Date.now() < until) {
-    for (const selector of list) {
-      const found = [...document.querySelectorAll(selector)].find(
-        (node) => node.offsetParent !== null || node.getClientRects().length,
-      );
+    const boxes = [
+      ...document.querySelectorAll('textarea, input[type="text"], div[contenteditable="true"]'),
+    ].filter(onScreen);
+
+    const byHint = boxes.find((node) =>
+      hint.test(`${node.getAttribute('placeholder') ?? ''} ${node.getAttribute('aria-label') ?? ''}`),
+    );
+
+    if (byHint) {
+      return byHint;
+    }
+
+    for (const selector of classes) {
+      const found = [...document.querySelectorAll(selector)].find(onScreen);
 
       if (found) {
         return found;
@@ -37,169 +63,205 @@ async function find(list, waitMs = 12000) {
     }
 
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((wait) => {
-      setTimeout(wait, 250);
-    });
+    await rest(300);
   }
 
   return null;
 }
 
 /**
- * Find something by the words written on it, which survives class renames.
- * @param {string[]} words - Words to look for.
- * @returns {Element|null} The element.
+ * Find a button by the words written on it.
+ * @param {RegExp} words - Words to match.
+ * @param {Element} [within] - Only look inside this.
+ * @returns {Element|null} The button.
  */
-function findByText(words) {
-  const clickable = [...document.querySelectorAll('a, button, span[role="button"]')];
+function findButton(words, within = document) {
+  const clickable = [
+    ...within.querySelectorAll('button, a, span[role="button"], div[role="button"]'),
+  ].filter(onScreen);
 
   return (
     clickable.find((node) => {
-      const text = (node.textContent ?? '').trim();
+      const text = (node.textContent ?? '').replace(/\s+/g, '');
 
-      return text.length < 16 && words.some((word) => text === word);
+      return text.length > 0 && text.length <= 10 && words.test(text);
     }) ?? null
   );
 }
 
 /**
- * Type text the way a person would, so the editor notices every line.
- * @param {Element} target - Editor element.
- * @param {string} text - Text to enter.
- * @returns {Promise<void>} Resolves once entered.
+ * Put text into a box the way a person would.
+ * @param {Element} box - Where to type.
+ * @param {string} text - What to type.
+ * @returns {Promise<boolean>} True when something went in.
  */
-async function typeInto(target, text) {
-  target.focus();
-  target.click();
+async function typeInto(box, text) {
+  box.scrollIntoView({ block: 'center' });
+  box.focus();
+  box.click();
+  await rest(300);
 
-  if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
-    const setter = Object.getOwnPropertyDescriptor(
-      target.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype,
-      'value',
-    ).set;
+  if (box.tagName === 'TEXTAREA' || box.tagName === 'INPUT') {
+    const proto = box.tagName === 'TEXTAREA' ? HTMLTextAreaElement : HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(proto.prototype, 'value').set;
 
-    setter.call(target, text);
-    target.dispatchEvent(new Event('input', { bubbles: true }));
-    target.dispatchEvent(new Event('change', { bubbles: true }));
+    setter.call(box, text);
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    await rest(300);
 
-    return;
+    return box.value.trim().length > 0;
   }
 
   // 스마트에디터는 붙여넣기로 넣어야 줄바꿈이 살아요.
   const data = new DataTransfer();
 
   data.setData('text/plain', text);
-  target.dispatchEvent(
+  box.dispatchEvent(
     new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
   );
+  await rest(900);
 
-  await new Promise((wait) => {
-    setTimeout(wait, 600);
-  });
-
-  if (!target.textContent.trim()) {
-    // 붙여넣기를 안 받는 화면이면 한 줄씩 직접 넣어요.
-    target.textContent = text;
-    target.dispatchEvent(new Event('input', { bubbles: true }));
+  if ((box.textContent ?? '').trim()) {
+    return true;
   }
+
+  // 붙여넣기를 안 받으면 한 줄씩 직접 쳐요.
+  for (const line of text.split('\n')) {
+    if (line) {
+      // eslint-disable-next-line no-await-in-loop
+      document.execCommand('insertText', false, line);
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    document.execCommand('insertParagraph');
+    // eslint-disable-next-line no-await-in-loop
+    await rest(40);
+  }
+
+  return (box.textContent ?? '').trim().length > 0;
 }
 
 /**
- * Put up the article.
+ * Fill in the article form.
  * @param {{ title: string, text: string }} step - What to post.
- * @returns {Promise<{ ok: boolean, reason?: string, url?: string }>} Result.
+ * @returns {Promise<Record<string, any>>} Result.
  */
-async function postArticle(step) {
-  const write = (await find(SELECTORS.writeButton, 6000)) ?? findByText(['글쓰기', '글 쓰기']);
-
-  if (!write) {
-    return { ok: false, reason: '글쓰기 단추를 못 찾았어요. 그 게시판에 글 쓸 수 있는 계정인지 봐주세요.' };
-  }
-
-  write.click();
-  await new Promise((wait) => {
-    setTimeout(wait, 3000);
-  });
-
-  const title = await find(SELECTORS.titleInput);
+async function fillArticle(step) {
+  const title = await findBox(/제목/, SELECTORS.title);
 
   if (!title) {
-    return { ok: false, reason: '제목 칸을 못 찾았어요.' };
+    return { ok: false, reason: '제목 칸을 못 찾았어요. 글쓰기 화면이 맞는지 봐주세요.' };
   }
 
-  await typeInto(title, step.title ?? '');
+  if (!(await typeInto(title, step.title ?? ''))) {
+    return { ok: false, reason: '제목이 안 들어가요.' };
+  }
 
-  const body = await find(SELECTORS.bodyEditor);
+  const body = await findBox(/내용|본문/, SELECTORS.body);
 
   if (!body) {
     return { ok: false, reason: '본문 칸을 못 찾았어요.' };
   }
 
-  await typeInto(body, step.text ?? '');
+  if (!(await typeInto(body, step.text ?? ''))) {
+    return { ok: false, reason: '본문이 안 들어가요.' };
+  }
 
-  return { ok: true, ready: true };
+  return { ok: true };
 }
 
 /**
- * Leave a comment, or a reply under the last one.
+ * Fill in the comment box, opening the reply box first when asked.
  * @param {{ kind: string, text: string }} step - What to post.
- * @returns {Promise<{ ok: boolean, reason?: string }>} Result.
+ * @returns {Promise<Record<string, any>>} Result.
  */
-async function postComment(step) {
+async function fillComment(step) {
   if (step.kind === 'reply') {
-    const items = [...document.querySelectorAll(SELECTORS.commentItem.join(','))];
+    const items = [...document.querySelectorAll(SELECTORS.commentItem.join(','))].filter(onScreen);
     const last = items[items.length - 1];
-    const reply = last?.querySelector(SELECTORS.replyButton.join(',')) ?? findByText(['답글']);
+    const reply = last ? findButton(/^답글$/, last) : findButton(/^답글$/);
 
     reply?.click();
-    await new Promise((wait) => {
-      setTimeout(wait, 900);
-    });
+    await rest(1200);
   }
 
-  const box = await find(SELECTORS.commentBox);
+  const box = await findBox(/댓글/, SELECTORS.comment);
 
   if (!box) {
-    return { ok: false, reason: '댓글 칸을 못 찾았어요.' };
+    return { ok: false, reason: '댓글 칸을 못 찾았어요. 그 카페에서 댓글을 쓸 수 있는 계정인지 봐주세요.' };
   }
 
-  await typeInto(box, step.text ?? '');
+  if (!(await typeInto(box, step.text ?? ''))) {
+    return { ok: false, reason: '댓글이 안 들어가요.' };
+  }
 
-  return { ok: true, ready: true };
+  return { ok: true };
+}
+
+/**
+ * Press 등록.
+ * @param {string} kind - `post` for an article, otherwise a comment.
+ * @returns {Promise<Record<string, any>>} Result.
+ */
+async function submit(kind) {
+  const button = findButton(/^(등록|등록하기|확인)$/);
+
+  if (!button) {
+    return { ok: false, reason: '등록 단추를 못 찾았어요.' };
+  }
+
+  button.click();
+  await rest(kind === 'post' ? 4500 : 2500);
+
+  return { ok: true, url: window.location.href };
+}
+
+/**
+ * Say what is on this page, so we can tell why something did not work.
+ * @returns {Record<string, any>} A short description.
+ */
+function look() {
+  const boxes = [
+    ...document.querySelectorAll('textarea, input[type="text"], div[contenteditable="true"]'),
+  ]
+    .filter(onScreen)
+    .map((n) => `${n.tagName.toLowerCase()}[${n.getAttribute('placeholder') ?? n.className}]`)
+    .slice(0, 8);
+
+  const buttons = [...document.querySelectorAll('button, a')]
+    .filter(onScreen)
+    .map((n) => (n.textContent ?? '').replace(/\s+/g, ''))
+    .filter((t) => t && t.length <= 8)
+    .slice(0, 16);
+
+  return { url: window.location.href, boxes, buttons };
 }
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
-  if (message?.type !== 'nabi-do') {
-    return false;
-  }
-
-  const run = message.step.kind === 'post' ? postArticle : postComment;
-
-  run(message.step)
-    .then((result) => reply(result))
-    .catch((error) => reply({ ok: false, reason: error.message }));
-
-  return true;
-});
-
-chrome.runtime.onMessage.addListener((message, sender, reply) => {
-  if (message?.type !== 'nabi-submit') {
-    return false;
-  }
-
-  const button =
-    message.kind === 'post'
-      ? (findByText(['등록', '등록하기']) ?? document.querySelector(SELECTORS.submitArticle.join(',')))
-      : (document.querySelector(SELECTORS.commentSubmit.join(',')) ?? findByText(['등록']));
-
-  if (!button) {
-    reply({ ok: false, reason: '등록 단추를 못 찾았어요.' });
+  if (message?.type === 'nabi-look') {
+    reply(look());
 
     return true;
   }
 
-  button.click();
-  reply({ ok: true });
+  if (message?.type === 'nabi-fill') {
+    const run = message.step.kind === 'post' ? fillArticle : fillComment;
 
-  return true;
+    run(message.step)
+      .then(reply)
+      .catch((error) => reply({ ok: false, reason: error.message }));
+
+    return true;
+  }
+
+  if (message?.type === 'nabi-submit') {
+    submit(message.kind)
+      .then(reply)
+      .catch((error) => reply({ ok: false, reason: error.message }));
+
+    return true;
+  }
+
+  return false;
 });

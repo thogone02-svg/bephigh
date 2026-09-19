@@ -24,7 +24,7 @@ console.log(`\n「${plan.keyword}」 — ${plan.steps.length}단계`);
 console.log(`게시판: ${plan.board || '(이름 없음)'}`);
 console.log(`주소: ${plan.cafeUrl}`);
 
-if (!/iframe_url|ArticleList|menuid/i.test(plan.cafeUrl)) {
+if (!/\/f-e\/cafes\/\d+\/menus\/\d+|iframe_url|ArticleList|menuid/i.test(plan.cafeUrl)) {
   console.log(
     '\n⚠ 카페 첫 주소 같아요. 이러면 글쓰기에서 게시판이 안 골라져 있을 수 있어요.',
   );
