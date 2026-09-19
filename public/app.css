@@ -1889,3 +1889,34 @@ th {
   line-height: 1.85;
   white-space: pre;
 }
+
+/* ---------- 확장이 올리는 동안 ---------- */
+
+.runlog {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+}
+
+.runlog ol {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--t700);
+  font-size: 13.5px;
+  line-height: 1.9;
+}
+
+.runlog li.now {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.runlog li.done {
+  color: var(--t500);
+}
+
+.runlog li.stuck {
+  color: var(--red);
+  font-weight: 600;
+}

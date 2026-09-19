@@ -1,0 +1,243 @@
+/*
+ * 올리는 일을 차례대로 진행하는 쪽.
+ *
+ * 카페 탭을 하나 열어 두고, 단계마다 그 탭에 시킵니다.
+ * 계정이 바뀌어야 하면 로그인 화면으로 보내 바꾸고 이어서 합니다.
+ */
+
+/** 지금 돌고 있는 작업. 한 번에 하나만 돌려요. */
+let running = null;
+
+/**
+ * Tell the app page how far it got.
+ * @param {Record<string, any>} message - Progress message.
+ */
+const say = (message) => {
+  chrome.tabs.query({}, (tabs) => {
+    tabs
+      .filter((tab) => /workers\.dev|localhost|127\.0\.0\.1/.test(tab.url ?? ''))
+      .forEach((tab) => chrome.tabs.sendMessage(tab.id, message).catch(() => {}));
+  });
+};
+
+/**
+ * Wait a while.
+ * @param {number} ms - Milliseconds.
+ * @returns {Promise<void>} Resolves after the wait.
+ */
+const rest = (ms) =>
+  new Promise((wait) => {
+    setTimeout(wait, ms);
+  });
+
+/**
+ * Put the cafe script into a tab, then ask it to do one thing.
+ * @param {number} tabId - Tab to work in.
+ * @param {Record<string, any>} message - What to do.
+ * @returns {Promise<Record<string, any>>} What came back.
+ */
+async function ask(tabId, message) {
+  await chrome.scripting
+    .executeScript({ target: { tabId }, files: ['cafe.js'] })
+    .catch(() => {});
+
+  return chrome.tabs.sendMessage(tabId, message).catch((error) => ({
+    ok: false,
+    reason: error.message,
+  }));
+}
+
+/**
+ * Find who is signed in right now.
+ * @param {number} tabId - Tab to look in.
+ * @returns {Promise<string>} The naver id, or an empty string.
+ */
+async function whoIsIn(tabId) {
+  const [got] = await chrome.scripting
+    .executeScript({
+      target: { tabId },
+      func: () => {
+        const link = document.querySelector('a[href*="MyCafeIntro"], .link_login, #gnb_logout_button');
+
+        return document.cookie.includes('NID_AUT') ? (link?.textContent ?? 'in').trim() : '';
+      },
+    })
+    .catch(() => [{ result: '' }]);
+
+  return got?.result ?? '';
+}
+
+/**
+ * Switch to another naver account, using the saved id and password.
+ * @param {number} tabId - Tab to work in.
+ * @param {{ alias: string, id: string, pw: string }} account - Account to sign in as.
+ * @returns {Promise<{ ok: boolean, reason?: string }>} Result.
+ */
+async function signIn(tabId, account) {
+  if (!account?.id || !account?.pw) {
+    return {
+      ok: false,
+      reason: `「${account?.alias ?? '계정'}」의 아이디와 비밀번호가 없어요. 직접 그 계정으로 로그인하고 「이어서 하기」를 눌러 주세요.`,
+    };
+  }
+
+  await chrome.tabs.update(tabId, { url: 'https://nid.naver.com/nidlogin.login' });
+  await rest(2500);
+
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    args: [account.id, account.pw],
+    func: (id, pw) => {
+      const set = (node, value) => {
+        const setter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        ).set;
+
+        setter.call(node, value);
+        node.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
+      const idBox = document.querySelector('#id');
+      const pwBox = document.querySelector('#pw');
+
+      if (idBox && pwBox) {
+        set(idBox, id);
+        set(pwBox, pw);
+        document.querySelector('#log\\.login, .btn_login')?.click();
+      }
+    },
+  });
+
+  await rest(5000);
+
+  return { ok: true };
+}
+
+/**
+ * Run the whole plan, one step at a time.
+ * @param {Record<string, any>} plan - Plan from the app.
+ */
+async function runPlan(plan) {
+  const tab = await chrome.tabs.create({ url: plan.cafeUrl, active: true });
+  const accounts = plan.accounts ?? [];
+
+  let articleUrl = null;
+  let signedAs = null;
+
+  for (const [index, step] of plan.steps.entries()) {
+    if (!running) {
+      say({ type: 'stopped', at: index });
+
+      return;
+    }
+
+    const previous = index === 0 ? 0 : plan.steps[index - 1].at;
+    const waitMs = (step.at - previous) * 60 * 1000;
+
+    if (waitMs > 0) {
+      say({ type: 'waiting', no: step.no, what: step.what, seconds: waitMs / 1000 });
+      // eslint-disable-next-line no-await-in-loop
+      await rest(waitMs);
+    }
+
+    say({ type: 'doing', no: step.no, what: step.what, who: step.profile });
+
+    // 이 단계를 맡은 계정으로 바꿔요.
+    if (signedAs !== step.profile) {
+      const account = accounts.find((a) => a.alias === step.profile);
+      // eslint-disable-next-line no-await-in-loop
+      const done = await signIn(tab.id, account);
+
+      if (!done.ok) {
+        say({ type: 'needs-you', no: step.no, message: done.reason });
+
+        return;
+      }
+
+      signedAs = step.profile;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await chrome.tabs.update(tab.id, {
+      url: step.kind === 'post' ? plan.cafeUrl : (articleUrl ?? plan.cafeUrl),
+    });
+    // eslint-disable-next-line no-await-in-loop
+    await rest(3000);
+
+    // eslint-disable-next-line no-await-in-loop
+    const filled = await ask(tab.id, { type: 'nabi-do', step });
+
+    if (!filled.ok) {
+      say({ type: 'needs-you', no: step.no, message: filled.reason });
+
+      return;
+    }
+
+    if (plan.dry) {
+      say({ type: 'done-step', no: step.no, dry: true });
+      // eslint-disable-next-line no-await-in-loop
+      await rest(1500);
+
+      continue;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const sent = await ask(tab.id, { type: 'nabi-submit', kind: step.kind });
+
+    if (!sent.ok) {
+      say({ type: 'needs-you', no: step.no, message: sent.reason });
+
+      return;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await rest(4000);
+
+    if (step.kind === 'post') {
+      // eslint-disable-next-line no-await-in-loop
+      const now = await chrome.tabs.get(tab.id);
+
+      articleUrl = now.url;
+    }
+
+    say({ type: 'done-step', no: step.no, url: articleUrl });
+  }
+
+  running = null;
+  say({ type: 'finished', url: articleUrl, dry: Boolean(plan.dry) });
+}
+
+chrome.runtime.onMessage.addListener((message, sender, reply) => {
+  if (message?.type === 'nabi-ping') {
+    reply({ type: 'pong', version: chrome.runtime.getManifest().version });
+
+    return true;
+  }
+
+  if (message?.type === 'nabi-stop') {
+    running = null;
+    reply({ type: 'ok' });
+
+    return true;
+  }
+
+  if (message?.type !== 'nabi-run') {
+    return false;
+  }
+
+  if (running) {
+    reply({ type: 'error', message: '이미 올리는 중이에요. 끝나거나 멈춘 뒤에 다시 눌러 주세요.' });
+
+    return true;
+  }
+
+  running = message.plan;
+  reply({ type: 'started', steps: message.plan.steps.length });
+  runPlan(message.plan).catch((error) => {
+    running = null;
+    say({ type: 'needs-you', message: error.message });
+  });
+
+  return true;
+});

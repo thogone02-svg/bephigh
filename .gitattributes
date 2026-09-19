@@ -1,1 +1,7 @@
-* text=auto eol=lf
+# 윈도우 cmd 는 줄바꿈이 LF 인 bat 파일을 못 읽고 바로 꺼져요.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 맥·리눅스 쪽은 LF 로 둡니다.
+*.command text eol=lf
+*.sh text eol=lf

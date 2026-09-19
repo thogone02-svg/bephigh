@@ -1,3 +1,4 @@
+import { cafeExtension, onCafeEvent, runInCafe, stopCafe } from './cafe-bridge.js';
 import { connect, createDoc, preloadGis } from './gdocs.js';
 import {
   download,
@@ -59,6 +60,8 @@ const state = {
   libPage: 0,
   madePage: 0,
   editLib: null,
+  runLog: [],
+  hasExtension: '',
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -350,6 +353,45 @@ function renderDraft() {
     renderDraft();
     toast('버렸어요');
   });
+}
+
+/**
+ * Show how far the extension got, step by step.
+ * @param {boolean} dry - True when nothing is actually being posted.
+ */
+function renderRunLog(dry) {
+  const box = el('auto-log');
+
+  if (!box || !state.runLog.length) {
+    return;
+  }
+
+  box.innerHTML = `<div class="runlog">
+    <div class="cardhead">
+      <h3>${dry ? '연습으로 올려 보는 중' : '올리는 중'}</h3>
+      <span class="grow"></span>
+      <button class="btn sm" type="button" id="btn-run-stop">멈추기</button>
+    </div>
+    <p class="desc" style="margin:0">
+      카페 탭이 새로 열려요. <b>그 탭을 닫지 마세요.</b>
+      캡차가 뜨면 그 창에서 풀어 주시면 이어서 갑니다.
+    </p>
+    <ol>
+      ${state.runLog
+        .map(
+          (step) =>
+            `<li class="${step.at}">${esc(step.what)} · ${esc(step.profile)}${
+              step.at === 'stuck' ? ` — ${esc(step.why ?? '')}` : ''
+            }</li>`,
+        )
+        .join('')}
+    </ol>
+  </div>`;
+
+  el('btn-run-stop').onclick = async () => {
+    await stopCafe();
+    toast('이번 단계까지만 하고 멈춰요');
+  };
 }
 
 /**
@@ -2229,15 +2271,142 @@ function renderPublish() {
     ? accounts.map((a) => `npm run login -- "${a.alias}"`).join('\n')
     : 'npm run login -- "계정별칭"';
 
+  /**
+   * Put together everything the uploader needs, or say what is missing.
+   * @returns {Record<string, any> | null} Plan, or null when something is missing.
+   */
+  const buildPlan = () => {
+    if (!v || !target) {
+      toast('원고를 먼저 골라 주세요');
+
+      return null;
+    }
+
+    if (!s.cafeUrl) {
+      toast('올릴 게시판 주소를 먼저 넣어 주세요');
+
+      return null;
+    }
+
+    const missing = roles(v).filter((seat) => !(s.assign ?? {})[seat.role]);
+
+    if (missing.length) {
+      toast(`${missing[0].label}에 쓸 계정을 골라 주세요`);
+
+      return null;
+    }
+
+    return {
+      version: 1,
+      keyword: target.keyword,
+      // 게시판을 열어 둔 주소라야 그 게시판에 올라가요.
+      cafeUrl: s.cafeUrl,
+      board: s.board ?? '',
+      steps: buildSteps(v).map((step, index) => ({
+        no: index + 1,
+        kind: step.kind,
+        profile: step.who,
+        thread: step.thread ?? null,
+        at: step.at,
+        what: step.what,
+        title: step.title ?? null,
+        text: step.text,
+      })),
+    };
+  };
+
+  el('btn-plan').onclick = () => {
+    const plan = buildPlan();
+
+    if (plan) {
+      download(`${target.keyword} 업로드.json`, JSON.stringify(plan, null, 2));
+      toast('자동 업로드 파일을 내려받았어요');
+    }
+  };
+
+  /**
+   * Hand the plan to the extension and follow along.
+   * @param {boolean} dry - True to fill everything in without pressing 등록.
+   */
+  const runHere = async (dry) => {
+    const plan = buildPlan();
+
+    if (!plan) {
+      return;
+    }
+
+    // 확장은 이 브라우저에서 로그인을 갈아 끼우므로 계정 정보도 같이 넘겨요.
+    const reply = await runInCafe({ ...plan, accounts }, dry);
+
+    if (!reply || reply.type === 'error') {
+      toast(reply?.message ?? '확장이 응답하지 않아요. 브라우저를 새로고침해 보세요.');
+
+      return;
+    }
+
+    state.runLog = plan.steps.map((step) => ({ ...step, at: 'wait' }));
+    renderRunLog(dry);
+  };
+
+  if (state.hasExtension) {
+    el('auto-state').textContent = ready ? '바로 올릴 수 있어요' : '아래를 먼저 채워 주세요';
+    el('auto-state').className = ready ? 'chip ok' : 'chip';
+    el('auto-guide').innerHTML = `
+      <p class="desc" style="margin:0 0 14px">
+        이 브라우저에 <b>카페 올리기</b>가 깔려 있어요. 아래 단추만 누르시면 카페 탭을 열어서
+        순서와 간격대로 올려 드립니다. 터미널은 필요 없어요.
+        <b>먼저 연습부터</b> 해보세요. 글은 다 채우고 등록만 안 누릅니다.
+      </p>
+      <div class="pfoot" style="margin-top:0">
+        <button class="btn pri" type="button" id="btn-run-dry"${ready ? '' : ' disabled'}>연습으로 올려 보기</button>
+        <button class="btn" type="button" id="btn-run"${ready ? '' : ' disabled'}>바로 올리기</button>
+        <span class="grow"></span>
+        <button class="btn ghost" type="button" id="btn-acct-file">계정 파일 내려받기</button>
+      </div>`;
+
+    el('btn-run-dry').onclick = () => runHere(true);
+    el('btn-run').onclick = () => runHere(false);
+
+    el('btn-acct-file').onclick = () => {
+      if (!accounts.length) {
+        toast('계정을 먼저 추가해 주세요');
+
+        return;
+      }
+
+      download('accounts.json', JSON.stringify({ version: 1, accounts }, null, 2));
+      toast('automation 폴더에 넣어 주세요');
+    };
+
+    return;
+  }
+
   el('auto-guide').innerHTML = `
+    <div class="way fallback" style="margin:0 0 16px">
+      <span class="mark">＋</span>
+      <div>
+        <b>확장을 깔면 여기서 바로 올릴 수 있어요</b>
+        <p>
+          터미널도, Node.js도 필요 없어요. 폴더 하나만 끌어다 놓으면 끝이고,
+          그 다음부터는 이 화면에서 단추 한 번이면 됩니다. 한 번만 하시면 돼요.
+        </p>
+        <p style="margin-top:8px">
+          ① 받은 폴더 안의 <b>extension</b> 폴더를 컴퓨터에 두기 (지우지 마세요)<br />
+          ② 주소창에 <code>chrome://extensions</code> 치기
+          (웨일은 <code>whale://extensions</code>)<br />
+          ③ 오른쪽 위 <b>개발자 모드</b> 켜기<br />
+          ④ <b>압축해제된 확장 프로그램을 로드합니다</b> → 그 <b>extension</b> 폴더 고르기<br />
+          ⑤ 이 화면 새로고침
+        </p>
+      </div>
+    </div>
+
     <p class="desc" style="margin:0 0 6px">
-      브라우저에서는 네이버에 대신 글을 못 올려요. 그래서 컴퓨터에서 도는 작은 프로그램이 대신
-      올립니다. 아래 <b>까만 칸에 있는 글자</b>는 컴퓨터의 <b>터미널</b>(윈도우는 명령 프롬프트)에
-      붙여넣고 엔터를 치는 명령이에요. 복사를 누르면 그 글자가 복사됩니다.
+      확장 없이 하시려면 아래 <b>까만 칸의 글자</b>를 컴퓨터의 <b>터미널</b>(윈도우는 명령
+      프롬프트)에 붙여넣고 엔터를 치시면 돼요. 복사를 누르면 그 글자가 복사됩니다.
     </p>
     <p class="desc" style="margin:0 0 14px">
-      터미널 여는 게 번거로우시면 <b>automation</b> 폴더 안의 <b>시작하기</b> 파일을 두 번 누르시면
-      돼요. 같은 일을 물어보면서 대신 해줍니다.
+      <b>automation</b> 폴더 안의 <b>시작하기</b> 파일을 두 번 눌러도 같은 일을 합니다.
     </p>
 
     ${[
@@ -2314,49 +2483,6 @@ function renderPublish() {
       renderPublish();
     });
   });
-
-  el('btn-plan').onclick = () => {
-    if (!v || !target) {
-      toast('원고를 먼저 골라 주세요');
-
-      return;
-    }
-
-    if (!s.cafeUrl) {
-      toast('올릴 게시판 주소를 먼저 넣어 주세요');
-
-      return;
-    }
-
-    const missing = roles(v).filter((seat) => !(s.assign ?? {})[seat.role]);
-
-    if (missing.length) {
-      toast(`${missing[0].label}에 쓸 계정을 골라 주세요`);
-
-      return;
-    }
-
-    const plan = {
-      version: 1,
-      keyword: target.keyword,
-      // 게시판을 열어 둔 주소라야 그 게시판에 올라가요.
-      cafeUrl: s.cafeUrl,
-      board: s.board ?? '',
-      steps: buildSteps(v).map((step, index) => ({
-        no: index + 1,
-        kind: step.kind,
-        profile: step.who,
-        thread: step.thread ?? null,
-        at: step.at,
-        what: step.what,
-        title: step.title ?? null,
-        text: step.text,
-      })),
-    };
-
-    download(`${target.keyword} 업로드.json`, JSON.stringify(plan, null, 2));
-    toast('자동 업로드 파일을 내려받았어요');
-  };
 
   el('btn-plan-help').onclick = () => {
     const box = el('plan-help');
@@ -2716,6 +2842,49 @@ async function start() {
   if (store.settings.googleClientId) {
     preloadGis();
   }
+
+  // 확장이 깔려 있으면 업로드 화면이 단추로 바뀌어요.
+  state.hasExtension = await cafeExtension();
+
+  onCafeEvent((event) => {
+    const mark = (no, at, why) => {
+      const step = state.runLog.find((x) => x.no === no);
+
+      if (step) {
+        step.at = at;
+        step.why = why;
+      }
+    };
+
+    if (event.type === 'waiting' || event.type === 'doing') {
+      state.runLog.forEach((step) => {
+        if (step.at === 'now') {
+          step.at = 'done';
+        }
+      });
+      mark(event.no, 'now');
+    }
+
+    if (event.type === 'done-step') {
+      mark(event.no, 'done');
+    }
+
+    if (event.type === 'needs-you') {
+      mark(event.no, 'stuck', event.message);
+      toast(event.message ?? '확인이 필요해요');
+    }
+
+    if (event.type === 'finished') {
+      state.runLog.forEach((step) => {
+        step.at = 'done';
+      });
+      toast(event.dry ? '연습이 끝났어요. 괜찮으면 바로 올리기를 눌러 주세요' : '다 올렸어요');
+    }
+
+    if (state.view === 'publish') {
+      renderRunLog(false);
+    }
+  });
 
   window.addEventListener('beforeunload', (event) => {
     if (state.busy) {
