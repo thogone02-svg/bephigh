@@ -1,16 +1,14 @@
 {
   "manifest_version": 3,
   "name": "나비효과플랜 카페 올리기",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "원고 작업실에서 만든 원고를 네이버 카페에 순서와 간격대로 올려 줍니다.",
-  "permissions": ["storage", "tabs", "scripting"],
-  "host_permissions": [
-    "https://cafe.naver.com/*",
-    "https://*.cafe.naver.com/*",
-    "https://nid.naver.com/*",
-    "https://www.naver.com/*"
-  ],
-  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": ["storage", "tabs", "scripting", "alarms", "cookies"],
+  "host_permissions": ["https://*.naver.com/*", "https://naver.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -22,5 +20,8 @@
       "run_at": "document_start"
     }
   ],
-  "action": { "default_title": "나비효과플랜 카페 올리기", "default_popup": "popup.html" }
+  "action": {
+    "default_title": "나비효과플랜 카페 올리기",
+    "default_popup": "popup.html"
+  }
 }

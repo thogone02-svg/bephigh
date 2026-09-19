@@ -20,6 +20,8 @@ const EMPTY = {
     gaps: { first: 3, between: 2, reply: 1 },
     /** 한 번에 어디까지 올릴지. Body / first / all */
     scope: 'all',
+    /** 창을 최소화해 두고 뒤에서 올릴지. */
+    background: true,
   },
   docs: [],
   library: [],

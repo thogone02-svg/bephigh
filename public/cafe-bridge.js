@@ -35,12 +35,13 @@ export const onCafeEvent = (listen) => {
  * @param {number} [waitMs] - How long to wait.
  * @returns {Promise<Record<string, any> | null>} The reply, or null when nothing came.
  */
-const askExtension = (payload, waitMs = 2500) =>
+const askExtension = (payload, waitMs = 2500, only = null) =>
   new Promise((done) => {
     let settled = false;
 
     const stop = onCafeEvent((reply) => {
-      if (settled) {
+      // 올리는 동안에는 진행 소식이 계속 와요. 물어본 것에 대한 답만 받습니다.
+      if (settled || (only && reply?.type !== only && reply?.type !== 'error')) {
         return;
       }
 
@@ -69,7 +70,7 @@ export const cafeExtension = async () => {
     return '';
   }
 
-  const reply = await askExtension({ type: 'nabi-ping' });
+  const reply = await askExtension({ type: 'nabi-ping' }, 2500, 'pong');
 
   return reply?.type === 'pong' ? reply.version : '';
 };
@@ -88,3 +89,11 @@ export const runInCafe = (plan, dry) =>
  * @returns {Promise<Record<string, any> | null>} Reply.
  */
 export const stopCafe = () => askExtension({ type: 'nabi-stop' });
+
+/**
+ * Ask whether something is being posted right now.
+ *
+ * 작업실 화면을 새로고침해도 올리던 것이 이어지고 있으면 다시 보여주려고요.
+ * @returns {Promise<Record<string, any> | null>} What it is in the middle of.
+ */
+export const cafeStatus = () => askExtension({ type: 'nabi-status' }, 2500, 'status');

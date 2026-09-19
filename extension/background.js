@@ -1,14 +1,29 @@
 /*
  * 올리는 일을 차례대로 진행하는 쪽.
  *
- * 카페 탭을 하나 열어 두고, 단계마다 그 탭에 시킵니다.
- * 계정이 바뀌어야 하면 로그인 화면으로 보내 바꾸고 이어서 합니다.
+ * 세 가지를 지킵니다.
+ *   ① 화면을 안 건드려요. 「뒤에서 올리기」면 창을 최소화한 채로 돕니다.
+ *   ② 기다리는 건 전부 여기서 해요. 페이지 안에서 기다리면 창이 내려가 있을 때
+ *      크롬이 타이머를 늦춰서 멈춘 것처럼 보이거든요.
+ *   ③ 진행 상황을 저장해 둬요. 크롬이 이 스크립트를 잠깐 재워도 알람으로 깨어나
+ *      하던 자리에서 이어서 합니다. 간격이 몇 분씩 되니까 이게 없으면 끊겨요.
  */
 
 import { readBoard, articleUrl, articleIdFrom } from './board.js';
+import { act } from './page.js';
 
-/** 지금 돌고 있는 작업. 한 번에 하나만 돌려요. */
-let running = null;
+/** 다음 단계를 깨우는 알람 이름. */
+const NEXT = 'nabi-next';
+
+/**
+ * Wait a while.
+ * @param {number} ms - Milliseconds.
+ * @returns {Promise<void>} Resolves after the wait.
+ */
+const rest = (ms) =>
+  new Promise((go) => {
+    setTimeout(go, ms);
+  });
 
 /**
  * Tell the app page how far it got.
@@ -23,225 +38,471 @@ const say = (message) => {
 };
 
 /**
- * Wait a while.
- * @param {number} ms - Milliseconds.
- * @returns {Promise<void>} Resolves after the wait.
+ * Read what we are in the middle of.
+ * @returns {Promise<Record<string, any> | null>} The run, or null when nothing is going on.
  */
-const rest = (ms) =>
-  new Promise((wait) => {
-    setTimeout(wait, ms);
-  });
+async function loadRun() {
+  return (await chrome.storage.session.get('run')).run ?? null;
+}
 
 /**
- * Put the cafe script into a tab, then ask it to do one thing.
+ * Remember what we are in the middle of.
+ * @param {Record<string, any>} run - The run.
+ * @returns {Promise<void>} Done.
+ */
+async function saveRun(run) {
+  await chrome.storage.session.set({ run });
+}
+
+/**
+ * Forget the run.
+ * @returns {Promise<void>} Done.
+ */
+async function dropRun() {
+  await chrome.alarms.clear(NEXT);
+  await chrome.storage.session.remove('run');
+}
+
+/**
+ * Do one small thing inside the cafe page, looking in every frame.
+ *
+ * 스마트에디터가 안쪽 틀(iframe)에 들어 있는 카페도 있어서 전부 뒤집니다.
  * @param {number} tabId - Tab to work in.
- * @param {Record<string, any>} message - What to do.
+ * @param {string} what - What to do.
+ * @param {string} [text] - Text to put in.
  * @returns {Promise<Record<string, any>>} What came back.
  */
-async function ask(tabId, message) {
-  await chrome.scripting.executeScript({ target: { tabId }, files: ['cafe.js'] }).catch(() => {});
+async function inPage(tabId, what, text) {
+  const got = await chrome.scripting
+    .executeScript({
+      target: { tabId, allFrames: true },
+      func: act,
+      args: [what, text ?? ''],
+    })
+    .catch((error) => [
+      { result: { ok: false, reason: `화면에 들어가지 못했어요: ${error.message}` } },
+    ]);
 
-  return chrome.tabs.sendMessage(tabId, message).catch((error) => ({
+  const answers = got.map((one) => one?.result).filter(Boolean);
+  const good = answers.find((one) => one.ok);
+
+  if (good) {
+    return good;
+  }
+
+  // 안 됐으면 어느 틀에서 뭘 봤는지 전부 챙겨요. 이걸 보고 고칩니다.
+  return {
     ok: false,
-    reason: error.message,
-  }));
+    reason: answers[0]?.reason ?? '화면을 못 읽었어요',
+    seen: answers.slice(0, 4),
+  };
 }
+
+/**
+ * Keep asking until the page is ready.
+ * @param {number} tabId - Tab to work in.
+ * @param {string} what - Question to ask (`form?` or `comment?`).
+ * @param {number} seconds - How long to keep trying.
+ * @returns {Promise<Record<string, any>>} The last answer.
+ */
+async function waitFor(tabId, what, seconds) {
+  const until = Date.now() + seconds * 1000;
+  let last = { ok: false, reason: '화면이 안 떴어요' };
+
+  while (Date.now() < until) {
+    // eslint-disable-next-line no-await-in-loop
+    last = await inPage(tabId, what);
+
+    if (last.ok) {
+      return last;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await rest(700);
+  }
+
+  return last;
+}
+
+/**
+ * Go to a page and wait until it has finished loading.
+ * @param {number} tabId - Tab to move.
+ * @param {string} url - Where to go.
+ * @returns {Promise<string>} The address we ended up on.
+ */
+async function goTo(tabId, url) {
+  await chrome.tabs.update(tabId, { url });
+
+  for (let tries = 0; tries < 40; tries += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await rest(500);
+
+    // eslint-disable-next-line no-await-in-loop
+    const tab = await chrome.tabs.get(tabId).catch(() => null);
+
+    if (tab && tab.status === 'complete') {
+      return tab.url ?? '';
+    }
+  }
+
+  return (await chrome.tabs.get(tabId).catch(() => null))?.url ?? '';
+}
+
+/**
+ * Is anyone signed in to naver in this browser?
+ * @returns {Promise<boolean>} True when there is a login.
+ */
+const anyoneSignedIn = async () =>
+  Boolean(
+    await chrome.cookies.get({ url: 'https://www.naver.com', name: 'NID_AUT' }).catch(() => null),
+  );
 
 /**
  * Switch to another naver account, using the saved id and password.
  * @param {number} tabId - Tab to work in.
  * @param {{ alias: string, id: string, pw: string }} account - Account to sign in as.
- * @returns {Promise<{ ok: boolean, reason?: string }>} Result.
+ * @returns {Promise<{ ok: boolean, reason?: string, note?: string }>} Result.
  */
 async function signIn(tabId, account) {
   if (!account?.id || !account?.pw) {
+    if (await anyoneSignedIn()) {
+      return {
+        ok: true,
+        note: `「${account?.alias ?? '계정'}」은 비밀번호가 없어서, 지금 로그인된 계정으로 올려요.`,
+      };
+    }
+
     return {
       ok: false,
-      reason: `「${account?.alias ?? '계정'}」의 아이디와 비밀번호가 없어요. 직접 그 계정으로 로그인하고 「이어서 하기」를 눌러 주세요.`,
+      reason: `「${account?.alias ?? '계정'}」으로 로그인해 주세요. 아이디와 비밀번호를 넣어 두시면 다음부터는 알아서 들어갑니다.`,
     };
   }
 
-  await chrome.tabs.update(tabId, { url: 'https://nid.naver.com/nidlogin.login' });
-  await rest(2500);
+  await goTo(tabId, 'https://nid.naver.com/nidlogin.login');
+  await rest(1200);
 
-  await chrome.scripting.executeScript({
-    target: { tabId },
-    args: [account.id, account.pw],
-    /**
-     * @param id
-     * @param pw
-     */
-    func: (id, pw) => {
+  await chrome.scripting
+    .executeScript({
+      target: { tabId },
+      args: [account.id, account.pw],
       /**
-       * @param node
-       * @param value
+       * Fill the login form and press the button.
+       * @param {string} id - Naver id.
+       * @param {string} pw - Password.
        */
-      const set = (node, value) => {
-        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      func: (id, pw) => {
+        const set = (node, value) => {
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(
+            node,
+            value,
+          );
+          node.dispatchEvent(new Event('input', { bubbles: true }));
+        };
 
-        setter.call(node, value);
-        node.dispatchEvent(new Event('input', { bubbles: true }));
-      };
+        const idBox = document.querySelector('#id');
+        const pwBox = document.querySelector('#pw');
 
-      const idBox = document.querySelector('#id');
-      const pwBox = document.querySelector('#pw');
-
-      if (idBox && pwBox) {
-        set(idBox, id);
-        set(pwBox, pw);
-        document.querySelector('#log\\.login, .btn_login')?.click();
-      }
-    },
-  });
+        if (idBox && pwBox) {
+          set(idBox, id);
+          set(pwBox, pw);
+          document.querySelector('#log\\.login, .btn_login')?.click();
+        }
+      },
+    })
+    .catch(() => {});
 
   await rest(5000);
+
+  const tab = await chrome.tabs.get(tabId).catch(() => null);
+
+  if (/nid\.naver\.com/.test(tab?.url ?? '')) {
+    return {
+      ok: false,
+      reason: `「${account.alias}」 로그인이 안 끝났어요. 열린 창에서 직접 로그인해 주세요. (캡차나 새 기기 확인이 뜬 것 같아요)`,
+    };
+  }
 
   return { ok: true };
 }
 
 /**
- * Run the whole plan, one step at a time.
+ * Open the window we will work in.
  * @param {Record<string, any>} plan - Plan from the app.
+ * @returns {Promise<{ tabId: number, windowId: number }>} Where we will work.
  */
-async function runPlan(plan) {
-  const board = readBoard(plan.cafeUrl);
-  const tab = await chrome.tabs.create({ url: plan.cafeUrl, active: true });
-  const accounts = plan.accounts ?? [];
-  let article = '';
-  let signedAs = null;
+async function openWorkplace(plan) {
+  if (plan.background) {
+    // 최소화한 창이라 보고 계신 화면을 안 건드려요.
+    const win = await chrome.windows
+      .create({ url: plan.cafeUrl, focused: false, state: 'minimized' })
+      .catch(() => null);
 
-  for (const [index, step] of plan.steps.entries()) {
-    if (!running) {
-      say({ type: 'stopped', at: index });
-
-      return;
+    if (win) {
+      return { tabId: win.tabs[0].id, windowId: win.id };
     }
 
-    const previous = index === 0 ? 0 : plan.steps[index - 1].at;
-    const waitMs = (step.at - previous) * 60 * 1000;
+    // 크롬이 한 번에 안 받아 주면 만들고 나서 내려요.
+    const plain = await chrome.windows.create({ url: plan.cafeUrl, focused: false });
 
-    if (waitMs > 0) {
-      say({ type: 'waiting', no: step.no, what: step.what, seconds: waitMs / 1000 });
-      // eslint-disable-next-line no-await-in-loop
-      await rest(waitMs);
-    }
+    await chrome.windows.update(plain.id, { state: 'minimized' }).catch(() => {});
 
-    say({ type: 'doing', no: step.no, what: step.what, who: step.profile });
-
-    // 이 단계를 맡은 계정으로 바꿔요.
-    if (signedAs !== step.profile) {
-      const account = accounts.find((a) => a.alias === step.profile);
-      // eslint-disable-next-line no-await-in-loop
-      const done = await signIn(tab.id, account);
-
-      if (!done.ok) {
-        say({ type: 'needs-you', no: step.no, message: done.reason });
-
-        return;
-      }
-
-      signedAs = step.profile;
-    }
-
-    // 새 카페는 글쓰기 주소로 바로 갈 수 있어요. 단추를 찾을 필요가 없습니다.
-    let goTo = plan.cafeUrl;
-
-    if (step.kind === 'post') {
-      goTo = board.write ?? plan.cafeUrl;
-    } else if (article) {
-      goTo = article;
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    await chrome.tabs.update(tab.id, { url: goTo });
-    // eslint-disable-next-line no-await-in-loop
-    await rest(3500);
-
-    // 옛 카페이거나 글쓰기 주소를 모르면 단추를 눌러서 들어가요.
-    if (step.kind === 'post' && !board.write) {
-      // eslint-disable-next-line no-await-in-loop
-      const opened = await chrome.scripting
-        .executeScript({
-          target: { tabId: tab.id },
-          func: () => {
-            const write = [...document.querySelectorAll('a, button')].find((n) =>
-              /^글쓰기$/.test((n.textContent ?? '').replace(/\s+/g, '')),
-            );
-
-            write?.click();
-
-            return Boolean(write);
-          },
-        })
-        .catch(() => [{ result: false }]);
-
-      if (!opened?.[0]?.result) {
-        say({ type: 'needs-you', no: step.no, message: '글쓰기 단추를 못 찾았어요.' });
-
-        return;
-      }
-
-      // eslint-disable-next-line no-await-in-loop
-      await rest(3000);
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    const filled = await ask(tab.id, { type: 'nabi-fill', step });
-
-    if (!filled.ok) {
-      // eslint-disable-next-line no-await-in-loop
-      const seen = await ask(tab.id, { type: 'nabi-look' });
-
-      say({ type: 'needs-you', no: step.no, message: filled.reason, seen });
-
-      return;
-    }
-
-    if (plan.dry) {
-      say({ type: 'done-step', no: step.no, dry: true });
-      // eslint-disable-next-line no-await-in-loop
-      await rest(1500);
-
-      continue;
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    const sent = await ask(tab.id, { type: 'nabi-submit', kind: step.kind });
-
-    if (!sent.ok) {
-      say({ type: 'needs-you', no: step.no, message: sent.reason });
-
-      return;
-    }
-
-    if (step.kind === 'post') {
-      // eslint-disable-next-line no-await-in-loop
-      await rest(2500);
-
-      // eslint-disable-next-line no-await-in-loop
-      const now = await chrome.tabs.get(tab.id);
-      const id = articleIdFrom(now.url);
-
-      article = id && board.clubId ? articleUrl(board.clubId, id) : now.url;
-
-      if (!id) {
-        say({
-          type: 'needs-you',
-          no: step.no,
-          message:
-            '글은 올라갔는데 글 주소를 못 읽었어요. 댓글은 그 글을 열어 두고 이어서 해주세요.',
-        });
-
-        return;
-      }
-    }
-
-    say({ type: 'done-step', no: step.no, url: article });
+    return { tabId: plain.tabs[0].id, windowId: plain.id };
   }
 
-  running = null;
-  say({ type: 'finished', url: article, dry: Boolean(plan.dry) });
+  const tab = await chrome.tabs.create({ url: plan.cafeUrl, active: true });
+
+  return { tabId: tab.id, windowId: tab.windowId };
 }
+
+/**
+ * Put one step up on the cafe.
+ * @param {Record<string, any>} run - What we are in the middle of.
+ * @returns {Promise<Record<string, any>>} Result, and what changed about the run.
+ */
+async function postOne(run) {
+  const { plan, tabId } = run;
+  const step = plan.steps[run.at];
+  const board = readBoard(plan.cafeUrl);
+  const accounts = plan.accounts ?? [];
+
+  say({ type: 'doing', no: step.no, what: step.what, who: step.profile });
+
+  // ① 이 단계를 맡은 계정으로.
+  if (run.signedAs !== step.profile) {
+    const done = await signIn(
+      tabId,
+      accounts.find((one) => one.alias === step.profile),
+    );
+
+    if (!done.ok) {
+      return { ok: false, reason: done.reason };
+    }
+
+    if (done.note) {
+      say({ type: 'note', no: step.no, message: done.note });
+    }
+
+    run.signedAs = step.profile;
+  }
+
+  // ② 글 쓰는 화면으로. 새 카페는 주소로 바로 갈 수 있어요.
+  let where = plan.cafeUrl;
+
+  if (step.kind === 'post') {
+    where = board.write ?? plan.cafeUrl;
+  } else if (run.article) {
+    where = run.article;
+  }
+
+  const landed = await goTo(tabId, where);
+
+  if (/nid\.naver\.com|nidlogin/.test(landed)) {
+    return { ok: false, reason: '로그인 화면으로 넘어갔어요. 열린 창에서 로그인해 주세요.' };
+  }
+
+  // ③ 옛 카페라 글쓰기 주소를 모르면 단추를 눌러서 들어가요.
+  if (step.kind === 'post' && !board.write) {
+    const opened = await chrome.scripting
+      .executeScript({
+        target: { tabId, allFrames: true },
+        /**
+         * Press the 글쓰기 button.
+         * @returns {boolean} True when it was there.
+         */
+        func: () => {
+          const write = [...document.querySelectorAll('a, button')].find((node) =>
+            /^글쓰기$/.test((node.textContent ?? '').replace(/\s+/g, '')),
+          );
+
+          write?.click();
+
+          return Boolean(write);
+        },
+      })
+      .catch(() => []);
+
+    if (!opened.some((one) => one?.result)) {
+      return { ok: false, reason: '글쓰기 단추를 못 찾았어요.' };
+    }
+
+    await rest(3000);
+  }
+
+  // ④ 칸이 나올 때까지 기다렸다가 넣어요.
+  if (step.kind === 'post') {
+    const form = await waitFor(tabId, 'form?', 25);
+
+    if (!form.ok) {
+      const seen = await inPage(tabId, 'look');
+
+      return {
+        ok: false,
+        reason: '글쓰기 화면이 안 떴어요.',
+        seen: seen.seen ?? [seen],
+      };
+    }
+
+    const title = await inPage(tabId, 'title', step.title ?? '');
+
+    if (!title.ok) {
+      return { ok: false, reason: title.reason, seen: title.seen };
+    }
+
+    await rest(400);
+
+    const body = await inPage(tabId, 'body', step.text ?? '');
+
+    if (!body.ok) {
+      return { ok: false, reason: body.reason, seen: body.seen };
+    }
+  } else {
+    if (step.kind === 'reply') {
+      const opened = await inPage(tabId, 'open-reply');
+
+      if (!opened.ok) {
+        return { ok: false, reason: opened.reason, seen: opened.seen };
+      }
+
+      await rest(1500);
+    }
+
+    const ready = await waitFor(tabId, 'comment?', 15);
+
+    if (!ready.ok) {
+      const seen = await inPage(tabId, 'look');
+
+      return {
+        ok: false,
+        reason: '댓글 칸이 안 보여요. 그 카페에서 댓글을 쓸 수 있는 계정인지 봐주세요.',
+        seen: seen.seen ?? [seen],
+      };
+    }
+
+    const filled = await inPage(tabId, 'comment', step.text ?? '');
+
+    if (!filled.ok) {
+      return { ok: false, reason: filled.reason, seen: filled.seen };
+    }
+  }
+
+  // ⑤ 연습이면 여기까지.
+  if (plan.dry) {
+    await rest(1200);
+
+    return { ok: true, dry: true };
+  }
+
+  const sent = await inPage(tabId, 'submit');
+
+  if (!sent.ok) {
+    return { ok: false, reason: sent.reason, seen: sent.seen };
+  }
+
+  await rest(step.kind === 'post' ? 4000 : 2500);
+
+  // ⑥ 글이 올라갔으면 그 글 주소를 챙겨 둬야 댓글을 달 수 있어요.
+  if (step.kind === 'post') {
+    for (let tries = 0; tries < 8; tries += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const tab = await chrome.tabs.get(tabId).catch(() => null);
+      const id = articleIdFrom(tab?.url ?? '');
+
+      if (id) {
+        run.article = board.clubId ? articleUrl(board.clubId, id) : tab.url;
+
+        return { ok: true };
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      await rest(1500);
+    }
+
+    return {
+      ok: false,
+      reason: '글은 올라갔는데 글 주소를 못 읽었어요. 댓글은 그 글을 열어 두고 이어서 해주세요.',
+    };
+  }
+
+  return { ok: true };
+}
+
+/**
+ * Do the step we are on, then line up the next one.
+ */
+async function tick() {
+  const run = await loadRun();
+
+  if (!run) {
+    return;
+  }
+
+  if (run.stop) {
+    say({ type: 'stopped', at: run.at });
+    await dropRun();
+
+    return;
+  }
+
+  const step = run.plan.steps[run.at];
+  let result;
+
+  try {
+    result = await postOne(run);
+  } catch (error) {
+    result = { ok: false, reason: error.message };
+  }
+
+  if (!result.ok) {
+    say({ type: 'needs-you', no: step.no, message: result.reason, seen: result.seen });
+    await dropRun();
+
+    return;
+  }
+
+  say({ type: 'done-step', no: step.no, url: run.article, dry: Boolean(result.dry) });
+
+  const next = run.plan.steps[run.at + 1];
+
+  // 연습에서는 글을 실제로 안 올리니까 글 주소가 없어요. 댓글은 달 데가 없습니다.
+  if (next && run.plan.dry && next.kind !== 'post' && !run.article) {
+    say({
+      type: 'finished',
+      dry: true,
+      message: '연습은 본문까지만 해봐요. 댓글은 글이 올라가 있어야 달 수 있어요.',
+    });
+    await dropRun();
+
+    return;
+  }
+
+  if (!next) {
+    say({ type: 'finished', url: run.article, dry: Boolean(run.plan.dry) });
+    await dropRun();
+
+    return;
+  }
+
+  const wait = Math.max(0, next.at - step.at);
+
+  run.at += 1;
+  await saveRun(run);
+
+  if (wait > 0) {
+    say({ type: 'waiting', no: next.no, what: next.what, seconds: wait * 60 });
+    // 알람은 이 스크립트가 잠들어도 깨워 줘요.
+    chrome.alarms.create(NEXT, { delayInMinutes: wait });
+
+    return;
+  }
+
+  await tick();
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === NEXT) {
+    tick();
+  }
+});
 
 chrome.runtime.onMessage.addListener((message, sender, reply) => {
   if (message?.type === 'nabi-ping') {
@@ -250,9 +511,28 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     return true;
   }
 
+  if (message?.type === 'nabi-status') {
+    loadRun().then((run) =>
+      reply(
+        run
+          ? { type: 'status', at: run.at, steps: run.plan.steps, dry: Boolean(run.plan.dry) }
+          : { type: 'status', at: -1, steps: [] },
+      ),
+    );
+
+    return true;
+  }
+
   if (message?.type === 'nabi-stop') {
-    running = null;
-    reply({ type: 'ok' });
+    loadRun().then(async (run) => {
+      if (run) {
+        run.stop = true;
+        await saveRun(run);
+      }
+
+      await chrome.alarms.clear(NEXT);
+      reply({ type: 'ok' });
+    });
 
     return true;
   }
@@ -261,17 +541,27 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     return false;
   }
 
-  if (running) {
-    reply({ type: 'error', message: '이미 올리는 중이에요. 끝나거나 멈춘 뒤에 다시 눌러 주세요.' });
+  loadRun().then(async (busy) => {
+    if (busy) {
+      reply({
+        type: 'error',
+        message: '이미 올리는 중이에요. 끝나거나 멈춘 뒤에 다시 눌러 주세요.',
+      });
 
-    return true;
-  }
+      return;
+    }
 
-  running = message.plan;
-  reply({ type: 'started', steps: message.plan.steps.length });
-  runPlan(message.plan).catch((error) => {
-    running = null;
-    say({ type: 'needs-you', message: error.message });
+    const { plan } = message;
+
+    try {
+      const { tabId, windowId } = await openWorkplace(plan);
+
+      await saveRun({ plan, at: 0, tabId, windowId, article: '', signedAs: null, stop: false });
+      reply({ type: 'started', steps: plan.steps.length, background: Boolean(plan.background) });
+      tick();
+    } catch (error) {
+      reply({ type: 'error', message: error.message });
+    }
   });
 
   return true;

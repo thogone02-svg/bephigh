@@ -1,4 +1,4 @@
-import { cafeExtension, onCafeEvent, runInCafe, stopCafe } from './cafe-bridge.js';
+import { cafeExtension, cafeStatus, onCafeEvent, runInCafe, stopCafe } from './cafe-bridge.js';
 import { connect, createDoc, preloadGis } from './gdocs.js';
 import {
   download,
@@ -64,6 +64,7 @@ const state = {
   pub: null,
   hasExtension: '',
   stuckSeen: null,
+  runNote: '',
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -387,9 +388,14 @@ function renderRunLog(dry) {
       <button class="btn sm" type="button" id="btn-run-stop">멈추기</button>
     </div>
     <p class="desc" style="margin:0">
-      카페 탭이 새로 열려요. <b>그 탭을 닫지 마세요.</b>
-      캡차가 뜨면 그 창에서 풀어 주시면 이어서 갑니다.
+      ${
+        store.settings.background === false
+          ? '카페 탭이 눈앞에 열려요. <b>그 창을 닫지 마세요.</b>'
+          : '카페 창을 내려둔 채로 올리고 있어요. <b>작업표시줄에 있는 그 창을 닫지 마세요.</b> 크롬은 켜 두셔야 해요.'
+      }
+      캡차나 로그인 확인이 뜨면 그 창을 열어서 풀어 주시면 이어서 갑니다.
     </p>
+    ${state.runNote ? `<p class="desc" style="margin:8px 0 0"><b>${esc(state.runNote)}</b></p>` : ''}
     <ol>
       ${state.runLog
         .map(
@@ -556,6 +562,28 @@ function renderDock() {
   }
 
   el('dock').hidden = !inner.innerHTML;
+  reserveForDock();
+}
+
+/**
+ * Leave room under the page so the bottom bar never sits on top of anything.
+ *
+ * 바가 두 줄이 되기도 해서 높이를 재서 그만큼 비워 둬요.
+ */
+function reserveForDock() {
+  const wrap = document.querySelector('.wrap');
+  const dock = el('dock');
+
+  if (!wrap || !dock) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    const tabbar = window.innerWidth <= 860 ? 62 : 0;
+    const tall = dock.hidden ? tabbar : dock.offsetHeight + tabbar;
+
+    wrap.style.paddingBottom = `${tall + 36}px`;
+  });
 }
 
 /**
@@ -1228,6 +1256,27 @@ function libList(query, sort) {
  */
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
+/** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
+const NEEDS_EXT = '1.2.0';
+
+/**
+ * Compare two version strings like `1.2.0`.
+ * @param {string} one - Version found.
+ * @param {string} two - Version needed.
+ * @returns {boolean} True when `one` is older than `two`.
+ */
+function olderThan(one, two) {
+  const left = String(one).split('.').map(Number);
+  const right = String(two).split('.').map(Number);
+
+  for (let at = 0; at < right.length; at += 1) {
+    if ((left[at] ?? 0) !== right[at]) {
+      return (left[at] ?? 0) < right[at];
+    }
+  }
+
+  return false;
+}
 
 /**
  * Draw the page buttons for a list.
@@ -2116,11 +2165,11 @@ const atLabel = (minutes) => (minutes ? `+${minutes}분` : '바로');
 function roles(v) {
   return [
     { role: 'body', label: '본문 · 작성자 답글' },
-    ...(v?.comments ?? []).map((comment, index) => {
-      const n = comment.index ?? index + 1;
-
-      return { role: `c${n}`, label: `댓글${n}` };
-    }),
+    // 원고 안의 댓글 번호가 겹치는 일이 있어서(1,2,3,3,4) 순서대로 셉니다.
+    ...(v?.comments ?? []).map((comment, index) => ({
+      role: `c${index + 1}`,
+      label: `댓글${index + 1}`,
+    })),
   ];
 }
 
@@ -2160,7 +2209,8 @@ function buildSteps(v) {
   let clock = 0;
 
   (v.comments ?? []).forEach((comment, index) => {
-    const n = comment.index ?? index + 1;
+    // 자리 이름과 똑같이, 원고 안 번호가 아니라 순서대로 셉니다.
+    const n = index + 1;
     const label = `댓글${n}`;
 
     (comment.thread ?? []).forEach((turn, position) => {
@@ -2226,6 +2276,13 @@ function renderPublish() {
   const s = store.settings;
 
   el('p-url').value = s.cafeUrl ?? '';
+  el('p-bg').checked = s.background !== false;
+
+  el('p-bg').onchange = () => {
+    store.settings.background = el('p-bg').checked;
+    persist();
+  };
+
   el('up-list').innerHTML = store.docs.length
     ? store.docs
         .slice(0, 20)
@@ -2501,7 +2558,7 @@ function renderPublish() {
     }
 
     // 확장은 이 브라우저에서 로그인을 갈아 끼우므로 계정 정보도 같이 넘겨요.
-    const reply = await runInCafe({ ...plan, accounts }, dry);
+    const reply = await runInCafe({ ...plan, accounts, background: s.background !== false }, dry);
 
     if (!reply || reply.type === 'error') {
       toast(reply?.message ?? '확장이 응답하지 않아요. 브라우저를 새로고침해 보세요.');
@@ -2531,7 +2588,25 @@ function renderPublish() {
   if (state.hasExtension) {
     el('auto-state').textContent = ready ? '바로 올릴 수 있어요' : '아래를 먼저 채워 주세요';
     el('auto-state').className = ready ? 'chip ok' : 'chip';
+
+    const stale = olderThan(state.hasExtension, NEEDS_EXT);
+
     el('auto-guide').innerHTML = `
+      ${
+        stale
+          ? `<div class="way fallback" style="margin:0 0 16px">
+              <span class="mark">!</span>
+              <div>
+                <b>확장이 낡았어요 (지금 ${esc(state.hasExtension)}, 필요한 판 ${NEEDS_EXT})</b>
+                <p>
+                  깃허브에서 <b>Code → Download ZIP</b> 으로 새로 받아 <b>extension</b> 폴더를 바꿔치기하고,
+                  <code>chrome://extensions</code> 에서 이 확장의 <b>↻</b> 를 눌러 주세요.
+                  낡은 판은 글쓰기 화면에서 멈출 수 있어요.
+                </p>
+              </div>
+            </div>`
+          : ''
+      }
       <p class="desc" style="margin:0 0 14px">
         이 브라우저에 <b>카페 올리기</b>가 깔려 있어요. 아래 단추만 누르시면 카페 탭을 열어서
         순서와 간격대로 올려 드립니다. 터미널은 필요 없어요.
@@ -2977,6 +3052,27 @@ async function start() {
   // 확장이 깔려 있으면 업로드 화면이 단추로 바뀌어요.
   state.hasExtension = await cafeExtension();
 
+  // 새로고침해도 올리던 것이 이어지고 있으면 진행 상황을 다시 보여줘요.
+  if (state.hasExtension) {
+    const now = await cafeStatus();
+
+    if (now?.steps?.length) {
+      const mark = (index) => {
+        if (index < now.at) {
+          return 'done';
+        }
+
+        return index === now.at ? 'now' : 'wait';
+      };
+
+      state.runLog = now.steps.map((step, index) => ({ ...step, at: mark(index) }));
+
+      if (state.view === 'publish') {
+        renderRunLog(now.dry);
+      }
+    }
+  }
+
   onCafeEvent((event) => {
     /**
      * @param no
@@ -3015,17 +3111,26 @@ async function start() {
       }
     }
 
+    if (event.type === 'note') {
+      state.runNote = event.message ?? '';
+    }
+
     if (event.type === 'finished') {
       state.runLog.forEach((step) => {
         step.at = 'done';
       });
-      toast(event.dry ? '연습이 끝났어요. 괜찮으면 바로 올리기를 눌러 주세요' : '다 올렸어요');
+      toast(
+        event.message ??
+          (event.dry ? '연습이 끝났어요. 괜찮으면 업로드 시작을 눌러 주세요' : '다 올렸어요'),
+      );
     }
 
     if (state.view === 'publish') {
       renderRunLog(false);
     }
   });
+
+  window.addEventListener('resize', reserveForDock);
 
   window.addEventListener('beforeunload', (event) => {
     if (state.busy) {
