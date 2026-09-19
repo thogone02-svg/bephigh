@@ -20,7 +20,15 @@ if (!Array.isArray(plan.steps) || !plan.steps.length) {
 }
 
 console.log(`\n「${plan.keyword}」 — ${plan.steps.length}단계`);
-console.log(`카페: ${plan.cafeUrl}${plan.board ? ` · ${plan.board}` : ''}`);
+console.log(`게시판: ${plan.board || '(이름 없음)'}`);
+console.log(`주소: ${plan.cafeUrl}`);
+
+if (!/iframe_url|ArticleList|menuid/i.test(plan.cafeUrl)) {
+  console.log(
+    '\n⚠ 카페 첫 주소 같아요. 이러면 글쓰기에서 게시판이 안 골라져 있을 수 있어요.',
+  );
+  console.log('  올릴 게시판을 연 상태의 주소를 넣으시면 그 게시판으로 바로 갑니다.\n');
+}
 console.log(
   dry ? '연습 모드예요. 등록 버튼은 누르지 않습니다.\n' : '진짜로 올립니다. 멈추려면 Ctrl+C.\n',
 );
@@ -59,7 +67,9 @@ let posted = 0;
  * @returns {Promise<void>} Resolves once posted.
  */
 async function postArticle(page, step) {
+  // 게시판을 열어 둔 주소로 가야 글쓰기를 눌렀을 때 그 게시판이 골라져 있어요.
   await page.goto(plan.cafeUrl, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
   await page.locator(SELECTORS.writeButton).first().click();
   await page.waitForTimeout(2500);
 

@@ -465,10 +465,19 @@
             <header>
               <h2>카페에 올리기</h2>
               <p>
-                순서와 간격을 짜 드릴게요. 각 단계에서 복사해서 카페에 붙여넣으면 됩니다. 계정
-                정보는 저장하지 않아요.
+                계정마다 자리를 정해 두면 순서와 간격대로 올려 드려요. 손으로 하나씩 올릴 수도 있고,
+                컴퓨터에서 도는 작은 프로그램이 대신 올리게 할 수도 있어요.
               </p>
             </header>
+
+            <div class="card" id="auto-card">
+              <div class="cardhead">
+                <h3>자동으로 올리기</h3>
+                <span class="grow"></span>
+                <span class="chip" id="auto-state"></span>
+              </div>
+              <div id="auto-guide"></div>
+            </div>
 
             <div class="card">
               <h3>올릴 원고</h3>
@@ -477,26 +486,34 @@
 
             <div class="card">
               <h3>
-                올릴 곳
-                <span class="sub">카페 주소를 넣어 두면 단계마다 바로 열 수 있어요</span>
+                올릴 게시판
+                <span class="sub"
+                  >그 게시판을 보고 있을 때 주소창에 있는 주소를 그대로 넣어 주세요</span
+                >
               </h3>
-              <div class="pfoot" style="margin-top: 0">
+              <div class="field" style="margin-bottom: 10px">
                 <input
                   id="p-url"
                   class="input"
                   type="url"
-                  placeholder="https://cafe.naver.com/카페주소"
-                  aria-label="카페 주소"
+                  placeholder="https://cafe.naver.com/카페이름?iframe_url=/ArticleList.nhn%3F..."
+                  aria-label="게시판 주소"
                 />
+              </div>
+              <div class="field">
+                <label class="label" for="p-board">게시판 이름</label>
                 <input
                   id="p-board"
                   class="input"
                   type="text"
-                  placeholder="게시판 이름 (메모용)"
-                  aria-label="게시판"
-                  style="flex: 0 1 200px"
+                  placeholder="예: 피부고민 자유게시판"
+                  aria-label="게시판 이름"
                 />
               </div>
+              <p class="desc" style="margin: 10px 0 0">
+                카페 첫 주소가 아니라 <b>글을 올릴 게시판을 열어 둔 상태의 주소</b>여야 그 게시판에
+                올라가요. 왼쪽 게시판 이름을 누른 뒤 주소창을 복사하시면 됩니다.
+              </p>
             </div>
 
             <div class="card">
@@ -517,7 +534,9 @@
                 <button class="btn pri" id="btn-acct-add" type="button">추가</button>
               </div>
               <p class="desc" style="margin: 10px 0 0">
-                별칭만 저장해요. 아이디와 비밀번호는 넣지 마세요.
+                여기엔 <b>별칭만</b> 저장해요. 아이디와 비밀번호는 이 사이트에 넣지 않습니다.
+                자동으로 올릴 때는 컴퓨터의 프로그램에서 계정마다 한 번씩 직접 로그인해 두고, 그
+                기록을 다시 쓰는 방식이라 비밀번호를 적어 둘 필요가 없어요.
               </p>
             </div>
 

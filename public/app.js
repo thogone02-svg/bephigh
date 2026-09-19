@@ -2201,6 +2201,43 @@ function renderPublish() {
     });
   });
 
+  const ready = Boolean(s.cafeUrl) && (s.accounts ?? []).length > 0;
+
+  el('auto-state').textContent = ready ? '쓸 준비 됨' : '아래를 먼저 채워 주세요';
+  el('auto-state').className = ready ? 'chip ok' : 'chip';
+
+  el('auto-guide').innerHTML = `
+    <p class="desc" style="margin:0 0 12px">
+      브라우저에서는 네이버에 대신 글을 못 올려요. 그래서 컴퓨터에서 도는 작은 프로그램이
+      대신 올립니다. <b>비밀번호는 저장하지 않아요.</b> 계정마다 한 번씩 직접 로그인해 두면
+      그 기록을 다시 쓰는 방식이라, 캡차나 기기 등록에도 잘 안 걸립니다.
+    </p>
+    <div class="rows">
+      <div class="row">
+        <span class="chip blue">1</span>
+        <span class="txt"><b>프로그램 받기</b><span>깃허브에서 받은 폴더 안 <code>automation</code> 으로 들어가서 한 번만</span></span>
+        <button class="btn sm" type="button" data-copy-cmd="cd automation && npm install && npm run setup">복사</button>
+      </div>
+      <div class="row">
+        <span class="chip blue">2</span>
+        <span class="txt"><b>계정마다 한 번 로그인</b><span>창이 뜨면 그 계정으로 직접 로그인하고 닫으면 끝</span></span>
+        <button class="btn sm" type="button" data-copy-cmd='${esc(
+          (s.accounts ?? []).length
+            ? (s.accounts ?? []).map((name) => `npm run login -- "${name}"`).join('\n')
+            : 'npm run login -- "계정별칭"',
+        )}'>복사</button>
+      </div>
+      <div class="row">
+        <span class="chip blue">3</span>
+        <span class="txt"><b>아래에서 파일 받아서 실행</b><span>먼저 <code>--dry</code> 로 연습해 보시면 등록만 빼고 똑같이 해봐요</span></span>
+        <button class="btn sm" type="button" data-copy-cmd='npm start -- "${esc(target?.keyword ?? '원고')} 업로드.json"'>복사</button>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('[data-copy-cmd]').forEach((button) => {
+    button.addEventListener('click', () => copy(button.dataset.copyCmd, '명령'));
+  });
+
   el('assign-list').innerHTML = v
     ? roles(v)
         .map((seat) => {
@@ -2240,7 +2277,7 @@ function renderPublish() {
     }
 
     if (!s.cafeUrl) {
-      toast('올릴 카페 주소를 먼저 넣어 주세요');
+      toast('올릴 게시판 주소를 먼저 넣어 주세요');
 
       return;
     }
@@ -2256,6 +2293,7 @@ function renderPublish() {
     const plan = {
       version: 1,
       keyword: target.keyword,
+      // 게시판을 열어 둔 주소라야 그 게시판에 올라가요.
       cafeUrl: s.cafeUrl,
       board: s.board ?? '',
       steps: buildSteps(v).map((step, index) => ({
