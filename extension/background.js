@@ -357,7 +357,7 @@ async function postOne(run) {
     }
   } else {
     if (step.kind === 'reply') {
-      const opened = await inPage(tabId, 'open-reply');
+      const opened = await inPage(tabId, 'open-reply', step.replyTo ?? '');
 
       if (!opened.ok) {
         return { ok: false, reason: opened.reason, seen: opened.seen };
@@ -392,7 +392,7 @@ async function postOne(run) {
     return { ok: true, dry: true };
   }
 
-  const sent = await inPage(tabId, 'submit');
+  const sent = await inPage(tabId, 'submit', step.kind === 'post' ? 'post' : 'comment');
 
   if (!sent.ok) {
     return { ok: false, reason: sent.reason, seen: sent.seen };
@@ -498,6 +498,50 @@ async function tick() {
   await tick();
 }
 
+/**
+ * Look at the cafe without touching anything, so we can see what is there.
+ *
+ * 올리기 전에 「여기서 뭘 찾을 수 있나」를 미리 보는 쪽이에요.
+ * 글쓰기 화면과, 글 하나를 열어 댓글 자리까지 봅니다.
+ * @param {string} cafeUrl - Board address.
+ * @returns {Promise<Record<string, any>>} What we found.
+ */
+async function checkCafe(cafeUrl) {
+  const board = readBoard(cafeUrl);
+
+  const win = await chrome.windows
+    .create({ url: cafeUrl, focused: false, state: 'minimized' })
+    .catch(() => null);
+
+  const opened = win ?? (await chrome.windows.create({ url: cafeUrl, focused: false }));
+  const tabId = opened.tabs[0].id;
+
+  try {
+    await goTo(tabId, cafeUrl);
+
+    const article = await inPage(tabId, 'first-article');
+    const write = { ok: false, reason: '글쓰기 주소를 몰라요' };
+
+    if (board.write) {
+      await goTo(tabId, board.write);
+      await waitFor(tabId, 'form?', 20);
+      Object.assign(write, await inPage(tabId, 'check'));
+    }
+
+    let comment = { ok: false, reason: '글 목록에서 글을 못 찾아서 댓글 자리는 못 봤어요' };
+
+    if (article.ok) {
+      await goTo(tabId, article.url);
+      await waitFor(tabId, 'comment?', 15);
+      comment = await inPage(tabId, 'check');
+    }
+
+    return { ok: true, write, comment };
+  } finally {
+    await chrome.windows.remove(opened.id).catch(() => {});
+  }
+}
+
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === NEXT) {
     tick();
@@ -519,6 +563,14 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
           : { type: 'status', at: -1, steps: [] },
       ),
     );
+
+    return true;
+  }
+
+  if (message?.type === 'nabi-check') {
+    checkCafe(message.cafeUrl)
+      .then((found) => reply({ type: 'checked', ...found }))
+      .catch((error) => reply({ type: 'checked', ok: false, reason: error.message }));
 
     return true;
   }

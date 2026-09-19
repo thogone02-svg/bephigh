@@ -685,6 +685,11 @@ svg {
   color: var(--green);
 }
 
+.chip.bad {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
 /* sticky bottom CTA */
 
 .dock {

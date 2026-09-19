@@ -1,4 +1,11 @@
-import { cafeExtension, cafeStatus, onCafeEvent, runInCafe, stopCafe } from './cafe-bridge.js';
+import {
+  cafeExtension,
+  cafeStatus,
+  checkCafe,
+  onCafeEvent,
+  runInCafe,
+  stopCafe,
+} from './cafe-bridge.js';
 import { connect, createDoc, preloadGis } from './gdocs.js';
 import {
   download,
@@ -65,6 +72,7 @@ const state = {
   hasExtension: '',
   stuckSeen: null,
   runNote: '',
+  checked: null,
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -368,6 +376,90 @@ function inScope(steps, scope) {
   }
 
   return steps;
+}
+
+/**
+ * Show what the extension can find on the cafe, before anything is posted.
+ * @param {Record<string, any> | null} found - What came back from the check.
+ */
+function renderCheck(found) {
+  const box = el('auto-check');
+
+  if (!box) {
+    return;
+  }
+
+  if (!found) {
+    box.innerHTML = '';
+
+    return;
+  }
+
+  if (found.checking) {
+    box.innerHTML = `<div class="runlog"><p class="desc" style="margin:0">
+      카페를 보고 오는 중이에요. 창이 잠깐 열렸다 닫힙니다. 20초쯤 걸려요.</p></div>`;
+
+    return;
+  }
+
+  const mark = (yes) => {
+    if (yes === null || yes === undefined) {
+      return '<span class="chip">아직 못 봄</span>';
+    }
+
+    return yes ? '<span class="chip ok">찾음</span>' : '<span class="chip bad">못 찾음</span>';
+  };
+
+  const part = (title, what, bits) => {
+    const head = `<div class="row"><span class="txt"><b>${title}</b><span>${
+      what.ok === false ? esc(what.reason ?? '못 봤어요') : esc(what.url ?? '')
+    }</span></span></div>`;
+
+    if (what.ok === false) {
+      return head;
+    }
+
+    const lines = bits
+      .map(
+        ([name, yes]) =>
+          `<div class="row"><span class="txt"><span>${name}</span></span>${mark(yes)}</div>`,
+      )
+      .join('');
+
+    return `${head}${lines}`;
+  };
+
+  const raw = JSON.stringify(found, null, 1);
+
+  box.innerHTML = `<div class="runlog">
+    <div class="cardhead">
+      <h3>카페 화면 점검</h3>
+      <span class="grow"></span>
+      <button class="btn sm" type="button" id="btn-check-copy">이 내용 복사</button>
+    </div>
+    <p class="desc" style="margin:0 0 12px">
+      아무것도 안 올리고 보기만 했어요. <b>못 찾음</b>이 있으면 그 자리에서 멈춥니다.
+      이 내용을 그대로 알려주시면 고칠 수 있어요.
+    </p>
+    <div class="rows">
+      ${part('글쓰기 화면', found.write ?? {}, [
+        ['제목 칸', found.write?.title],
+        ['본문 칸', found.write?.body],
+        ['등록 단추', found.write?.send],
+      ])}
+      ${part('댓글 자리', found.comment ?? {}, [
+        ['댓글 칸', found.comment?.comment],
+        [
+          found.comment?.comments ? '답글 단추' : '답글 단추 (그 글에 댓글이 없어서 못 봤어요)',
+          found.comment?.reply,
+        ],
+        ['등록 단추', found.comment?.send],
+      ])}
+    </div>
+    <pre class="seen">${esc(raw)}</pre>
+  </div>`;
+
+  el('btn-check-copy').onclick = () => copy(raw, '점검 결과');
 }
 
 /**
@@ -1257,7 +1349,7 @@ function libList(query, sort) {
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
-const NEEDS_EXT = '1.2.0';
+const NEEDS_EXT = '1.3.0';
 
 /**
  * Compare two version strings like `1.2.0`.
@@ -2230,6 +2322,7 @@ function buildSteps(v) {
       }
 
       const role = turn.by === 'author' ? 'body' : `c${n}`;
+      const parent = (comment.thread ?? [])[position - 1];
 
       steps.push({
         role,
@@ -2237,6 +2330,8 @@ function buildSteps(v) {
         what,
         kind: turn.by === 'author' || position > 0 ? 'reply' : 'comment',
         thread: n,
+        // 답글은 이 글에 달아요. 댓글이 여러 개일 때 자리를 안 헷갈리게.
+        replyTo: parent?.text ?? '',
         text: turn.text + photo,
         at: clock,
       });
@@ -2518,6 +2613,7 @@ function renderPublish() {
         kind: step.kind,
         profile: step.who,
         thread: step.thread ?? null,
+        replyTo: step.replyTo ?? '',
         at: step.at,
         what: step.what,
         title: step.title ?? null,
@@ -2614,14 +2710,30 @@ function renderPublish() {
         화면 맨 아래 바에서도 똑같이 시작할 수 있어요.
       </p>
       <div class="pfoot" style="margin-top:0">
+        <button class="btn" type="button" id="btn-check"${s.cafeUrl ? '' : ' disabled'}>카페 화면 점검</button>
         <button class="btn" type="button" id="btn-run-dry"${ready ? '' : ' disabled'}>연습으로 올려 보기</button>
         <button class="btn pri" type="button" id="btn-run"${ready ? '' : ' disabled'}>업로드 시작</button>
         <span class="grow"></span>
         <button class="btn ghost" type="button" id="btn-acct-file">계정 파일 내려받기</button>
       </div>`;
 
+    el('btn-check').onclick = async () => {
+      renderCheck({ checking: true });
+
+      const found = await checkCafe(s.cafeUrl);
+
+      state.checked = found;
+      renderCheck(found ?? { ok: false, write: {}, comment: {} });
+
+      if (!found) {
+        toast('확장이 대답을 안 해요. 브라우저를 새로고침해 보세요');
+      }
+    };
+
     el('btn-run-dry').onclick = () => runHere(true);
     el('btn-run').onclick = () => runHere(false);
+
+    renderCheck(state.checked);
 
     el('btn-acct-file').onclick = () => {
       if (!accounts.length) {

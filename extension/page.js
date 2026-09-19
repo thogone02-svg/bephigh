@@ -111,10 +111,55 @@ export function act(what, text) {
     );
   };
 
+  const looksLikeComment = (node) =>
+    /댓글|답글/.test(label(node)) || /cmt|comment|reply/i.test(named(node));
+
+  // 답글을 열어 둔 자리가 있으면 그 안의 칸이 먼저예요.
+  // 답글 칸은 그 댓글 안에 생기기도 하고 바로 아래에 생기기도 합니다.
+  const replySpot = () => {
+    const marked = document.querySelector('[data-nabi-reply="1"]');
+
+    if (!marked) {
+      return null;
+    }
+
+    const near = [marked, marked.nextElementSibling, marked.parentElement].filter(Boolean);
+
+    for (const zone of near) {
+      const found = [
+        ...zone.querySelectorAll('textarea, [contenteditable="true"], [contenteditable=""]'),
+      ].filter(seen)[0];
+
+      if (found) {
+        return found;
+      }
+    }
+
+    return null;
+  };
+
   const commentBox = () =>
-    writable().find((node) => /댓글/.test(label(node))) ??
-    writable().find((node) => /cmt|comment/i.test(named(node))) ??
+    replySpot() ??
+    writable().find((node) => node.tagName === 'TEXTAREA' && looksLikeComment(node)) ??
+    writable().find(looksLikeComment) ??
     null;
+
+  // 「등록」이 화면에 여럿 있을 수 있어서, 글 쓰는 칸 가까이 있는 것을 먼저 봐요.
+  const sendNear = (box) => {
+    let zone = box?.parentElement ?? null;
+
+    for (let up = 0; up < 6 && zone; up += 1) {
+      const found = button(/^(등록|등록하기|확인|올리기|작성)$/, zone);
+
+      if (found) {
+        return found;
+      }
+
+      zone = zone.parentElement;
+    }
+
+    return null;
+  };
 
   const put = (box, value) => {
     box.scrollIntoView({ block: 'center' });
@@ -171,6 +216,39 @@ export function act(what, text) {
     return { ok: Boolean(commentBox()) };
   }
 
+  // 미리 점검. 이 화면에서 무엇을 찾을 수 있는지 그대로 알려줘요.
+  if (what === 'check') {
+    const box = commentBox();
+
+    const written = [
+      ...document.querySelectorAll(
+        'li.CommentItem, .comment_list li, ul.comment_list > li, [class*="CommentItem"]',
+      ),
+    ].filter(seen);
+
+    return {
+      ok: true,
+      title: Boolean(titleBox()),
+      body: Boolean(bodyBox()),
+      comment: Boolean(box),
+      comments: written.length,
+      // 댓글이 하나도 없으면 답글 단추가 있을 수가 없어요. 모르는 걸로 둡니다.
+      reply: written.length ? Boolean(button(/^답글$/)) : null,
+      send: Boolean(sendNear(box) ?? button(/^(등록|등록하기|확인|올리기)$/)),
+      ...dump(),
+    };
+  }
+
+  // 게시판에서 글 하나를 골라 그 주소를 알려줘요. 댓글 자리를 보려고요.
+  if (what === 'first-article') {
+    const link = [...document.querySelectorAll('a[href*="/articles/"]')]
+      .filter(seen)
+      .map((node) => node.href)
+      .find((href) => /\/articles\/\d+/.test(href));
+
+    return link ? { ok: true, url: link } : { ok: false, reason: '글 목록에서 글을 못 찾았어요' };
+  }
+
   if (what === 'title') {
     const box = titleBox();
 
@@ -203,23 +281,41 @@ export function act(what, text) {
 
   if (what === 'open-reply') {
     const items = [
-      ...document.querySelectorAll('li.CommentItem, .comment_list li, ul.comment_list > li'),
+      ...document.querySelectorAll(
+        'li.CommentItem, .comment_list li, ul.comment_list > li, [class*="CommentItem"]',
+      ),
     ].filter(seen);
 
-    const last = items[items.length - 1];
-    const reply = button(/^답글$/, last) ?? button(/^답글$/);
+    // 달려는 댓글의 글자로 그 자리를 찾아요. 못 찾으면 맨 끝 댓글.
+    const want = (text ?? '').replace(/\s+/g, '').slice(0, 20);
+    const mine = want ? items.filter((node) => words(node).includes(want)) : [];
+    const spot = mine[mine.length - 1] ?? items[items.length - 1];
+
+    if (!spot) {
+      return no('댓글을 하나도 못 찾았어요');
+    }
+
+    const reply = button(/^답글$/, spot);
 
     if (!reply) {
       return no('답글 단추를 못 찾았어요');
     }
 
+    // 다음 부름에서 이 자리를 알아볼 수 있게 표시해 둬요.
+    document
+      .querySelectorAll('[data-nabi-reply]')
+      .forEach((node) => node.removeAttribute('data-nabi-reply'));
+    spot.setAttribute('data-nabi-reply', '1');
     reply.click();
 
     return { ok: true };
   }
 
   if (what === 'submit') {
-    const send = button(/^(등록|등록하기|확인|올리기)$/);
+    // 댓글이면 그 칸 가까이 있는 등록을, 없으면 화면 전체에서 찾아요.
+    const send =
+      (text === 'comment' ? sendNear(commentBox()) : null) ??
+      button(/^(등록|등록하기|확인|올리기)$/);
 
     if (!send) {
       return no('등록 단추를 못 찾았어요');

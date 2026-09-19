@@ -91,6 +91,16 @@ export const runInCafe = (plan, dry) =>
 export const stopCafe = () => askExtension({ type: 'nabi-stop' });
 
 /**
+ * Look at the cafe first, without posting anything.
+ *
+ * 올리기 전에 글쓰기 화면과 댓글 자리를 미리 봐 둡니다.
+ * @param {string} cafeUrl - Board address.
+ * @returns {Promise<Record<string, any> | null>} What the extension found.
+ */
+export const checkCafe = (cafeUrl) =>
+  askExtension({ type: 'nabi-check', cafeUrl }, 90000, 'checked');
+
+/**
  * Ask whether something is being posted right now.
  *
  * 작업실 화면을 새로고침해도 올리던 것이 이어지고 있으면 다시 보여주려고요.
