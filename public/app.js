@@ -55,6 +55,10 @@ const state = {
   maker: '전체',
   setMode: 'new',
   carried: '',
+  stopped: false,
+  libPage: 0,
+  madePage: 0,
+  editLib: null,
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -661,9 +665,22 @@ async function generate() {
   card.hidden = false;
   out.textContent = '';
   out.classList.add('caret');
+  el('stream-title').textContent = '쓰는 중이에요';
+  el('stream-count').textContent = '0자';
+  el('btn-stop').hidden = false;
+  el('stream-note').textContent =
+    '다른 화면으로 가도 계속 써요. 창을 닫으면 여기까지 쓴 만큼만 남고 이어서 쓰진 못해요.';
   state.busy = true;
+  state.stopped = false;
   renderDock();
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  el('btn-stop').onclick = () => {
+    state.stopped = true;
+    el('stream-title').textContent = '여기서 멈췄어요';
+    el('stream-note').textContent = '쓴 만큼은 남아 있어요. 아래에서 살릴 수 있어요.';
+    el('btn-stop').hidden = true;
+  };
 
   // 흘러오는 글을 이따금 적어 둡니다. 여기서 창이 닫혀도 쓴 만큼은 남아요.
   let lastKept = 0;
@@ -701,8 +718,13 @@ async function generate() {
       },
       (event) => {
         if (event.type === 'delta') {
+          if (state.stopped) {
+            throw new Error('그만뒀어요. 쓴 만큼은 아래에서 살릴 수 있어요.');
+          }
+
           out.textContent += event.text;
           out.scrollTop = out.scrollHeight;
+          el('stream-count').textContent = `${out.textContent.replace(/\s/g, '').length}자`;
           keepDraft(out.textContent);
         }
 
@@ -745,7 +767,9 @@ async function generate() {
     }
 
     state.busy = false;
+    state.stopped = false;
     out.classList.remove('caret');
+    el('btn-stop').hidden = true;
     renderDock();
     renderDraft();
   }
@@ -1104,6 +1128,157 @@ function libList(query, sort) {
 /**
  * Draw the library grid.
  */
+/** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
+const PER_PAGE = 10;
+
+/**
+ * Draw the page buttons for a list.
+ * @param {string} id - Container id.
+ * @param {number} total - How many items there are.
+ * @param {number} page - Current page, starting at 0.
+ * @param {(next: number) => void} go - Called with the page to move to.
+ */
+function renderPager(id, total, page, go) {
+  const box = el(id);
+  const last = Math.max(0, Math.ceil(total / PER_PAGE) - 1);
+
+  if (last === 0) {
+    box.innerHTML = '';
+
+    return;
+  }
+
+  const numbers = [];
+
+  for (let n = Math.max(0, page - 2); n <= Math.min(last, page + 2); n += 1) {
+    numbers.push(n);
+  }
+
+  box.innerHTML = `
+    <button type="button" data-go-page="${page - 1}" ${page === 0 ? 'disabled' : ''}>이전</button>
+    ${numbers
+      .map(
+        (n) =>
+          `<button type="button" data-go-page="${n}" aria-current="${n === page}">${n + 1}</button>`,
+      )
+      .join('')}
+    <button type="button" data-go-page="${page + 1}" ${page === last ? 'disabled' : ''}>다음</button>
+    <span class="at">${total}개 중 ${page * PER_PAGE + 1}~${Math.min(total, (page + 1) * PER_PAGE)}</span>`;
+
+  box.querySelectorAll('[data-go-page]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const next = Number(button.dataset.goPage);
+
+      if (next >= 0 && next <= last) {
+        go(next);
+      }
+    });
+  });
+}
+
+/**
+ * Draw the manuscripts made in this app, newest first.
+ *
+ * 만든 원고도 보관함에서 한눈에 보이게 해요. 여기서 바로 열거나 지웁니다.
+ */
+function renderMade() {
+  const total = store.docs.length;
+
+  el('made-card').hidden = !total;
+
+  if (!total) {
+    return;
+  }
+
+  const last = Math.max(0, Math.ceil(total / PER_PAGE) - 1);
+
+  state.madePage = Math.min(state.madePage, last);
+  el('made-count').textContent = `${total}개`;
+
+  el('made-grid').innerHTML = store.docs
+    .slice(state.madePage * PER_PAGE, (state.madePage + 1) * PER_PAGE)
+    .map((d) => {
+      const v = applied(d);
+
+      return `<article class="lib">
+        <h4>${esc(d.keyword || '이름 없음')}</h4>
+        <p>${esc(v?.title ?? '')}</p>
+        <span class="meta">댓글 ${v?.comments?.length ?? 0}개 · ${d.versions.length}차 · ${new Date(d.createdAt).toLocaleDateString('ko-KR')}</span>
+        <div class="act">
+          <button class="btn sm" type="button" data-open-doc="${d.id}">열기</button>
+          <button class="btn sm" type="button" data-save-doc="${d.id}">보관함에 넣기</button>
+          <span class="grow"></span>
+          <button class="btn sm ghost" type="button" data-del-doc="${d.id}">지우기</button>
+        </div>
+      </article>`;
+    })
+    .join('');
+
+  renderPager('made-pager', total, state.madePage, (next) => {
+    state.madePage = next;
+    renderMade();
+  });
+
+  document.querySelectorAll('[data-open-doc]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.docId = button.dataset.openDoc;
+      state.version = (doc()?.versions.length ?? 1) - 1;
+      state.revising = {};
+      show('result');
+    });
+  });
+
+  document.querySelectorAll('[data-save-doc]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = store.docs.find((d) => d.id === button.dataset.saveDoc);
+      const v = applied(target);
+
+      if (!v?.comments?.length) {
+        toast('댓글이 있어야 보관함 세트로 쓸 수 있어요');
+
+        return;
+      }
+
+      store.library.unshift({
+        id: uid('lib'),
+        keyword: target.keyword,
+        fileName: `${target.keyword}.txt`,
+        title: v.title,
+        body: v.body,
+        comments: v.comments.map((c) => ({ ...c, locked: false })),
+        learn: false,
+        uses: 0,
+        addedAt: Date.now(),
+      });
+      persist();
+      renderLibrary();
+      toast('보관함에 넣었어요. 어투 학습을 켜면 다음 원고에 반영돼요');
+    });
+  });
+
+  document.querySelectorAll('[data-del-doc]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = store.docs.find((d) => d.id === button.dataset.delDoc);
+
+      if (!window.confirm(`「${target?.keyword ?? '원고'}」를 지울까요? 되돌릴 수 없어요.`)) {
+        return;
+      }
+
+      store.docs = store.docs.filter((d) => d.id !== button.dataset.delDoc);
+
+      if (state.docId === button.dataset.delDoc) {
+        state.docId = store.docs[0]?.id ?? null;
+        state.version = Math.max(0, (store.docs[0]?.versions.length ?? 1) - 1);
+      }
+
+      persist();
+      renderMade();
+      renderExport();
+      toast('지웠어요');
+    });
+  });
+}
+
 function renderLibrary() {
   const list = libList(state.libQuery, state.libSort);
   const learning = store.library.filter((i) => i.learn).length;
@@ -1117,9 +1292,14 @@ function renderLibrary() {
     )}`;
   }
 
+  const lastPage = Math.max(0, Math.ceil(list.length / PER_PAGE) - 1);
+
+  state.libPage = Math.min(state.libPage, lastPage);
+
   el('lib-summary').textContent = summary;
   el('lib-empty').hidden = list.length > 0 || !store.library.length;
   el('lib-grid').innerHTML = list
+    .slice(state.libPage * PER_PAGE, (state.libPage + 1) * PER_PAGE)
     .map(
       (i) => `<article class="lib">
       <h4>${esc(i.keyword)}</h4>
@@ -1127,12 +1307,21 @@ function renderLibrary() {
       <span class="meta">댓글 ${i.comments.length}개${i.uses ? ` · ${i.uses}번 씀` : ''}</span>
       <div class="act">
         <button class="btn sm" type="button" data-use="${i.id}">댓글 가져오기</button>
+        <button class="btn sm" type="button" data-edit-lib="${i.id}">고치기</button>
         <span class="grow"></span>
         <label class="check"><input type="checkbox" data-learn="${i.id}" ${i.learn ? 'checked' : ''} aria-label="어투 학습" />어투 학습</label>
+        <button class="btn sm ghost" type="button" data-del-lib="${i.id}">지우기</button>
       </div>
     </article>`,
     )
     .join('');
+
+  renderPager('lib-pager', list.length, state.libPage, (next) => {
+    state.libPage = next;
+    renderLibrary();
+  });
+  renderMade();
+  renderLibEditor();
 
   document.querySelectorAll('[data-learn]').forEach((box) => {
     box.addEventListener('change', () => {
@@ -1142,6 +1331,114 @@ function renderLibrary() {
       persist();
       renderLibrary();
     });
+  });
+
+  document.querySelectorAll('[data-edit-lib]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.editLib = state.editLib === button.dataset.editLib ? null : button.dataset.editLib;
+      renderLibEditor();
+    });
+  });
+
+  document.querySelectorAll('[data-del-lib]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const item = store.library.find((l) => l.id === button.dataset.delLib);
+
+      if (!window.confirm(`「${item?.keyword ?? '원고'}」를 보관함에서 지울까요?`)) {
+        return;
+      }
+
+      store.library = store.library.filter((l) => l.id !== button.dataset.delLib);
+
+      if (state.editLib === button.dataset.delLib) {
+        state.editLib = null;
+      }
+
+      persist();
+      renderLibrary();
+      toast('지웠어요');
+    });
+  });
+}
+
+/**
+ * Show the panel for fixing one saved manuscript.
+ *
+ * 원고를 올린 그대로 글자로 보여주고, 고쳐서 저장하면 다시 읽어들여요.
+ * 제목·본문·댓글을 따로 다루는 화면을 만드는 것보다 손대기 쉬워요.
+ */
+function renderLibEditor() {
+  const box = el('lib-editor');
+  const item = state.editLib ? store.library.find((l) => l.id === state.editLib) : null;
+
+  if (!box) {
+    return;
+  }
+
+  if (!item) {
+    box.innerHTML = '';
+
+    return;
+  }
+
+  box.innerHTML = `<div class="editor">
+    <div class="cardhead">
+      <h3>「${esc(item.keyword)}」 고치기</h3>
+      <span class="grow"></span>
+      <button class="btn sm ghost" type="button" id="btn-edit-close">닫기</button>
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label class="label" for="f-lib-keyword">키워드</label>
+      <input class="input" type="text" id="f-lib-keyword" value="${esc(item.keyword)}" />
+    </div>
+    <label class="label" for="f-lib-text">원고</label>
+    <textarea id="f-lib-text" spellcheck="false"></textarea>
+    <p class="desc" style="margin:8px 0 0">
+      올릴 때와 같은 형식이에요. 첫 줄이 제목, <b>댓글1</b> 부터 댓글, <b>ㄴ 작성자</b> 는 글쓴이 답글이에요.
+    </p>
+    <div class="pfoot">
+      <button class="btn pri" type="button" id="btn-edit-save">저장하기</button>
+      <button class="btn" type="button" id="btn-edit-cancel">되돌리기</button>
+    </div>
+  </div>`;
+
+  el('f-lib-text').value = toText(item);
+
+  el('btn-edit-close').addEventListener('click', () => {
+    state.editLib = null;
+    renderLibEditor();
+  });
+
+  el('btn-edit-cancel').addEventListener('click', () => {
+    el('f-lib-text').value = toText(item);
+    el('f-lib-keyword').value = item.keyword;
+    toast('되돌렸어요');
+  });
+
+  el('btn-edit-save').addEventListener('click', async () => {
+    const response = await fetch('/api/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: el('f-lib-text').value }),
+    }).catch(() => null);
+
+    const data = await response?.json().catch(() => null);
+    const next = data?.manuscripts?.[0] ?? data?.manuscript;
+
+    if (!next?.title) {
+      toast('제목을 못 찾았어요. 첫 줄에 제목이 있어야 해요.');
+
+      return;
+    }
+
+    item.keyword = el('f-lib-keyword').value.trim() || item.keyword;
+    item.title = next.title;
+    item.body = next.body;
+    item.comments = next.comments;
+    persist();
+    state.editLib = null;
+    renderLibrary();
+    toast('고쳤어요');
   });
 }
 

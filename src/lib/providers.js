@@ -75,6 +75,9 @@ export const findModel = (id) => {
  * @param {string} maker - Provider key.
  * @returns {Promise<string>} Korean message.
  */
+/** 잠깐 몰렸을 뿐이라 다시 물어보면 되는 상태들. */
+const BUSY = new Set([429, 500, 502, 503, 504]);
+
 const describe = async (response, maker) => {
   const name = MAKER_NAMES[maker] ?? maker;
   const text = await response.text().catch(() => '');
@@ -96,6 +99,10 @@ const describe = async (response, maker) => {
 
   if (response.status === 429) {
     return `${name} 사용량이 잠시 막혔어요. 조금 뒤에 다시 시도해 주세요.`;
+  }
+
+  if (BUSY.has(response.status)) {
+    return `${name} 쪽이 지금 몰려서 못 받고 있어요. 세 번 물어봤는데 계속 그러네요. 1~2분 뒤에 다시 눌러 보시거나, 설정에서 다른 모델로 바꿔 주세요.`;
   }
 
   return `${name} 오류(${response.status})예요. ${detail}`;
@@ -276,13 +283,27 @@ export async function* streamCompletion({ modelId, keys, system, user, maxTokens
     throw new Error(`${MAKER_NAMES[model.maker]} API 키가 없어요. 설정에서 먼저 넣어 주세요.`);
   }
 
-  const response = await CALLS[model.maker]({
-    apiKey,
-    model: model.api,
-    system,
-    user,
-    maxTokens,
-  });
+  const call = () =>
+    CALLS[model.maker]({
+      apiKey,
+      model: model.api,
+      system,
+      user,
+      maxTokens,
+    });
+
+  let response = await call();
+
+  // 회사 쪽이 잠깐 몰려서 못 받는 경우가 있어요. 사람이 다시 누르게 하지 말고
+  // 조금 기다렸다가 두 번까지 알아서 다시 물어봅니다.
+  for (let attempt = 0; attempt < 2 && BUSY.has(response.status); attempt += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((wait) => {
+      setTimeout(wait, 1500 * (attempt + 1));
+    });
+    // eslint-disable-next-line no-await-in-loop
+    response = await call();
+  }
 
   if (!response.ok || !response.body) {
     throw new Error(await describe(response, model.maker));

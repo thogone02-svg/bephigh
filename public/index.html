@@ -199,7 +199,13 @@
             </div>
 
             <div class="card" id="stream-card" hidden>
-              <h3>쓰는 중이에요</h3>
+              <div class="cardhead">
+                <h3 id="stream-title">쓰는 중이에요</h3>
+                <span class="grow"></span>
+                <span class="chip" id="stream-count"></span>
+                <button class="btn sm" type="button" id="btn-stop" hidden>그만두기</button>
+              </div>
+              <p class="desc" id="stream-note" style="margin: 0 0 12px"></p>
               <div class="stream" id="stream-out"></div>
             </div>
           </section>
@@ -244,6 +250,16 @@
               </div>
             </div>
 
+            <div class="card" id="made-card">
+              <div class="cardhead">
+                <h3>작업실에서 만든 원고</h3>
+                <span class="grow"></span>
+                <span class="chip" id="made-count"></span>
+              </div>
+              <div class="libgrid" id="made-grid"></div>
+              <div class="pager" id="made-pager"></div>
+            </div>
+
             <div class="card">
               <div class="toolbar">
                 <label class="searchbar">
@@ -276,6 +292,8 @@
               <p class="desc" id="lib-summary" style="margin: 0 0 12px"></p>
               <div class="libgrid" id="lib-grid"></div>
               <div class="empty" id="lib-empty" hidden>찾는 키워드가 없어요</div>
+              <div class="pager" id="lib-pager"></div>
+              <div id="lib-editor"></div>
             </div>
 
             <div class="card">

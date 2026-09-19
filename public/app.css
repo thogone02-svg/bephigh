@@ -1740,3 +1740,72 @@ th {
 .banner .grow b {
   color: var(--t900);
 }
+
+/* ---------- 쪽 넘기기 ---------- */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.pager:empty {
+  display: none;
+}
+
+.pager button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--t600);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pager button:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.pager button[aria-current='true'] {
+  border-color: var(--t900);
+  background: var(--t900);
+  color: var(--bg);
+}
+
+.pager button:disabled {
+  color: var(--t400);
+  cursor: default;
+}
+
+.pager .at {
+  margin: 0 6px;
+  color: var(--t500);
+  font-size: 13px;
+}
+
+/* 보관함 원고 고치기 */
+.editor {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+}
+
+.editor textarea {
+  width: 100%;
+  min-height: 320px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 13px;
+  line-height: 1.7;
+  resize: vertical;
+}
