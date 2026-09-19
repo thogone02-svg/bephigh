@@ -18,6 +18,8 @@ const EMPTY = {
     accounts: [],
     assign: {},
     gaps: { first: 3, between: 2, reply: 1 },
+    /** 한 번에 어디까지 올릴지. Body / first / all */
+    scope: 'all',
   },
   docs: [],
   library: [],
@@ -37,7 +39,7 @@ let opening = null;
 /**
  * Open the database the app keeps its work in.
  *
- * localStorage only gives a site about 5MB, which ran out at a few hundred
+ * LocalStorage only gives a site about 5MB, which ran out at a few hundred
  * manuscripts. This store is limited by free disk space instead.
  * @returns {Promise<IDBDatabase>} Open database.
  */

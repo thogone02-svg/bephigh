@@ -39,34 +39,12 @@ const rest = (ms) =>
  * @returns {Promise<Record<string, any>>} What came back.
  */
 async function ask(tabId, message) {
-  await chrome.scripting
-    .executeScript({ target: { tabId }, files: ['cafe.js'] })
-    .catch(() => {});
+  await chrome.scripting.executeScript({ target: { tabId }, files: ['cafe.js'] }).catch(() => {});
 
   return chrome.tabs.sendMessage(tabId, message).catch((error) => ({
     ok: false,
     reason: error.message,
   }));
-}
-
-/**
- * Find who is signed in right now.
- * @param {number} tabId - Tab to look in.
- * @returns {Promise<string>} The naver id, or an empty string.
- */
-async function whoIsIn(tabId) {
-  const [got] = await chrome.scripting
-    .executeScript({
-      target: { tabId },
-      func: () => {
-        const link = document.querySelector('a[href*="MyCafeIntro"], .link_login, #gnb_logout_button');
-
-        return document.cookie.includes('NID_AUT') ? (link?.textContent ?? 'in').trim() : '';
-      },
-    })
-    .catch(() => [{ result: '' }]);
-
-  return got?.result ?? '';
 }
 
 /**
@@ -89,12 +67,17 @@ async function signIn(tabId, account) {
   await chrome.scripting.executeScript({
     target: { tabId },
     args: [account.id, account.pw],
+    /**
+     * @param id
+     * @param pw
+     */
     func: (id, pw) => {
+      /**
+       * @param node
+       * @param value
+       */
       const set = (node, value) => {
-        const setter = Object.getOwnPropertyDescriptor(
-          HTMLInputElement.prototype,
-          'value',
-        ).set;
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
 
         setter.call(node, value);
         node.dispatchEvent(new Event('input', { bubbles: true }));
@@ -124,7 +107,6 @@ async function runPlan(plan) {
   const board = readBoard(plan.cafeUrl);
   const tab = await chrome.tabs.create({ url: plan.cafeUrl, active: true });
   const accounts = plan.accounts ?? [];
-
   let article = '';
   let signedAs = null;
 
@@ -235,6 +217,7 @@ async function runPlan(plan) {
     if (step.kind === 'post') {
       // eslint-disable-next-line no-await-in-loop
       await rest(2500);
+
       // eslint-disable-next-line no-await-in-loop
       const now = await chrome.tabs.get(tab.id);
       const id = articleIdFrom(now.url);
@@ -245,7 +228,8 @@ async function runPlan(plan) {
         say({
           type: 'needs-you',
           no: step.no,
-          message: '글은 올라갔는데 글 주소를 못 읽었어요. 댓글은 그 글을 열어 두고 이어서 해주세요.',
+          message:
+            '글은 올라갔는데 글 주소를 못 읽었어요. 댓글은 그 글을 열어 두고 이어서 해주세요.',
         });
 
         return;

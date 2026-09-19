@@ -13,7 +13,11 @@
   "background": { "service_worker": "background.js", "type": "module" },
   "content_scripts": [
     {
-      "matches": ["https://bephighcafe.thogone02.workers.dev/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "matches": [
+        "https://bephighcafe.thogone02.workers.dev/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
       "js": ["bridge.js"],
       "run_at": "document_start"
     }

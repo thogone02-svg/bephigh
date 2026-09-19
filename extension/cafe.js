@@ -47,7 +47,9 @@ async function findBox(hint, classes, waitMs = 15000) {
     ].filter(onScreen);
 
     const byHint = boxes.find((node) =>
-      hint.test(`${node.getAttribute('placeholder') ?? ''} ${node.getAttribute('aria-label') ?? ''}`),
+      hint.test(
+        `${node.getAttribute('placeholder') ?? ''} ${node.getAttribute('aria-label') ?? ''}`,
+      ),
     );
 
     if (byHint) {
@@ -129,11 +131,9 @@ async function typeInto(box, text) {
   // 붙여넣기를 안 받으면 한 줄씩 직접 쳐요.
   for (const line of text.split('\n')) {
     if (line) {
-      // eslint-disable-next-line no-await-in-loop
       document.execCommand('insertText', false, line);
     }
 
-    // eslint-disable-next-line no-await-in-loop
     document.execCommand('insertParagraph');
     // eslint-disable-next-line no-await-in-loop
     await rest(40);
@@ -189,7 +189,10 @@ async function fillComment(step) {
   const box = await findBox(/댓글/, SELECTORS.comment);
 
   if (!box) {
-    return { ok: false, reason: '댓글 칸을 못 찾았어요. 그 카페에서 댓글을 쓸 수 있는 계정인지 봐주세요.' };
+    return {
+      ok: false,
+      reason: '댓글 칸을 못 찾았어요. 그 카페에서 댓글을 쓸 수 있는 계정인지 봐주세요.',
+    };
   }
 
   if (!(await typeInto(box, step.text ?? ''))) {

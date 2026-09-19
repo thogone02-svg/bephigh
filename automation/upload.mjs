@@ -25,11 +25,10 @@ console.log(`게시판: ${plan.board || '(이름 없음)'}`);
 console.log(`주소: ${plan.cafeUrl}`);
 
 if (!/\/f-e\/cafes\/\d+\/menus\/\d+|iframe_url|ArticleList|menuid/i.test(plan.cafeUrl)) {
-  console.log(
-    '\n⚠ 카페 첫 주소 같아요. 이러면 글쓰기에서 게시판이 안 골라져 있을 수 있어요.',
-  );
+  console.log('\n⚠ 카페 첫 주소 같아요. 이러면 글쓰기에서 게시판이 안 골라져 있을 수 있어요.');
   console.log('  올릴 게시판을 연 상태의 주소를 넣으시면 그 게시판으로 바로 갑니다.\n');
 }
+
 console.log(
   dry ? '연습 모드예요. 등록 버튼은 누르지 않습니다.\n' : '진짜로 올립니다. 멈추려면 Ctrl+C.\n',
 );
@@ -54,6 +53,7 @@ for (const alias of needed) {
     console.log(`   ${alias} 로그인이 풀려서 다시 들어가 볼게요…`);
     // eslint-disable-next-line no-await-in-loop
     context = await openAs(alias, false);
+
     // eslint-disable-next-line no-await-in-loop
     const page = context.pages()[0] ?? (await context.newPage());
 

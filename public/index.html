@@ -501,16 +501,6 @@
                   aria-label="게시판 주소"
                 />
               </div>
-              <div class="field">
-                <label class="label" for="p-board">게시판 이름</label>
-                <input
-                  id="p-board"
-                  class="input"
-                  type="text"
-                  placeholder="예: 피부고민 자유게시판"
-                  aria-label="게시판 이름"
-                />
-              </div>
               <p class="desc" style="margin: 10px 0 0">
                 카페 첫 주소가 아니라 <b>글을 올릴 게시판을 열어 둔 상태의 주소</b>여야 그 게시판에
                 올라가요. 왼쪽에서 게시판 이름을 누른 뒤 주소창을 복사하시면 됩니다.
@@ -566,8 +556,27 @@
 
             <div class="card">
               <h3>
+                어디까지 올릴까요
+                <span class="sub">본문만 먼저 올려보고 댓글은 나중에 달아도 돼요</span>
+              </h3>
+              <div class="seg wide" role="group" aria-label="올릴 범위">
+                <button type="button" data-seg="scope" data-value="body" aria-pressed="false">
+                  본문만
+                </button>
+                <button type="button" data-seg="scope" data-value="first" aria-pressed="false">
+                  본문 + 댓글1
+                </button>
+                <button type="button" data-seg="scope" data-value="all" aria-pressed="true">
+                  전체
+                </button>
+              </div>
+              <p class="desc" id="scope-note" style="margin: 12px 0 0"></p>
+            </div>
+
+            <div class="card">
+              <h3>
                 자리 배정
-                <span class="sub">본문과 댓글마다 어느 계정이 올릴지 정해요</span>
+                <span class="sub">올릴 자리만 정하면 돼요. 안 올릴 댓글은 비워 두셔도 됩니다</span>
               </h3>
               <div class="rows" id="assign-list"></div>
             </div>

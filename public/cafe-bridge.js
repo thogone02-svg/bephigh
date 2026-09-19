@@ -7,7 +7,6 @@
 
 const OUT = 'nabi-cafe-request';
 const IN = 'nabi-cafe-event';
-
 /** 확장이 보내오는 진행 소식을 받을 사람들. */
 const listeners = new Set();
 

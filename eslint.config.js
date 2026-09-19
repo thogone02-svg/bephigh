@@ -152,4 +152,12 @@ export default [
     files: ['automation/**/*.mjs'],
     rules: { 'no-console': 'off' },
   },
+
+  // 확장 프로그램은 크롬 안에서 돌아요. `chrome` 은 크롬이 넣어 주는 것이고,
+  // 단계를 건너뛰는 `continue` 는 올리는 차례를 도는 곳에서 가장 읽기 쉬워요.
+  {
+    files: ['extension/**/*.js'],
+    languageOptions: { globals: { ...globals.browser, chrome: 'readonly' } },
+    rules: { 'no-continue': 'off' },
+  },
 ];

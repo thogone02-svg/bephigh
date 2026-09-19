@@ -1425,6 +1425,19 @@ th {
     display: none;
   }
 
+  /* 업로드 바는 무엇을 올리는지 / 무엇이 빠졌는지 좁은 화면에서도 보여야 해요. */
+  .dock .inner.stack {
+    flex-wrap: wrap;
+  }
+
+  .dock .inner.stack p {
+    display: block;
+    flex: 1 1 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   .dock .btn {
     flex: 1 1 0;
   }

@@ -78,6 +78,10 @@ export const findModel = (id) => {
 /** 잠깐 몰렸을 뿐이라 다시 물어보면 되는 상태들. */
 const BUSY = new Set([429, 500, 502, 503, 504]);
 
+/**
+ * @param response
+ * @param maker
+ */
 const describe = async (response, maker) => {
   const name = MAKER_NAMES[maker] ?? maker;
   const text = await response.text().catch(() => '');
@@ -283,6 +287,9 @@ export async function* streamCompletion({ modelId, keys, system, user, maxTokens
     throw new Error(`${MAKER_NAMES[model.maker]} API 키가 없어요. 설정에서 먼저 넣어 주세요.`);
   }
 
+  /**
+   *
+   */
   const call = () =>
     CALLS[model.maker]({
       apiKey,

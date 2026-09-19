@@ -61,6 +61,7 @@ const state = {
   madePage: 0,
   editLib: null,
   runLog: [],
+  pub: null,
   hasExtension: '',
   stuckSeen: null,
   keepSet: null,
@@ -129,13 +130,7 @@ const wonDoc = (m) => Math.round(perDoc(m) * WON);
  * @param id
  */
 const model = (id) => state.models.find((m) => m.id === id) ?? state.models[0];
-/**
- *
- */
 const doc = () => store.docs.find((d) => d.id === state.docId) ?? null;
-/**
- *
- */
 const version = () => doc()?.versions[state.version] ?? null;
 
 /**
@@ -182,9 +177,6 @@ function applied(target, at) {
   };
 }
 
-/**
- *
- */
 const persist = () => save(store);
 
 /**
@@ -357,6 +349,27 @@ function renderDraft() {
 }
 
 /**
+ * Keep only the steps the chosen range covers.
+ *
+ * 본문만 먼저 올려 보고 댓글은 나중에 다는 일이 많아서, 어디까지 올릴지
+ * 고를 수 있게 했어요.
+ * @param {Record<string, any>[]} steps - All steps.
+ * @param {string} scope - `body`, `first` or `all`.
+ * @returns {Record<string, any>[]} Steps to actually post.
+ */
+function inScope(steps, scope) {
+  if (scope === 'body') {
+    return steps.filter((step) => step.kind === 'post');
+  }
+
+  if (scope === 'first') {
+    return steps.filter((step) => step.kind === 'post' || step.thread === 1);
+  }
+
+  return steps;
+}
+
+/**
  * Show how far the extension got, step by step.
  * @param {boolean} dry - True when nothing is actually being posted.
  */
@@ -490,6 +503,9 @@ function renderDock() {
   const inner = el('dock-inner');
   const pending = Object.values(state.revising).filter((v) => v && v.trim()).length;
 
+  // 좁은 화면에서는 설명줄을 감추는데, 업로드 바만은 보여야 해요.
+  inner.className = state.view === 'publish' ? 'inner stack' : 'inner';
+
   if (state.view === 'write') {
     const m = model(store.settings.model);
 
@@ -506,6 +522,23 @@ function renderDock() {
       '<button class="btn" type="button" data-go="export">내보내기</button>' +
       `<button class="btn pri" id="btn-revise" type="button"${state.busy ? ' disabled' : ''}>${state.busy ? '고치는 중…' : '다음 버전 만들기'}</button>`;
     el('btn-revise').addEventListener('click', revise);
+  } else if (state.view === 'publish' && state.pub) {
+    const p = state.pub;
+    const off = p.ready ? '' : ' disabled';
+
+    const buttons = state.hasExtension
+      ? `<button class="btn" type="button" id="btn-dock-dry"${off}>연습으로</button>
+         <button class="btn pri lg" type="button" id="btn-dock-run"${off}>업로드 시작</button>`
+      : `<button class="btn pri lg" type="button" id="btn-dock-plan"${off}>업로드 파일 내려받기</button>`;
+
+    inner.innerHTML = `<p>${p.ready ? `${esc(p.keyword)} · ${p.scope} · ${p.count}단계` : esc(p.missing)}</p>${buttons}`;
+
+    if (state.hasExtension) {
+      el('btn-dock-dry').onclick = () => p.run(true);
+      el('btn-dock-run').onclick = () => p.run(false);
+    } else {
+      el('btn-dock-plan').onclick = p.plan;
+    }
   } else if (state.view === 'export') {
     const n = state.picks.length;
 
@@ -1060,9 +1093,6 @@ function renderResult() {
     });
   });
 
-  /**
-   *
-   */
   el('doc-pick').onchange = () => {
     const next = store.docs.find((d) => d.id === el('doc-pick').value);
 
@@ -1625,9 +1655,6 @@ function bindPicker(searchId) {
   }
 
   // 결과만 다시 그려요. 입력칸은 그대로 두어야 한글 조합이 안 끊깁니다.
-  /**
-   *
-   */
   const refresh = () => {
     state.pickQuery = search.value;
     el(`${searchId}-recs`).innerHTML = pickerRecs();
@@ -2063,6 +2090,17 @@ const GAPS = [
   { id: 'reply', label: '댓글 달린 뒤 작성자 답글까지' },
 ];
 
+/** 어디까지 올릴지 고른 것을 짧게 부르는 말. */
+const SCOPE_LABEL = { body: '본문만', first: '본문 + 댓글1', all: '전체' };
+
+/** 고른 범위가 무슨 뜻인지 풀어서 쓴 말. */
+const SCOPE_NOTE = {
+  body: '<b>본문 글만</b> 올려요. 댓글은 하나도 안 올립니다. 글이 제대로 올라가는지 먼저 볼 때 좋아요.',
+  first:
+    '<b>본문 글과 댓글1 묶음까지</b> 올려요. 남은 댓글은 나중에 <b>전체</b>로 다시 올리시면 됩니다.',
+  all: '원고에 있는 <b>본문과 댓글을 전부</b> 정해둔 간격대로 올려요.',
+};
+
 /**
  * Add up minutes and format the running clock offset.
  * @param {number} minutes - Minutes from the start.
@@ -2159,13 +2197,35 @@ function buildSteps(v) {
 }
 
 /**
+ * Say in one short line what still has to be filled in before uploading.
+ * @param {Record<string, any> | null} v - The chosen version, when there is one.
+ * @param {Record<string, any>} settings - Saved settings.
+ * @param {Record<string, any>[]} accounts - Saved accounts.
+ * @returns {string} What to do next.
+ */
+function whatIsMissing(v, settings, accounts) {
+  if (!v) {
+    return '올릴 원고를 골라 주세요';
+  }
+
+  if (!settings.cafeUrl) {
+    return '올릴 게시판 주소를 넣어 주세요';
+  }
+
+  if (!accounts.length) {
+    return '올릴 계정을 하나라도 추가해 주세요';
+  }
+
+  return '';
+}
+
+/**
  * Draw the publish screen.
  */
 function renderPublish() {
   const s = store.settings;
 
   el('p-url').value = s.cafeUrl ?? '';
-  el('p-board').value = s.board ?? '';
   el('up-list').innerHTML = store.docs.length
     ? store.docs
         .slice(0, 20)
@@ -2212,9 +2272,22 @@ function renderPublish() {
 
   const target = store.docs.find((d) => d.id === state.upPick) ?? store.docs[0];
   const v = applied(target);
+  const scope = s.scope ?? 'all';
+  const allSteps = v ? buildSteps(v) : [];
+  const steps = inScope(allSteps, scope);
+  const left = allSteps.length - steps.length;
+  const needed = new Set(steps.map((step) => step.role));
+  let scopeNote = SCOPE_NOTE[scope];
+
+  if (v) {
+    scopeNote += ` 고른 원고로는 <b>${steps.length}단계</b>를 올려요`;
+    scopeNote += left > 0 ? ` (원고 전체는 ${allSteps.length}단계).` : '.';
+  }
+
+  el('scope-note').innerHTML = scopeNote;
 
   el('step-list').innerHTML = v
-    ? buildSteps(v)
+    ? steps
         .map(
           (step, index) => `<div class="row">
             <span class="chip blue">${index + 1}</span>
@@ -2226,8 +2299,11 @@ function renderPublish() {
           </div>`,
         )
         .join('') +
+      (left > 0
+        ? `<div class="row"><span class="txt"><b>남은 ${left}단계는 이번에 안 올려요</b><span>「어디까지 올릴까요」를 전체로 바꾸면 다 올라가요</span></span></div>`
+        : '') +
       (s.cafeUrl
-        ? `<div class="row"><span class="txt"><b>카페 열기</b><span>${esc(s.board || '게시판')}</span></span>
+        ? `<div class="row"><span class="txt"><b>카페 열기</b><span>올릴 게시판을 새 탭에서 봐요</span></span>
            <a class="btn sm pri" href="${esc(s.cafeUrl)}" target="_blank" rel="noopener">열기</a></div>`
         : '')
     : '<div class="empty">원고를 먼저 골라 주세요</div>';
@@ -2267,14 +2343,77 @@ function renderPublish() {
   });
   document.querySelectorAll('[data-step-copy]').forEach((button) => {
     button.addEventListener('click', () => {
-      const steps = buildSteps(v);
       const step = steps[Number(button.dataset.stepCopy)];
 
       copy(step.kind === 'post' ? `제목: ${step.title}\n\n${step.text}` : step.text, step.what);
     });
   });
 
-  const ready = Boolean(s.cafeUrl) && accounts.length > 0;
+  el('assign-list').innerHTML = v
+    ? roles(v)
+        .map((seat) => {
+          const picked = (s.assign ?? {})[seat.role] ?? '';
+          let why = '이번 범위에서는 안 올려요. 비워 두셔도 됩니다';
+
+          if (needed.has(seat.role)) {
+            why =
+              seat.role === 'body'
+                ? '글을 올리고 답글도 다는 계정이에요'
+                : '이 댓글을 다는 계정이에요';
+          }
+
+          return `<div class="row"${needed.has(seat.role) ? '' : ' style="opacity:.55"'}>
+            <span class="txt"><b>${esc(seat.label)}</b><span>${why}</span></span>
+            <select class="input" data-assign="${seat.role}" aria-label="${esc(seat.label)} 계정"
+              style="max-width:200px;padding:10px 12px">
+              <option value="">고르지 않음</option>
+              ${accounts
+                .map(
+                  (a) =>
+                    `<option value="${esc(a.alias)}" ${a.alias === picked ? 'selected' : ''}>${esc(a.alias)}</option>`,
+                )
+                .join('')}
+            </select>
+          </div>`;
+        })
+        .join('')
+    : '<div class="empty" style="padding:14px">원고를 먼저 골라 주세요</div>';
+
+  document.querySelectorAll('[data-assign]').forEach((select) => {
+    select.addEventListener('change', () => {
+      store.settings.assign = { ...(store.settings.assign ?? {}) };
+      store.settings.assign[select.dataset.assign] = select.value;
+      persist();
+      renderPublish();
+    });
+  });
+
+  el('btn-plan-help').onclick = () => {
+    const box = el('plan-help');
+
+    box.hidden = !box.hidden;
+    box.innerHTML = box.hidden
+      ? ''
+      : `<div class="way fallback" style="margin-top:12px">
+          <span class="mark">?</span>
+          <div>
+            <b>자동으로 올리는 법</b>
+            <p>브라우저에서는 네이버에 대신 글을 못 올려요. 컴퓨터에서 도는 작은 프로그램이 대신 올려 줍니다.</p>
+            <p style="margin-top:6px">
+              ① 프로그램을 받아서 <code>npm install</code> 한 번<br />
+              ② 계정마다 <code>npm run login -- 별칭</code> — 창이 뜨면 그 계정으로 직접 로그인하고 닫기<br />
+              ③ 여기서 받은 파일을 <code>npm start -- 받은파일.json</code><br />
+              ④ 정해둔 간격대로 알아서 올라가요
+            </p>
+            <p style="margin-top:6px">
+              별칭은 위 <b>자리 배정</b>에서 고른 이름과 똑같이 맞춰 주세요.
+              비밀번호는 저장하지 않고, 처음 한 번 직접 로그인한 기록만 컴퓨터에 남습니다.
+            </p>
+          </div>
+        </div>`;
+  };
+
+  const ready = Boolean(v) && Boolean(s.cafeUrl) && accounts.length > 0;
 
   el('auto-state').textContent = ready ? '쓸 준비 됨' : '아래를 먼저 채워 주세요';
   el('auto-state').className = ready ? 'chip ok' : 'chip';
@@ -2300,7 +2439,10 @@ function renderPublish() {
       return null;
     }
 
-    const missing = roles(v).filter((seat) => !(s.assign ?? {})[seat.role]);
+    // 올릴 자리의 계정만 있으면 돼요. 안 올릴 댓글은 비어 있어도 괜찮습니다.
+    const missing = roles(v).filter(
+      (seat) => needed.has(seat.role) && !(s.assign ?? {})[seat.role],
+    );
 
     if (missing.length) {
       toast(`${missing[0].label}에 쓸 계정을 골라 주세요`);
@@ -2314,7 +2456,7 @@ function renderPublish() {
       // 게시판을 열어 둔 주소라야 그 게시판에 올라가요.
       cafeUrl: s.cafeUrl,
       board: s.board ?? '',
-      steps: buildSteps(v).map((step, index) => ({
+      steps: steps.map((step, index) => ({
         no: index + 1,
         kind: step.kind,
         profile: step.who,
@@ -2347,6 +2489,17 @@ function renderPublish() {
       return;
     }
 
+    // 진짜로 올리면 되돌릴 수 없어요. 한 번만 물어봅니다.
+    if (
+      !dry &&
+      // eslint-disable-next-line no-alert
+      !window.confirm(
+        `${SCOPE_LABEL[scope]} · ${plan.steps.length}단계를 실제로 카페에 올려요. 올린 글은 카페에서 직접 지워야 합니다. 시작할까요?`,
+      )
+    ) {
+      return;
+    }
+
     // 확장은 이 브라우저에서 로그인을 갈아 끼우므로 계정 정보도 같이 넘겨요.
     const reply = await runInCafe({ ...plan, accounts }, dry);
 
@@ -2360,6 +2513,21 @@ function renderPublish() {
     renderRunLog(dry);
   };
 
+  // 아래 바에서도 바로 올릴 수 있게, 필요한 것만 넘겨 둬요.
+  state.pub = {
+    ready,
+    count: steps.length,
+    scope: SCOPE_LABEL[scope] ?? '전체',
+    keyword: target?.keyword ?? '',
+    missing: ready ? '' : whatIsMissing(v, s, accounts),
+    run: runHere,
+    plan: () => el('btn-plan').click(),
+  };
+
+  if (state.view === 'publish') {
+    renderDock();
+  }
+
   if (state.hasExtension) {
     el('auto-state').textContent = ready ? '바로 올릴 수 있어요' : '아래를 먼저 채워 주세요';
     el('auto-state').className = ready ? 'chip ok' : 'chip';
@@ -2368,10 +2536,11 @@ function renderPublish() {
         이 브라우저에 <b>카페 올리기</b>가 깔려 있어요. 아래 단추만 누르시면 카페 탭을 열어서
         순서와 간격대로 올려 드립니다. 터미널은 필요 없어요.
         <b>먼저 연습부터</b> 해보세요. 글은 다 채우고 등록만 안 누릅니다.
+        화면 맨 아래 바에서도 똑같이 시작할 수 있어요.
       </p>
       <div class="pfoot" style="margin-top:0">
-        <button class="btn pri" type="button" id="btn-run-dry"${ready ? '' : ' disabled'}>연습으로 올려 보기</button>
-        <button class="btn" type="button" id="btn-run"${ready ? '' : ' disabled'}>바로 올리기</button>
+        <button class="btn" type="button" id="btn-run-dry"${ready ? '' : ' disabled'}>연습으로 올려 보기</button>
+        <button class="btn pri" type="button" id="btn-run"${ready ? '' : ' disabled'}>업로드 시작</button>
         <span class="grow"></span>
         <button class="btn ghost" type="button" id="btn-acct-file">계정 파일 내려받기</button>
       </div>`;
@@ -2463,62 +2632,6 @@ function renderPublish() {
 
     download('accounts.json', JSON.stringify({ version: 1, accounts }, null, 2));
     toast('automation 폴더에 넣어 주세요');
-  };
-
-  el('assign-list').innerHTML = v
-    ? roles(v)
-        .map((seat) => {
-          const picked = (s.assign ?? {})[seat.role] ?? '';
-
-          return `<div class="row">
-            <span class="txt"><b>${esc(seat.label)}</b><span>${seat.role === 'body' ? '글을 올리고 답글도 다는 계정이에요' : '이 댓글을 다는 계정이에요'}</span></span>
-            <select class="input" data-assign="${seat.role}" aria-label="${esc(seat.label)} 계정"
-              style="max-width:200px;padding:10px 12px">
-              <option value="">고르지 않음</option>
-              ${accounts
-                .map(
-                  (a) =>
-                    `<option value="${esc(a.alias)}" ${a.alias === picked ? 'selected' : ''}>${esc(a.alias)}</option>`,
-                )
-                .join('')}
-            </select>
-          </div>`;
-        })
-        .join('')
-    : '<div class="empty" style="padding:14px">원고를 먼저 골라 주세요</div>';
-
-  document.querySelectorAll('[data-assign]').forEach((select) => {
-    select.addEventListener('change', () => {
-      store.settings.assign = { ...(store.settings.assign ?? {}) };
-      store.settings.assign[select.dataset.assign] = select.value;
-      persist();
-      renderPublish();
-    });
-  });
-
-  el('btn-plan-help').onclick = () => {
-    const box = el('plan-help');
-
-    box.hidden = !box.hidden;
-    box.innerHTML = box.hidden
-      ? ''
-      : `<div class="way fallback" style="margin-top:12px">
-          <span class="mark">?</span>
-          <div>
-            <b>자동으로 올리는 법</b>
-            <p>브라우저에서는 네이버에 대신 글을 못 올려요. 컴퓨터에서 도는 작은 프로그램이 대신 올려 줍니다.</p>
-            <p style="margin-top:6px">
-              ① 프로그램을 받아서 <code>npm install</code> 한 번<br />
-              ② 계정마다 <code>npm run login -- 별칭</code> — 창이 뜨면 그 계정으로 직접 로그인하고 닫기<br />
-              ③ 여기서 받은 파일을 <code>npm start -- 받은파일.json</code><br />
-              ④ 정해둔 간격대로 알아서 올라가요
-            </p>
-            <p style="margin-top:6px">
-              별칭은 위 <b>자리 배정</b>에서 고른 이름과 똑같이 맞춰 주세요.
-              비밀번호는 저장하지 않고, 처음 한 번 직접 로그인한 기록만 컴퓨터에 남습니다.
-            </p>
-          </div>
-        </div>`;
   };
 }
 
@@ -2830,6 +2943,12 @@ document.addEventListener('click', (event) => {
     if (seg === 'tone') store.settings.tone = value;
     if (seg === 'len') store.settings.length = value;
 
+    if (seg === 'scope') {
+      store.settings.scope = value;
+      persist();
+      renderPublish();
+    }
+
     if (seg === 'set') {
       state.setMode = value;
       renderSetZone();
@@ -2859,6 +2978,11 @@ async function start() {
   state.hasExtension = await cafeExtension();
 
   onCafeEvent((event) => {
+    /**
+     * @param no
+     * @param at
+     * @param why
+     */
     const mark = (no, at, why) => {
       const step = state.runLog.find((x) => x.no === no);
 
@@ -2932,6 +3056,7 @@ async function start() {
   setSeg('len', s.length);
   setSeg('set', 'new');
   setSeg('way', 'docs');
+  setSeg('scope', store.settings.scope ?? 'all');
 
   el('f-mobile').addEventListener('change', () => {
     store.settings.mobileShape = el('f-mobile').checked;
@@ -2991,10 +3116,6 @@ async function start() {
     store.settings.cafeUrl = el('p-url').value.trim();
     persist();
     renderPublish();
-  });
-  el('p-board').addEventListener('change', () => {
-    store.settings.board = el('p-board').value.trim();
-    persist();
   });
   el('btn-acct-add').addEventListener('click', () => {
     const name = el('f-acct').value.trim();
