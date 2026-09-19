@@ -353,6 +353,20 @@ function renderDraft() {
 }
 
 /**
+ * Read the saved accounts, whichever shape they were stored in.
+ *
+ * 처음에는 별칭만 글자로 넣어 뒀어요. 그때 저장한 것도 그대로 열리게 합니다.
+ * @returns {{ alias: string, id: string, pw: string }[]} Accounts.
+ */
+function accountList() {
+  return (store.settings.accounts ?? []).map((entry) =>
+    typeof entry === 'string'
+      ? { alias: entry, id: '', pw: '' }
+      : { alias: entry.alias ?? '', id: entry.id ?? '', pw: entry.pw ?? '' },
+  );
+}
+
+/**
  * Say which keyword the generate screen is holding, if it carried one over.
  *
  * 결과 화면에서 조건을 들고 넘어오면 칸이 채워진 채로 열려요.
@@ -2026,7 +2040,7 @@ function roles(v) {
 function account(role) {
   const picked = (store.settings.assign ?? {})[role];
 
-  return (store.settings.accounts ?? []).includes(picked)
+  return accountList().some((a) => a.alias === picked)
     ? picked
     : `${role === 'body' ? '본문' : `댓글${role.slice(1)}`} 계정`;
 }
@@ -2118,11 +2132,13 @@ function renderPublish() {
         .join('')
     : '<div class="empty">아직 만든 원고가 없어요</div>';
 
-  el('acct-list').innerHTML = (s.accounts ?? []).length
-    ? s.accounts
+  const accounts = accountList();
+
+  el('acct-list').innerHTML = accounts.length
+    ? accounts
         .map(
-          (name, index) => `<div class="row">
-            <span class="txt"><b>${esc(name)}</b></span>
+          (a, index) => `<div class="row">
+            <span class="txt"><b>${esc(a.alias)}</b><span>${a.id ? esc(a.id) : '아이디 없음'}${a.pw ? ' · 비밀번호 저장됨' : ' · 직접 로그인'}</span></span>
             <button class="btn sm ghost" type="button" data-acct-del="${index}">지우기</button>
           </div>`,
         )
@@ -2170,7 +2186,10 @@ function renderPublish() {
   });
   document.querySelectorAll('[data-acct-del]').forEach((button) => {
     button.addEventListener('click', () => {
-      store.settings.accounts.splice(Number(button.dataset.acctDel), 1);
+      const next = accountList();
+
+      next.splice(Number(button.dataset.acctDel), 1);
+      store.settings.accounts = next;
       persist();
       renderPublish();
       renderSettings();
@@ -2201,42 +2220,69 @@ function renderPublish() {
     });
   });
 
-  const ready = Boolean(s.cafeUrl) && (s.accounts ?? []).length > 0;
+  const ready = Boolean(s.cafeUrl) && accounts.length > 0;
 
   el('auto-state').textContent = ready ? '쓸 준비 됨' : '아래를 먼저 채워 주세요';
   el('auto-state').className = ready ? 'chip ok' : 'chip';
 
+  const loginCmd = accounts.length
+    ? accounts.map((a) => `npm run login -- "${a.alias}"`).join('\n')
+    : 'npm run login -- "계정별칭"';
+
   el('auto-guide').innerHTML = `
-    <p class="desc" style="margin:0 0 12px">
-      브라우저에서는 네이버에 대신 글을 못 올려요. 그래서 컴퓨터에서 도는 작은 프로그램이
-      대신 올립니다. <b>비밀번호는 저장하지 않아요.</b> 계정마다 한 번씩 직접 로그인해 두면
-      그 기록을 다시 쓰는 방식이라, 캡차나 기기 등록에도 잘 안 걸립니다.
+    <p class="desc" style="margin:0 0 6px">
+      브라우저에서는 네이버에 대신 글을 못 올려요. 그래서 컴퓨터에서 도는 작은 프로그램이 대신
+      올립니다. 아래 <b>까만 칸에 있는 글자</b>는 컴퓨터의 <b>터미널</b>(윈도우는 명령 프롬프트)에
+      붙여넣고 엔터를 치는 명령이에요. 복사를 누르면 그 글자가 복사됩니다.
     </p>
-    <div class="rows">
-      <div class="row">
-        <span class="chip blue">1</span>
-        <span class="txt"><b>프로그램 받기</b><span>깃허브에서 받은 폴더 안 <code>automation</code> 으로 들어가서 한 번만</span></span>
-        <button class="btn sm" type="button" data-copy-cmd="cd automation && npm install && npm run setup">복사</button>
-      </div>
-      <div class="row">
-        <span class="chip blue">2</span>
-        <span class="txt"><b>계정마다 한 번 로그인</b><span>창이 뜨면 그 계정으로 직접 로그인하고 닫으면 끝</span></span>
-        <button class="btn sm" type="button" data-copy-cmd='${esc(
-          (s.accounts ?? []).length
-            ? (s.accounts ?? []).map((name) => `npm run login -- "${name}"`).join('\n')
-            : 'npm run login -- "계정별칭"',
-        )}'>복사</button>
-      </div>
-      <div class="row">
-        <span class="chip blue">3</span>
-        <span class="txt"><b>아래에서 파일 받아서 실행</b><span>먼저 <code>--dry</code> 로 연습해 보시면 등록만 빼고 똑같이 해봐요</span></span>
-        <button class="btn sm" type="button" data-copy-cmd='npm start -- "${esc(target?.keyword ?? '원고')} 업로드.json"'>복사</button>
-      </div>
-    </div>`;
+    <p class="desc" style="margin:0 0 14px">
+      터미널 여는 게 번거로우시면 <b>automation</b> 폴더 안의 <b>시작하기</b> 파일을 두 번 누르시면
+      돼요. 같은 일을 물어보면서 대신 해줍니다.
+    </p>
+
+    ${[
+      {
+        title: '처음 한 번만 · 프로그램 준비',
+        note: '받은 폴더에서 딱 한 번만 하면 돼요',
+        cmd: 'cd automation\nnpm install\nnpm run setup',
+      },
+      {
+        title: '계정마다 한 번만 · 로그인해 두기',
+        note: '창이 뜨면 그 계정으로 로그인하고 닫으면 끝이에요',
+        cmd: loginCmd,
+      },
+      {
+        title: '올릴 때마다 · 연습해 보고 진짜로 올리기',
+        note: '--dry 를 붙이면 등록만 빼고 똑같이 해봐요. 먼저 이걸로 확인해 보세요',
+        cmd: `npm start -- "${target?.keyword ?? '원고'} 업로드.json" --dry\nnpm start -- "${target?.keyword ?? '원고'} 업로드.json"`,
+      },
+    ]
+      .map(
+        (step, index) => `<div class="cmd">
+          <div class="cmdhead">
+            <span class="chip blue">${index + 1}</span>
+            <span class="txt"><b>${step.title}</b><span>${step.note}</span></span>
+            <button class="btn sm" type="button" data-copy-cmd="${esc(step.cmd)}">복사</button>
+          </div>
+          <pre>${esc(step.cmd)}</pre>
+        </div>`,
+      )
+      .join('')}`;
 
   document.querySelectorAll('[data-copy-cmd]').forEach((button) => {
     button.addEventListener('click', () => copy(button.dataset.copyCmd, '명령'));
   });
+
+  el('btn-acct-file').onclick = () => {
+    if (!accounts.length) {
+      toast('계정을 먼저 추가해 주세요');
+
+      return;
+    }
+
+    download('accounts.json', JSON.stringify({ version: 1, accounts }, null, 2));
+    toast('automation 폴더에 넣어 주세요');
+  };
 
   el('assign-list').innerHTML = v
     ? roles(v)
@@ -2248,10 +2294,10 @@ function renderPublish() {
             <select class="input" data-assign="${seat.role}" aria-label="${esc(seat.label)} 계정"
               style="max-width:200px;padding:10px 12px">
               <option value="">고르지 않음</option>
-              ${(s.accounts ?? [])
+              ${accounts
                 .map(
-                  (name) =>
-                    `<option value="${esc(name)}" ${name === picked ? 'selected' : ''}>${esc(name)}</option>`,
+                  (a) =>
+                    `<option value="${esc(a.alias)}" ${a.alias === picked ? 'selected' : ''}>${esc(a.alias)}</option>`,
                 )
                 .join('')}
             </select>
@@ -2269,7 +2315,7 @@ function renderPublish() {
     });
   });
 
-  el('btn-plan').addEventListener('click', () => {
+  el('btn-plan').onclick = () => {
     if (!v || !target) {
       toast('원고를 먼저 골라 주세요');
 
@@ -2310,9 +2356,9 @@ function renderPublish() {
 
     download(`${target.keyword} 업로드.json`, JSON.stringify(plan, null, 2));
     toast('자동 업로드 파일을 내려받았어요');
-  });
+  };
 
-  el('btn-plan-help').addEventListener('click', () => {
+  el('btn-plan-help').onclick = () => {
     const box = el('plan-help');
 
     box.hidden = !box.hidden;
@@ -2335,7 +2381,7 @@ function renderPublish() {
             </p>
           </div>
         </div>`;
-  });
+  };
 }
 
 /* ---------------- 설정 ---------------- */
@@ -2416,7 +2462,7 @@ function renderSettings() {
     });
   }
 
-  el('naver-count').textContent = `${(store.settings.accounts ?? []).length}개`;
+  el('naver-count').textContent = `${accountList().length}개`;
   el('key-list').innerHTML = Object.keys(MAKERS)
     .map((maker) => {
       const saved = store.settings.keys[maker];
@@ -2773,9 +2819,14 @@ async function start() {
       return;
     }
 
-    store.settings.accounts = [...(store.settings.accounts ?? []), name];
+    store.settings.accounts = [
+      ...accountList(),
+      { alias: name, id: el('f-acct-id').value.trim(), pw: el('f-acct-pw').value },
+    ];
     persist();
     el('f-acct').value = '';
+    el('f-acct-id').value = '';
+    el('f-acct-pw').value = '';
     renderPublish();
     renderSettings();
   });

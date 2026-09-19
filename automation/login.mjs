@@ -1,4 +1,5 @@
 import { openAs } from './profile.mjs';
+import { findAccount, fillLogin } from './accounts.mjs';
 
 const alias = process.argv.slice(2).join(' ').trim();
 
@@ -14,8 +15,15 @@ console.log('로그인이 끝나면 창을 그냥 닫으시면 됩니다. 비밀
 
 const context = await openAs(alias);
 const page = context.pages()[0] ?? (await context.newPage());
+const account = findAccount(alias);
 
-await page.goto('https://nid.naver.com/nidlogin.login', { waitUntil: 'domcontentloaded' });
+if (account?.id && account?.pw) {
+  console.log('저장해 두신 아이디와 비밀번호로 넣어 볼게요.');
+  console.log('캡차가 뜨면 그것만 풀어 주시고, 로그인되면 창을 닫으세요.\n');
+  await fillLogin(page, account);
+} else {
+  await page.goto('https://nid.naver.com/nidlogin.login', { waitUntil: 'domcontentloaded' });
+}
 
 // The window stays open until the person closes it themselves.
 await new Promise((done) => {

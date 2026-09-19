@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { openAs, isLoggedIn, waitWithCountdown } from './profile.mjs';
+import { findAccount, fillLogin } from './accounts.mjs';
 import { SELECTORS, cafeFrame, typeParagraphs } from './cafe.mjs';
 
 const args = process.argv.slice(2);
@@ -39,12 +40,30 @@ const needed = [...new Set(plan.steps.map((step) => step.profile))];
 
 for (const alias of needed) {
   // eslint-disable-next-line no-await-in-loop
-  const context = await openAs(alias, true);
+  let context = await openAs(alias, true);
   // eslint-disable-next-line no-await-in-loop
-  const ok = await isLoggedIn(context).catch(() => false);
+  let ok = await isLoggedIn(context).catch(() => false);
 
   // eslint-disable-next-line no-await-in-loop
   await context.close();
+
+  const account = findAccount(alias);
+
+  // 로그인이 풀렸는데 아이디와 비밀번호를 적어 두셨으면 알아서 다시 들어가요.
+  if (!ok && account?.id && account?.pw) {
+    console.log(`   ${alias} 로그인이 풀려서 다시 들어가 볼게요…`);
+    // eslint-disable-next-line no-await-in-loop
+    context = await openAs(alias, false);
+    // eslint-disable-next-line no-await-in-loop
+    const page = context.pages()[0] ?? (await context.newPage());
+
+    // eslint-disable-next-line no-await-in-loop
+    await fillLogin(page, account).catch(() => {});
+    // eslint-disable-next-line no-await-in-loop
+    ok = await isLoggedIn(context).catch(() => false);
+    // eslint-disable-next-line no-await-in-loop
+    await context.close();
+  }
 
   if (!ok) {
     console.error(`\n「${alias}」 계정이 로그인되어 있지 않아요.`);
