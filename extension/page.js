@@ -239,6 +239,35 @@ export function act(what, text) {
     };
   }
 
+  // 이 화면에서 글쓰기로 들어가는 링크를 찾아요. 단추를 누르는 것보다 확실합니다.
+  if (what === 'write-link') {
+    const link = [...document.querySelectorAll('a[href]')]
+      .map((node) => node.href)
+      .find((href) => /\/articles\/write|ArticleWrite|WriteForm/i.test(href));
+
+    return link ? { ok: true, url: link } : { ok: false, reason: '글쓰기 링크가 없어요' };
+  }
+
+  // 페이지 안에 적힌 카페 번호와 게시판 번호를 찾아요. 주소로 못 읽었을 때 씁니다.
+  if (what === 'ids') {
+    const all = document.documentElement.innerHTML;
+
+    const clubId =
+      all.match(/"cafeId"\s*:\s*"?(\d+)/)?.[1] ??
+      all.match(/"clubId"\s*:\s*"?(\d+)/)?.[1] ??
+      all.match(/g_sClubId\s*=\s*"(\d+)"/)?.[1] ??
+      all.match(/clubid[=:]"?(\d+)/i)?.[1] ??
+      '';
+
+    const menuId =
+      window.location.href.match(/\/menus\/(\d+)/)?.[1] ??
+      all.match(/"menuId"\s*:\s*"?(\d+)/)?.[1] ??
+      all.match(/menuid[=:]"?(\d+)/i)?.[1] ??
+      '';
+
+    return clubId ? { ok: true, clubId, menuId } : { ok: false, reason: '카페 번호를 못 찾았어요' };
+  }
+
   // 게시판에서 글 하나를 골라 그 주소를 알려줘요. 댓글 자리를 보려고요.
   if (what === 'first-article') {
     const link = [...document.querySelectorAll('a[href*="/articles/"]')]

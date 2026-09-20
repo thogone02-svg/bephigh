@@ -9,7 +9,7 @@
  *      하던 자리에서 이어서 합니다. 간격이 몇 분씩 되니까 이게 없으면 끊겨요.
  */
 
-import { readBoard, articleUrl, articleIdFrom } from './board.js';
+import { readBoard, writeUrl, articleUrl, articleIdFrom } from './board.js';
 import { act } from './page.js';
 import { setWatching, caught, forget } from './watch.js';
 
@@ -379,32 +379,38 @@ async function postOne(run) {
     return { ok: false, reason: '로그인 화면으로 넘어갔어요. 열린 창에서 로그인해 주세요.' };
   }
 
-  // ③ 옛 카페라 글쓰기 주소를 모르면 단추를 눌러서 들어가요.
+  // ③ 주소로 글쓰기 화면을 못 만들었으면 그 페이지에서 길을 찾아요.
+  //    ⓐ 글쓰기 링크 → ⓑ 페이지에 적힌 카페·게시판 번호 → ⓒ 단추 누르기 순서.
   if (step.kind === 'post' && !board.write) {
-    const opened = await chrome.scripting
-      .executeScript({
-        target: { tabId, allFrames: true },
-        /**
-         * Press the 글쓰기 button.
-         * @returns {boolean} True when it was there.
-         */
-        func: () => {
-          const write = [...document.querySelectorAll('a, button')].find((node) =>
-            /^글쓰기$/.test((node.textContent ?? '').replace(/\s+/g, '')),
-          );
+    const link = await inPage(tabId, 'write-link');
 
-          write?.click();
+    if (link.ok) {
+      await goTo(tabId, link.url);
+    } else {
+      const ids = await inPage(tabId, 'ids');
 
-          return Boolean(write);
-        },
-      })
-      .catch(() => []);
+      if (ids.ok && ids.menuId) {
+        await goTo(tabId, writeUrl(ids.clubId, ids.menuId));
+      } else {
+        await chrome.scripting
+          .executeScript({
+            target: { tabId, allFrames: true },
+            /**
+             * Press the 글쓰기 button.
+             */
+            func: () => {
+              [...document.querySelectorAll('a, button, span[role="button"]')]
+                .find((node) => /^글쓰기$/.test((node.textContent ?? '').replace(/\s+/g, '')))
+                ?.click();
+            },
+          })
+          .catch(() => {});
 
-    if (!opened.some((one) => one?.result)) {
-      return { ok: false, reason: '글쓰기 단추를 못 찾았어요.' };
+        // 단추를 누르면 그 자리에서 화면이 넘어가느라 「눌렸다」는 대답이 안 올 때가
+        // 있어요. 대답 말고 글쓰기 칸이 떴는지로 판단합니다.
+        await rest(3000);
+      }
     }
-
-    await rest(3000);
   }
 
   // ④ 칸이 나올 때까지 기다렸다가 넣어요.
@@ -416,7 +422,9 @@ async function postOne(run) {
 
       return {
         ok: false,
-        reason: '글쓰기 화면이 안 떴어요.',
+        reason: board.write
+          ? '글쓰기 화면이 안 떴어요.'
+          : '글쓰기 화면으로 못 들어갔어요. 게시판 주소가 .../menus/31 처럼 게시판 번호까지 있는지 봐주세요.',
         seen: seen.seen ?? [seen],
       };
     }

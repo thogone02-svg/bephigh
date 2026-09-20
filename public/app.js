@@ -467,6 +467,38 @@ function renderCheck(found) {
 }
 
 /**
+ * Say whether we could read the board address.
+ */
+function renderUrlNote() {
+  const box = el('url-note');
+
+  if (!box) {
+    return;
+  }
+
+  const url = store.settings.cafeUrl ?? '';
+  const { clubId, menuId } = readBoardHere(url);
+
+  if (!url) {
+    box.innerHTML = '';
+
+    return;
+  }
+
+  if (clubId && menuId) {
+    box.innerHTML = `<span class="chip ok">읽었어요</span>
+      카페 ${esc(clubId)} · 게시판 ${esc(menuId)} — 글쓰기 화면으로 바로 들어갑니다.`;
+
+    return;
+  }
+
+  box.innerHTML = `<span class="chip bad">게시판 번호가 없어요</span>
+    이대로도 글쓰기 링크를 찾아 들어가 보지만, 실패할 수 있어요.
+    카페에서 <b>그 게시판을 누른 뒤</b> 주소창을 그대로 복사해 주세요
+    (<code>.../menus/31</code> 처럼 끝나야 합니다).`;
+}
+
+/**
  * Draw the «요청 엿보기» panel, used to learn how to post without a window.
  * @param {Record<string, any>[] | null} all - What the extension saw.
  */
@@ -1412,7 +1444,7 @@ function libList(query, sort) {
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
-const NEEDS_EXT = '1.5.0';
+const NEEDS_EXT = '1.6.0';
 
 /**
  * Compare two version strings like `1.2.0`.
@@ -2405,6 +2437,37 @@ function buildSteps(v) {
 }
 
 /**
+ * Read the cafe and board numbers out of a board address.
+ *
+ * 확장과 똑같은 눈으로 봅니다. 주소를 넣자마자 제대로 읽혔는지 보여 주려고요.
+ * @param {string} url - Board address.
+ * @returns {{ clubId: string, menuId: string }} What we could read.
+ */
+function readBoardHere(url) {
+  let plain = String(url ?? '');
+
+  try {
+    plain = decodeURIComponent(plain);
+  } catch {
+    plain = String(url ?? '');
+  }
+
+  const fresh = plain.match(/\/(?:f-e|ca-fe)\/cafes\/(\d+)\/menus\/(\d+)/);
+
+  if (fresh) {
+    return { clubId: fresh[1], menuId: fresh[2] };
+  }
+
+  return {
+    clubId:
+      plain.match(/clubid[=:]"?(\d+)/i)?.[1] ??
+      plain.match(/\/(?:f-e|ca-fe)\/cafes\/(\d+)/)?.[1] ??
+      '',
+    menuId: plain.match(/menuid[=:]"?(\d+)/i)?.[1] ?? '',
+  };
+}
+
+/**
  * Say in one short line what still has to be filled in before uploading.
  * @param {Record<string, any> | null} v - The chosen version, when there is one.
  * @param {Record<string, any>} settings - Saved settings.
@@ -2434,6 +2497,7 @@ function renderPublish() {
   const s = store.settings;
 
   el('p-url').value = s.cafeUrl ?? '';
+  renderUrlNote();
   el('p-bg').checked = s.background !== false;
 
   el('p-bg').onchange = () => {
@@ -3410,6 +3474,12 @@ async function start() {
     store.settings.cafeUrl = el('p-url').value.trim();
     persist();
     renderPublish();
+  });
+
+  // 주소를 치는 동안에도 제대로 읽혔는지 바로 보여 줘요.
+  el('p-url').addEventListener('input', () => {
+    store.settings.cafeUrl = el('p-url').value.trim();
+    renderUrlNote();
   });
   el('btn-acct-add').addEventListener('click', () => {
     const name = el('f-acct').value.trim();

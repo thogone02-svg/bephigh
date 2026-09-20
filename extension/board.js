@@ -1,14 +1,30 @@
 /*
  * 게시판 주소를 읽어서 글쓰기 주소를 만드는 곳.
  *
- * 네이버 카페에는 두 가지 주소 모양이 있어요.
- *   새 카페  https://cafe.naver.com/f-e/cafes/22014230/menus/31
- *   옛 카페  https://cafe.naver.com/카페이름?iframe_url=/ArticleList.nhn%3F...
- * 새 카페는 글쓰기 주소로 바로 갈 수 있어서 단추를 찾을 필요가 없습니다.
+ * 네이버 카페 주소는 모양이 여러 가지예요.
+ *   새 카페   https://cafe.naver.com/f-e/cafes/22014230/menus/31
+ *   새 카페2  https://cafe.naver.com/ca-fe/cafes/22014230/menus/31
+ *   옛 카페   https://cafe.naver.com/카페이름?iframe_url=/ArticleList.nhn%3Fsearch.clubid%3D...
+ *   옛 카페2  https://cafe.naver.com/ArticleList.nhn?search.clubid=...&search.menuid=31
+ *   짧은 주소 https://cafe.naver.com/카페이름
+ *
+ * 카페 번호와 게시판 번호만 알아내면 글쓰기 주소를 바로 만들 수 있어요.
+ * 번호를 못 찾으면 그 페이지에서 글쓰기 링크를 찾아 들어갑니다.
  */
 
-const NEW_BOARD = /\/f-e\/cafes\/(\d+)\/menus\/(\d+)/;
-const NEW_ANY = /\/f-e\/cafes\/(\d+)/;
+const NEW_BOARD = /\/(?:f-e|ca-fe)\/cafes\/(\d+)\/menus\/(\d+)/;
+const NEW_ANY = /\/(?:f-e|ca-fe)\/cafes\/(\d+)/;
+const CLUB = /clubid[=:]"?(\d+)/i;
+const MENU = /menuid[=:]"?(\d+)/i;
+
+/**
+ * Build the write page address from the two numbers.
+ * @param {string} clubId - Cafe number.
+ * @param {string} menuId - Board number.
+ * @returns {string} Address of the write page.
+ */
+export const writeUrl = (clubId, menuId) =>
+  `https://cafe.naver.com/f-e/cafes/${clubId}/menus/${menuId}/articles/write`;
 
 /**
  * Work out what kind of board address this is.
@@ -17,30 +33,33 @@ const NEW_ANY = /\/f-e\/cafes\/(\d+)/;
  *   write: string | null }} What we can tell from it.
  */
 export function readBoard(url) {
-  const address = String(url ?? '');
-  const board = address;
-  const fresh = address.match(NEW_BOARD);
+  const board = String(url ?? '');
+  let plain = board;
+
+  // 옛 주소는 게시판 번호가 %3D 처럼 꼬여 있어요. 풀어서 봅니다.
+  try {
+    plain = decodeURIComponent(board);
+  } catch {
+    plain = board;
+  }
+
+  const fresh = plain.match(NEW_BOARD);
 
   if (fresh) {
     const [, clubId, menuId] = fresh;
 
-    return {
-      kind: 'new',
-      clubId,
-      menuId,
-      board,
-      write: `https://cafe.naver.com/f-e/cafes/${clubId}/menus/${menuId}/articles/write`,
-    };
+    return { kind: 'new', clubId, menuId, board, write: writeUrl(clubId, menuId) };
   }
 
-  const anyNew = address.match(NEW_ANY);
+  const clubId = plain.match(CLUB)?.[1] ?? plain.match(NEW_ANY)?.[1] ?? '';
+  const menuId = plain.match(MENU)?.[1] ?? '';
 
-  if (anyNew) {
-    // 게시판 번호가 없으면 글쓰기에서 직접 골라야 해요.
-    return { kind: 'new', clubId: anyNew[1], board, write: null };
+  if (clubId && menuId) {
+    return { kind: 'old', clubId, menuId, board, write: writeUrl(clubId, menuId) };
   }
 
-  return { kind: 'old', board, write: null };
+  // 번호가 모자라면 그 페이지를 열어서 찾아야 해요.
+  return { kind: 'old', clubId, menuId, board, write: null };
 }
 
 /**
