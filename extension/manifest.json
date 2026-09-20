@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "나비효과플랜 카페 올리기",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "원고 작업실에서 만든 원고를 네이버 카페에 순서와 간격대로 올려 줍니다.",
   "permissions": ["storage", "tabs", "scripting", "alarms", "cookies", "webRequest"],
   "host_permissions": ["https://*.naver.com/*", "https://naver.com/*"],

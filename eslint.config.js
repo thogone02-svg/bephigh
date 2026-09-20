@@ -153,6 +153,14 @@ export default [
     rules: { 'no-console': 'off' },
   },
 
+  // 올리는 프로그램은 확장과 같은 눈(extension/page.js)을 씁니다. 한 군데만
+  // 고치면 둘 다 고쳐지라고요. 그래서 폴더를 넘어가는 불러오기를 허용합니다.
+  // 차례를 건너뛰는 `continue` 도 단계를 도는 곳에서 가장 읽기 쉬워요.
+  {
+    files: ['automation/**/*.mjs'],
+    rules: { 'import/no-relative-packages': 'off', 'no-continue': 'off' },
+  },
+
   // 확장 프로그램은 크롬 안에서 돌아요. `chrome` 은 크롬이 넣어 주는 것이고,
   // 단계를 건너뛰는 `continue` 는 올리는 차례를 도는 곳에서 가장 읽기 쉬워요.
   {

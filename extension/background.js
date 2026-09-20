@@ -78,7 +78,7 @@ async function inPage(tabId, what, text) {
     .executeScript({
       target: { tabId, allFrames: true },
       func: act,
-      args: [what, text ?? ''],
+      args: [{ what, text: text ?? '' }],
     })
     .catch((error) => [
       { result: { ok: false, reason: `화면에 들어가지 못했어요: ${error.message}` } },
@@ -390,7 +390,7 @@ async function postOne(run) {
       const ids = await inPage(tabId, 'ids');
 
       if (ids.ok && ids.menuId) {
-        await goTo(tabId, writeUrl(ids.clubId, ids.menuId));
+        await goTo(tabId, writeUrl(ids.clubId, ids.menuId, board.home));
       } else {
         await chrome.scripting
           .executeScript({
@@ -495,7 +495,7 @@ async function postOne(run) {
       const id = articleIdFrom(tab?.url ?? '');
 
       if (id) {
-        run.article = board.clubId ? articleUrl(board.clubId, id) : tab.url;
+        run.article = board.clubId ? articleUrl(board.clubId, id, board.home) : tab.url;
 
         return { ok: true };
       }
@@ -604,10 +604,24 @@ async function checkCafe(cafeUrl) {
   const tabId = opened.tabs[0].id;
 
   try {
-    await goTo(tabId, cafeUrl);
-
+    const landed = await goTo(tabId, cafeUrl);
+    const seen = await inPage(tabId, 'look');
     const article = await inPage(tabId, 'first-article');
-    const write = { ok: false, reason: '글쓰기 주소를 몰라요' };
+
+    // 주소를 어떻게 읽었고, 그 주소로 갔더니 어디에 닿았는지.
+    const given = {
+      주소: cafeUrl,
+      읽은_카페번호: board.clubId || '(못 읽음)',
+      읽은_게시판번호: board.menuId || '(못 읽음)',
+      도착한_주소: landed,
+      그화면에_보인_것: seen.buttons ?? seen.seen?.[0]?.buttons ?? [],
+    };
+
+    const write = {
+      ok: false,
+      reason:
+        '주소에서 게시판 번호를 못 읽어서 글쓰기 화면을 못 만들었어요. 카페에서 그 게시판을 누른 뒤 주소창을 복사해 주세요.',
+    };
 
     if (board.write) {
       await goTo(tabId, board.write);
@@ -615,7 +629,11 @@ async function checkCafe(cafeUrl) {
       Object.assign(write, await inPage(tabId, 'check'));
     }
 
-    let comment = { ok: false, reason: '글 목록에서 글을 못 찾아서 댓글 자리는 못 봤어요' };
+    let comment = {
+      ok: false,
+      reason:
+        '그 주소에서 글 목록을 못 찾아서 댓글 자리는 못 봤어요. 게시판 주소가 맞는지 봐주세요.',
+    };
 
     if (article.ok) {
       await goTo(tabId, article.url);
@@ -623,7 +641,7 @@ async function checkCafe(cafeUrl) {
       comment = await inPage(tabId, 'check');
     }
 
-    return { ok: true, write, comment };
+    return { ok: true, given, write, comment };
   } finally {
     await chrome.windows.remove(opened.id).catch(() => {});
   }

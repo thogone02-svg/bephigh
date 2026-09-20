@@ -9,10 +9,10 @@ echo   ------------------------
 echo.
 
 if not exist node_modules (
-  echo   처음이라 준비부터 할게요. 몇 분 걸려요.
+  echo   처음이라 준비부터 할게요. 1~2분 걸려요.
+  echo   ^(컴퓨터에 깔린 크롬을 그대로 씁니다^)
   echo.
   call npm install
-  call npm run setup
   echo.
 )
 
@@ -29,6 +29,7 @@ if "%pick%"=="1" goto login
 if "%pick%"=="2" goto dry
 if "%pick%"=="3" goto real
 if "%pick%"=="4" goto check
+if "%pick%"=="5" goto watch
 if "%pick%"=="0" exit
 goto menu
 
@@ -50,6 +51,13 @@ goto menu
 call :pickfile
 if "%plan%"=="" goto menu
 call npm start -- "%plan%"
+echo.
+goto menu
+
+:watch
+call :pickfile
+if "%plan%"=="" goto menu
+call npm start -- "%plan%" --show
 echo.
 goto menu
 

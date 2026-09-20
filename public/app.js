@@ -77,6 +77,7 @@ const state = {
   checked: null,
   watching: false,
   catchSeen: null,
+  catchOpen: false,
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -511,19 +512,58 @@ function renderCatch(all) {
 
   const raw = all?.length ? JSON.stringify(all, null, 1) : '';
 
+  // 평소엔 접어 둬요. 안 하셔도 되는 일이라 자리만 차지하면 헷갈립니다.
+  if (!state.catchOpen) {
+    box.innerHTML = `<div class="runlog">
+      <div class="cardhead">
+        <h3 style="font-size:14px;color:var(--t600)">고급 · 창도 안 띄우고 올리게 만들기</h3>
+        <span class="grow"></span>
+        <button class="btn sm ghost" type="button" id="btn-catch-open">열어 보기</button>
+      </div>
+    </div>`;
+
+    el('btn-catch-open').onclick = () => {
+      state.catchOpen = true;
+      renderCatch(state.catchSeen);
+    };
+
+    return;
+  }
+
   box.innerHTML = `<div class="runlog">
     <div class="cardhead">
-      <h3>요청 엿보기 ${state.watching ? '<span class="chip ok">보는 중</span>' : ''}</h3>
+      <h3>창도 안 띄우고 올리게 만들기 ${state.watching ? '<span class="chip ok">받아적는 중</span>' : ''}</h3>
       <span class="grow"></span>
-      <button class="btn sm" type="button" id="btn-watch">${state.watching ? '그만 보기' : '엿보기 켜기'}</button>
-      <button class="btn sm" type="button" id="btn-caught"${state.watching ? '' : ' disabled'}>본 것 꺼내기</button>
+      <button class="btn sm ghost" type="button" id="btn-catch-close">접기</button>
     </div>
-    <p class="desc" style="margin:0">
-      <b>창 없이 올리는 길</b>로 가려면 네이버에 나가는 요청이 어떻게 생겼는지 한 번 봐야 해요.
-      ① <b>엿보기 켜기</b> → ② 카페에 들어가서 <b>직접 글을 하나 올리고 댓글도 하나</b> 달아 보세요
-      → ③ 여기로 돌아와서 <b>본 것 꺼내기</b> → ④ 내용을 복사해서 저에게 주세요.
-      비밀번호와 쿠키는 안 적습니다. 주소와 보낸 내용만 봐요.
+    <p class="desc" style="margin:0 0 12px">
+      <b>안 하셔도 됩니다.</b> 지금도 올라가요. 이건 더 좋게 만드는 일이고, 한 번만 하면 끝나요.
     </p>
+    <p class="desc" style="margin:0 0 12px">
+      지금은 사람이 하듯 <b>카페 화면을 열어서 칸에 글자를 넣고 등록을 누릅니다.</b>
+      그래서 창이 하나 떠 있어야 하고, 네이버가 화면을 바꾸면 멈춰요.
+      대신 <b>네이버에 바로 말을 걸어서</b> 올리면 창도 필요 없고 화면이 바뀌어도 안 깨집니다.
+      그 「말」이 어떻게 생겼는지 알아야 하는데, 제가 네이버에 들어가 볼 수가 없어요.
+      그래서 <b>사장님이 한 번 올려 보실 때 그 말을 받아적는</b> 겁니다.
+    </p>
+    <div class="rows">
+      <div class="row"><span class="chip blue">1</span><span class="txt">
+        <b>아래 「받아적기 시작」 누르기</b></span></div>
+      <div class="row"><span class="chip blue">2</span><span class="txt">
+        <b>카페에 가서 직접 올려 보기</b>
+        <span>글 하나(제목·본문 아무거나) → 댓글 하나 → 그 댓글에 답글 하나. 다 쓰고 지우셔도 돼요</span></span></div>
+      <div class="row"><span class="chip blue">3</span><span class="txt">
+        <b>여기로 돌아와 「받아적은 것 보기」</b></span></div>
+      <div class="row"><span class="chip blue">4</span><span class="txt">
+        <b>복사해서 저에게 주기</b>
+        <span>비밀번호와 로그인 정보는 안 적혀요. 주소와 보낸 글자만 적힙니다</span></span></div>
+    </div>
+    <div class="pfoot" style="margin-top:14px">
+      <button class="btn ${state.watching ? '' : 'pri'}" type="button" id="btn-watch">${
+        state.watching ? '그만 받아적기' : '받아적기 시작'
+      }</button>
+      <button class="btn" type="button" id="btn-caught"${state.watching ? '' : ' disabled'}>받아적은 것 보기</button>
+    </div>
     ${
       raw
         ? `<pre class="seen">${esc(raw.slice(0, 4000))}</pre>
@@ -532,6 +572,11 @@ function renderCatch(all) {
     }
   </div>`;
 
+  el('btn-catch-close').onclick = () => {
+    state.catchOpen = false;
+    renderCatch(state.catchSeen);
+  };
+
   el('btn-watch').onclick = async () => {
     const next = !state.watching;
     const said = await watchCafe(next);
@@ -539,7 +584,7 @@ function renderCatch(all) {
     state.watching = Boolean(said?.on);
     state.catchSeen = next ? null : state.catchSeen;
     renderCatch(state.catchSeen);
-    toast(state.watching ? '이제 카페에서 글을 하나 올려 보세요' : '그만 봐요');
+    toast(state.watching ? '이제 카페에서 글을 하나 올려 보세요' : '그만 받아적어요');
   };
 
   el('btn-caught').onclick = async () => {
@@ -547,13 +592,13 @@ function renderCatch(all) {
 
     state.catchSeen = seen;
     renderCatch(seen);
-    toast(seen.length ? `${seen.length}개를 봤어요` : '아직 본 게 없어요');
+    toast(seen.length ? `${seen.length}개를 받아적었어요` : '아직 받아적은 게 없어요');
   };
 
   const copier = el('btn-catch-copy');
 
   if (copier) {
-    copier.onclick = () => copy(raw, '요청 내용');
+    copier.onclick = () => copy(raw, '받아적은 내용');
   }
 }
 
@@ -1444,7 +1489,7 @@ function libList(query, sort) {
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
-const NEEDS_EXT = '1.6.0';
+const NEEDS_EXT = '1.7.0';
 
 /**
  * Compare two version strings like `1.2.0`.
@@ -2915,14 +2960,15 @@ function renderPublish() {
       프롬프트)에 붙여넣고 엔터를 치시면 돼요. 복사를 누르면 그 글자가 복사됩니다.
     </p>
     <p class="desc" style="margin:0 0 14px">
-      <b>automation</b> 폴더 안의 <b>시작하기</b> 파일을 두 번 눌러도 같은 일을 합니다.
+      <b>automation</b> 폴더 안의 <b>시작하기</b> 파일을 두 번 누르면 번호만 고르면 돼요.
+      터미널에 글자를 칠 필요가 없습니다. <b>창도 안 뜨고 뒤에서</b> 올라가요.
     </p>
 
     ${[
       {
         title: '처음 한 번만 · 프로그램 준비',
-        note: '받은 폴더에서 딱 한 번만 하면 돼요',
-        cmd: 'cd automation\nnpm install\nnpm run setup',
+        note: '받은 폴더에서 딱 한 번만 하면 돼요. 컴퓨터에 깔린 크롬을 그대로 씁니다',
+        cmd: 'cd automation\nnpm install',
       },
       {
         title: '계정마다 한 번만 · 로그인해 두기',
@@ -2931,7 +2977,7 @@ function renderPublish() {
       },
       {
         title: '올릴 때마다 · 연습해 보고 진짜로 올리기',
-        note: '--dry 를 붙이면 등록만 빼고 똑같이 해봐요. 먼저 이걸로 확인해 보세요',
+        note: '연습은 등록만 빼고 똑같이 해봐요. 진짜로 올릴 때는 창도 안 뜹니다',
         cmd: `npm start -- "${target?.keyword ?? '원고'} 업로드.json" --dry\nnpm start -- "${target?.keyword ?? '원고'} 업로드.json"`,
       },
     ]

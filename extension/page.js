@@ -10,11 +10,12 @@
  *
  * 못 찾았을 때는 그 화면에 뭐가 있었는지도 같이 돌려줍니다.
  * 네이버가 화면을 바꿔도 그걸 보고 바로 고칠 수 있게요.
- * @param {string} what - 할 일.
- * @param {string} [text] - 넣을 글.
+ * @param {{ what: string, text?: string }} job - 할 일과 넣을 글.
  * @returns {Record<string, any>} 됐는지, 안 됐으면 왜 안 됐는지.
  */
-export function act(what, text) {
+export function act(job) {
+  const { what, text } = job ?? {};
+
   const seen = (node) =>
     Boolean(node) && (node.offsetParent !== null || node.getClientRects().length > 0);
 

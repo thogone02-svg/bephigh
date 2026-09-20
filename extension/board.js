@@ -21,20 +21,28 @@ const MENU = /menuid[=:]"?(\d+)/i;
  * Build the write page address from the two numbers.
  * @param {string} clubId - Cafe number.
  * @param {string} menuId - Board number.
+ * @param {string} [home] - Where the cafe lives. Only tests change this.
  * @returns {string} Address of the write page.
  */
-export const writeUrl = (clubId, menuId) =>
-  `https://cafe.naver.com/f-e/cafes/${clubId}/menus/${menuId}/articles/write`;
+export const writeUrl = (clubId, menuId, home = 'https://cafe.naver.com') =>
+  `${home}/f-e/cafes/${clubId}/menus/${menuId}/articles/write`;
 
 /**
  * Work out what kind of board address this is.
  * @param {string} url - Board address the person pasted.
- * @returns {{ kind: 'new' | 'old', clubId?: string, menuId?: string, board: string,
- *   write: string | null }} What we can tell from it.
+ * @returns {{ kind: 'new' | 'old', clubId?: string, menuId?: string, home: string,
+ *   board: string, write: string | null }} What we can tell from it.
  */
 export function readBoard(url) {
   const board = String(url ?? '');
+  let home = 'https://cafe.naver.com';
   let plain = board;
+
+  try {
+    home = new URL(board).origin;
+  } catch {
+    home = 'https://cafe.naver.com';
+  }
 
   // 옛 주소는 게시판 번호가 %3D 처럼 꼬여 있어요. 풀어서 봅니다.
   try {
@@ -48,28 +56,29 @@ export function readBoard(url) {
   if (fresh) {
     const [, clubId, menuId] = fresh;
 
-    return { kind: 'new', clubId, menuId, board, write: writeUrl(clubId, menuId) };
+    return { kind: 'new', clubId, menuId, home, board, write: writeUrl(clubId, menuId, home) };
   }
 
   const clubId = plain.match(CLUB)?.[1] ?? plain.match(NEW_ANY)?.[1] ?? '';
   const menuId = plain.match(MENU)?.[1] ?? '';
 
   if (clubId && menuId) {
-    return { kind: 'old', clubId, menuId, board, write: writeUrl(clubId, menuId) };
+    return { kind: 'old', clubId, menuId, home, board, write: writeUrl(clubId, menuId, home) };
   }
 
   // 번호가 모자라면 그 페이지를 열어서 찾아야 해요.
-  return { kind: 'old', clubId, menuId, board, write: null };
+  return { kind: 'old', clubId, menuId, home, board, write: null };
 }
 
 /**
  * Build the address of one article on the new cafe.
  * @param {string} clubId - Cafe number.
  * @param {string} articleId - Article number.
+ * @param {string} [home] - Where the cafe lives. Only tests change this.
  * @returns {string} Address.
  */
-export const articleUrl = (clubId, articleId) =>
-  `https://cafe.naver.com/f-e/cafes/${clubId}/articles/${articleId}`;
+export const articleUrl = (clubId, articleId, home = 'https://cafe.naver.com') =>
+  `${home}/f-e/cafes/${clubId}/articles/${articleId}`;
 
 /**
  * Pull the article number out of whatever address the browser ended up on.
