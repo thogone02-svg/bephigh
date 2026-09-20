@@ -11,25 +11,119 @@
  * 한 군데만 고치면 둘 다 고쳐져요.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readBoard, writeUrl, articleUrl, articleIdFrom } from '../extension/board.js';
 import { act } from '../extension/page.js';
 import { openAs, isLoggedIn, waitWithCountdown } from './profile.mjs';
 import { findAccount, fillLogin } from './accounts.mjs';
 
+const HERE = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const dry = args.includes('--dry');
 const show = args.includes('--show');
-const file = args.find((one) => !one.startsWith('--'));
 
-if (!file) {
-  console.error('쓰는 법: npm start -- "말라세지아 모낭염 업로드.json"');
-  console.error('  --dry   등록만 안 누르고 나머지는 그대로 해봐요');
-  console.error('  --show  크롬 창을 띄워서 되는 걸 눈으로 봐요');
+const asked = args
+  .filter((one) => !one.startsWith('--'))
+  .join(' ')
+  .trim();
+
+/** 이 폴더에 있는 업로드 파일들. 프로그램이 쓰는 파일은 빼요. */
+const NOT_A_PLAN = ['accounts.json', 'package.json', 'package-lock.json'];
+
+/**
+ * List the plan files sitting next to this program.
+ * @returns {string[]} File names.
+ */
+const plansHere = () =>
+  readdirSync(HERE).filter(
+    (one) => one.toLowerCase().endsWith('.json') && !NOT_A_PLAN.includes(one.toLowerCase()),
+  );
+
+/**
+ * Find the plan file, even when the name was typed a bit wrong.
+ *
+ * 「.json」을 빼고 치거나 앞부분만 쳐도 찾아줍니다.
+ * @param {string} name - What the person typed.
+ * @returns {string} Path to the file.
+ */
+function findPlan(name) {
+  const tries = [name, `${name}.json`, join(HERE, name), join(HERE, `${name}.json`)];
+  const found = tries.find((one) => one && existsSync(one));
+
+  if (found) {
+    return found;
+  }
+
+  const want = name.replace(/\.json$/i, '').trim();
+
+  const near = plansHere().find((one) =>
+    one
+      .replace(/\.json$/i, '')
+      .trim()
+      .startsWith(want),
+  );
+
+  if (want && near) {
+    return join(HERE, near);
+  }
+
+  console.error(`\n✖ 「${name}」 파일을 못 찾았어요.`);
+
+  const all = plansHere();
+
+  if (all.length) {
+    console.error('  이 폴더에 있는 파일은 이거예요:');
+    all.forEach((one) => console.error(`    ${one}`));
+    console.error('  이름을 그대로 적어 주세요. 「.json」까지 넣으셔야 해요.');
+  } else {
+    console.error('  이 폴더에 업로드 파일이 없어요.');
+    console.error(
+      '  작업실 업로드 화면에서 「자동 업로드 파일 내려받기」로 받아 이 폴더에 넣어 주세요.',
+    );
+  }
+
   process.exit(1);
+
+  return '';
 }
 
-const plan = JSON.parse(readFileSync(file, 'utf8'));
+/**
+ * Pick the newest plan file sitting in this folder.
+ *
+ * 이름을 치지 않아도 되게, 방금 받아 둔 파일을 알아서 씁니다.
+ * @returns {string} Path to the file.
+ */
+function newestPlan() {
+  const all = plansHere()
+    .map((one) => ({ one, at: statSync(join(HERE, one)).mtimeMs }))
+    .sort((a, b) => b.at - a.at);
+
+  if (!all.length) {
+    console.error('\n✖ 이 폴더에 올릴 원고 파일이 없어요.');
+    console.error('  작업실 업로드 화면에서 「자동 업로드 파일 내려받기」를 누르고,');
+    console.error('  받은 파일을 이 폴더에 넣은 다음 다시 눌러 주세요.');
+    process.exit(1);
+  }
+
+  if (all.length > 1) {
+    console.log(`(파일이 ${all.length}개라 가장 최근 것을 씁니다)`);
+  }
+
+  return join(HERE, all[0].one);
+}
+
+const file = asked ? findPlan(asked) : newestPlan();
+let plan = null;
+
+try {
+  plan = JSON.parse(readFileSync(file, 'utf8'));
+} catch (error) {
+  console.error(`\n✖ 「${file}」 를 못 읽었어요. ${error.message}`);
+  console.error('  작업실에서 받은 파일이 맞는지 봐주세요.');
+  process.exit(1);
+}
 
 if (!Array.isArray(plan.steps) || !plan.steps.length) {
   console.error('업로드 파일에 올릴 단계가 없어요.');
@@ -39,7 +133,8 @@ if (!Array.isArray(plan.steps) || !plan.steps.length) {
 const board = readBoard(plan.cafeUrl);
 const naver = /naver\.com$/i.test(new URL(plan.cafeUrl).hostname);
 
-console.log(`\n「${plan.keyword}」 — ${plan.steps.length}단계`);
+console.log(`\n파일: ${file.split(/[\\/]/).pop()}`);
+console.log(`「${plan.keyword}」 — ${plan.steps.length}단계`);
 console.log(`주소: ${plan.cafeUrl}`);
 console.log(
   board.write

@@ -7,20 +7,50 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** 웹앱의 「계정 파일 내려받기」로 받아서 이 폴더에 둔 파일. */
 export const ACCOUNTS_FILE = join(HERE, 'accounts.json');
 
+/** 메모장으로 직접 적는 파일. 이게 있으면 이걸 먼저 씁니다. */
+export const ACCOUNTS_TEXT = join(HERE, '계정.txt');
+
 /**
- * Read the saved accounts, if the file is there.
+ * Read the accounts people type into 계정.txt.
  *
+ * 한 줄에 하나씩 「별칭,아이디,비밀번호」. # 으로 시작하는 줄은 메모라서 건너뜁니다.
+ * @returns {{ alias: string, id: string, pw: string }[]} Accounts.
+ */
+function readTyped() {
+  try {
+    return readFileSync(ACCOUNTS_TEXT, 'utf8')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'))
+      .map((line) => line.split(/[,\t]/).map((bit) => bit.trim()))
+      .filter((bits) => bits[0])
+      .map((bits) => ({ alias: bits[0], id: bits[1] ?? '', pw: bits[2] ?? '' }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Read the saved accounts, if there are any.
+ *
+ * 메모장 파일(계정.txt)이 먼저고, 없으면 작업실에서 받은 accounts.json 을 씁니다.
  * 비밀번호를 안 적어 두셨어도 됩니다. 그 경우엔 직접 로그인한 기록만 씁니다.
  * @returns {{ alias: string, id: string, pw: string }[]} Accounts.
  */
 export function readAccounts() {
+  const typed = readTyped();
+
+  if (typed.length) {
+    return typed;
+  }
+
   try {
     const saved = JSON.parse(readFileSync(ACCOUNTS_FILE, 'utf8'));
 
-    return (saved.accounts ?? []).map((a) => ({
-      alias: String(a.alias ?? ''),
-      id: String(a.id ?? ''),
-      pw: String(a.pw ?? ''),
+    return (saved.accounts ?? []).map((one) => ({
+      alias: String(one.alias ?? ''),
+      id: String(one.id ?? ''),
+      pw: String(one.pw ?? ''),
     }));
   } catch {
     return [];
