@@ -1,10 +1,12 @@
 import {
   cafeExtension,
   cafeStatus,
+  caughtCafe,
   checkCafe,
   onCafeEvent,
   runInCafe,
   stopCafe,
+  watchCafe,
 } from './cafe-bridge.js';
 import { connect, createDoc, preloadGis } from './gdocs.js';
 import {
@@ -73,6 +75,8 @@ const state = {
   stuckSeen: null,
   runNote: '',
   checked: null,
+  watching: false,
+  catchSeen: null,
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -460,6 +464,65 @@ function renderCheck(found) {
   </div>`;
 
   el('btn-check-copy').onclick = () => copy(raw, '점검 결과');
+}
+
+/**
+ * Draw the «요청 엿보기» panel, used to learn how to post without a window.
+ * @param {Record<string, any>[] | null} all - What the extension saw.
+ */
+function renderCatch(all) {
+  const box = el('auto-catch');
+
+  if (!box) {
+    return;
+  }
+
+  const raw = all?.length ? JSON.stringify(all, null, 1) : '';
+
+  box.innerHTML = `<div class="runlog">
+    <div class="cardhead">
+      <h3>요청 엿보기 ${state.watching ? '<span class="chip ok">보는 중</span>' : ''}</h3>
+      <span class="grow"></span>
+      <button class="btn sm" type="button" id="btn-watch">${state.watching ? '그만 보기' : '엿보기 켜기'}</button>
+      <button class="btn sm" type="button" id="btn-caught"${state.watching ? '' : ' disabled'}>본 것 꺼내기</button>
+    </div>
+    <p class="desc" style="margin:0">
+      <b>창 없이 올리는 길</b>로 가려면 네이버에 나가는 요청이 어떻게 생겼는지 한 번 봐야 해요.
+      ① <b>엿보기 켜기</b> → ② 카페에 들어가서 <b>직접 글을 하나 올리고 댓글도 하나</b> 달아 보세요
+      → ③ 여기로 돌아와서 <b>본 것 꺼내기</b> → ④ 내용을 복사해서 저에게 주세요.
+      비밀번호와 쿠키는 안 적습니다. 주소와 보낸 내용만 봐요.
+    </p>
+    ${
+      raw
+        ? `<pre class="seen">${esc(raw.slice(0, 4000))}</pre>
+           <div class="pfoot"><button class="btn sm pri" type="button" id="btn-catch-copy">이 내용 복사</button></div>`
+        : ''
+    }
+  </div>`;
+
+  el('btn-watch').onclick = async () => {
+    const next = !state.watching;
+    const said = await watchCafe(next);
+
+    state.watching = Boolean(said?.on);
+    state.catchSeen = next ? null : state.catchSeen;
+    renderCatch(state.catchSeen);
+    toast(state.watching ? '이제 카페에서 글을 하나 올려 보세요' : '그만 봐요');
+  };
+
+  el('btn-caught').onclick = async () => {
+    const seen = await caughtCafe();
+
+    state.catchSeen = seen;
+    renderCatch(seen);
+    toast(seen.length ? `${seen.length}개를 봤어요` : '아직 본 게 없어요');
+  };
+
+  const copier = el('btn-catch-copy');
+
+  if (copier) {
+    copier.onclick = () => copy(raw, '요청 내용');
+  }
 }
 
 /**
@@ -1349,7 +1412,7 @@ function libList(query, sort) {
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
-const NEEDS_EXT = '1.3.0';
+const NEEDS_EXT = '1.4.0';
 
 /**
  * Compare two version strings like `1.2.0`.
@@ -2734,6 +2797,7 @@ function renderPublish() {
     el('btn-run').onclick = () => runHere(false);
 
     renderCheck(state.checked);
+    renderCatch(state.catchSeen);
 
     el('btn-acct-file').onclick = () => {
       if (!accounts.length) {

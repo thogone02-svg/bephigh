@@ -101,6 +101,22 @@ export const checkCafe = (cafeUrl) =>
   askExtension({ type: 'nabi-check', cafeUrl }, 90000, 'checked');
 
 /**
+ * Start or stop watching what goes out to naver.
+ *
+ * 창 없이 올리는 길로 가려면 그 요청이 어떻게 생겼는지 한 번 봐야 해요.
+ * @param {boolean} on - True to start.
+ * @returns {Promise<Record<string, any> | null>} Reply.
+ */
+export const watchCafe = (on) => askExtension({ type: 'nabi-watch', on }, 4000, 'watching');
+
+/**
+ * Read back what went out while we were watching.
+ * @returns {Promise<Record<string, any>[]>} What it saw.
+ */
+export const caughtCafe = async () =>
+  (await askExtension({ type: 'nabi-caught' }, 6000, 'caught'))?.all ?? [];
+
+/**
  * Ask whether something is being posted right now.
  *
  * 작업실 화면을 새로고침해도 올리던 것이 이어지고 있으면 다시 보여주려고요.

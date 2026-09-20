@@ -11,6 +11,7 @@
 
 import { readBoard, articleUrl, articleIdFrom } from './board.js';
 import { act } from './page.js';
+import { setWatching, caught, forget } from './watch.js';
 
 /** 다음 단계를 깨우는 알람 이름. */
 const NEXT = 'nabi-next';
@@ -571,6 +572,25 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     checkCafe(message.cafeUrl)
       .then((found) => reply({ type: 'checked', ...found }))
       .catch((error) => reply({ type: 'checked', ok: false, reason: error.message }));
+
+    return true;
+  }
+
+  if (message?.type === 'nabi-watch') {
+    const turn = message.on ? setWatching(true) : setWatching(false);
+
+    turn
+      .then(() => (message.on ? forget() : Promise.resolve()))
+      .then(() => reply({ type: 'watching', on: Boolean(message.on) }))
+      .catch((error) => reply({ type: 'watching', on: false, message: error.message }));
+
+    return true;
+  }
+
+  if (message?.type === 'nabi-caught') {
+    caught()
+      .then((all) => reply({ type: 'caught', all }))
+      .catch((error) => reply({ type: 'caught', all: [], message: error.message }));
 
     return true;
   }
