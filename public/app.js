@@ -1518,6 +1518,8 @@ function libList(query, sort) {
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
 const NEEDS_EXT = '1.7.0';
+/** 눌러서 바로 받는 주소. 깃허브가 압축해서 내려줍니다. */
+const ZIP_URL = 'https://github.com/thogone02-svg/bephigh/archive/refs/heads/main.zip';
 
 /**
  * Compare two version strings like `1.2.0`.
@@ -2908,10 +2910,14 @@ function renderPublish() {
               <div>
                 <b>확장이 낡았어요 (지금 ${esc(state.hasExtension)}, 필요한 판 ${NEEDS_EXT})</b>
                 <p>
-                  깃허브에서 <b>Code → Download ZIP</b> 으로 새로 받아 <b>extension</b> 폴더를 바꿔치기하고,
-                  <code>chrome://extensions</code> 에서 이 확장의 <b>↻</b> 를 눌러 주세요.
-                  낡은 판은 글쓰기 화면에서 멈출 수 있어요.
+                  ① 아래 <b>새로 받기</b> → ② 압축 풀어서 <b>extension</b> 폴더를 쓰던 것과 바꿔치기
+                  → ③ <code>chrome://extensions</code> 에서 이 확장의 <b>↻</b> 누르기
+                  → ④ 이 화면 새로고침. 낡은 판은 글쓰기 화면에서 멈출 수 있어요.
                 </p>
+                <div class="pfoot" style="margin-top:10px">
+                  <a class="btn sm pri" href="${ZIP_URL}">새로 받기</a>
+                  <button class="btn sm" type="button" id="btn-ext-url">확장 주소 복사</button>
+                </div>
               </div>
             </div>`
           : ''
@@ -2943,6 +2949,7 @@ function renderPublish() {
       }
     };
 
+    el('btn-ext-url')?.addEventListener('click', () => copy('chrome://extensions', '주소'));
     el('btn-run-dry').onclick = () => runHere(true);
     el('btn-run').onclick = () => runHere(false);
 
@@ -2962,6 +2969,10 @@ function renderPublish() {
         <p>
           터미널도, Node.js도 필요 없어요. 폴더 하나만 끌어다 놓으면 끝이고,
           그 다음부터는 이 화면에서 단추 한 번이면 됩니다. 한 번만 하시면 돼요.
+        </p>
+        <p class="pfoot" style="margin-top:10px">
+          <a class="btn sm pri" href="${ZIP_URL}">확장 받기</a>
+          <button class="btn sm" type="button" id="btn-ext-url2">확장 주소 복사</button>
         </p>
         <p style="margin-top:8px">
           ① 받은 폴더 안의 <b>extension</b> 폴더를 컴퓨터에 두기 (지우지 마세요)<br />
@@ -3011,6 +3022,8 @@ function renderPublish() {
         </div>`,
       )
       .join('')}`;
+
+  el('btn-ext-url2')?.addEventListener('click', () => copy('chrome://extensions', '주소'));
 
   document.querySelectorAll('[data-copy-cmd]').forEach((button) => {
     button.addEventListener('click', () => copy(button.dataset.copyCmd, '명령'));
