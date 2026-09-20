@@ -81,6 +81,7 @@ const state = {
   catchOpen: false,
   hasProgram: false,
   runOn: '',
+  build: '',
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -1589,8 +1590,17 @@ function libList(query, sort) {
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
 const NEEDS_EXT = '1.7.0';
-/** 눌러서 바로 받는 주소. 깃허브가 압축해서 내려줍니다. */
-const ZIP_URL = 'https://github.com/thogone02-svg/bephigh/archive/refs/heads/main.zip';
+
+/**
+ * 눌러서 바로 받는 주소.
+ *
+ * 판마다 그 이름의 가지를 하나 만들어 둡니다. 그래야 받은 파일 이름에도
+ * 판 번호가 붙어서(bephigh-v2026-09-20.9.zip) 어느 걸 받았는지 압니다.
+ */
+const zipUrl = () =>
+  `https://github.com/thogone02-svg/bephigh/archive/refs/heads/${
+    state.build ? `v${state.build}` : 'main'
+  }.zip`;
 
 /**
  * Compare two version strings like `1.2.0`.
@@ -3036,7 +3046,7 @@ function renderPublish() {
                   → ④ 이 화면 새로고침. 낡은 판은 글쓰기 화면에서 멈출 수 있어요.
                 </p>
                 <div class="pfoot" style="margin-top:10px">
-                  <a class="btn sm pri" href="${ZIP_URL}">새로 받기</a>
+                  <a class="btn sm pri" href="${zipUrl()}">새로 받기${state.build ? ` (${state.build})` : ''}</a>
                   <button class="btn sm" type="button" id="btn-ext-url">확장 주소 복사</button>
                 </div>
               </div>
@@ -3092,7 +3102,7 @@ function renderPublish() {
           그 다음부터는 이 화면에서 단추 한 번이면 됩니다. 한 번만 하시면 돼요.
         </p>
         <p class="pfoot" style="margin-top:10px">
-          <a class="btn sm pri" href="${ZIP_URL}">확장 받기</a>
+          <a class="btn sm pri" href="${zipUrl()}">확장 받기${state.build ? ` (${state.build})` : ''}</a>
           <button class="btn sm" type="button" id="btn-ext-url2">확장 주소 복사</button>
         </p>
         <p style="margin-top:8px">
@@ -3596,6 +3606,7 @@ async function start() {
 
   // 지금 어떤 판이 도는지 보여줍니다. 고친 게 반영됐는지 여기서 확인해요.
   if (meta?.build) {
+    state.build = meta.build;
     el('build-tag').textContent = meta.build;
   }
 
