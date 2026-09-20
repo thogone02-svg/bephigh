@@ -13,18 +13,27 @@ export const ACCOUNTS_TEXT = join(HERE, '계정.txt');
 /**
  * Read the accounts people type into 계정.txt.
  *
- * 한 줄에 하나씩 「별칭,아이디,비밀번호」. # 으로 시작하는 줄은 메모라서 건너뜁니다.
+ * 한 줄에 하나씩 「아이디,비밀번호」. 순서가 자리예요 — 첫 줄이 본문, 그다음이 댓글1, 댓글2…
+ * 자리 이름을 직접 적고 싶으면 「별칭,아이디,비밀번호」 로 세 칸을 쓰셔도 됩니다.
+ * # 으로 시작하는 줄은 메모라서 건너뜁니다.
  * @returns {{ alias: string, id: string, pw: string }[]} Accounts.
  */
 function readTyped() {
   try {
-    return readFileSync(ACCOUNTS_TEXT, 'utf8')
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line && !line.startsWith('#'))
-      .map((line) => line.split(/[,\t]/).map((bit) => bit.trim()))
-      .filter((bits) => bits[0])
-      .map((bits) => ({ alias: bits[0], id: bits[1] ?? '', pw: bits[2] ?? '' }));
+    return (
+      readFileSync(ACCOUNTS_TEXT, 'utf8')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith('#'))
+        .map((line) => line.split(/[,\t]/).map((bit) => bit.trim()))
+        .filter((bits) => bits[0])
+        // 두 칸이면 「아이디,비밀번호」, 세 칸이면 「별칭,아이디,비밀번호」.
+        .map((bits) =>
+          bits.length >= 3
+            ? { alias: bits[0], id: bits[1], pw: bits[2] }
+            : { alias: '', id: bits[0], pw: bits[1] ?? '' },
+        )
+    );
   } catch {
     return [];
   }

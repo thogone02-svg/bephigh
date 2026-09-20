@@ -63,18 +63,16 @@ export async function openAs(alias, headless = false) {
 
 /**
  * Check whether a profile is still signed in to Naver.
+ *
+ * 화면에 뭐가 보이는지로 판단하면 네이버가 디자인을 바꿀 때마다 틀려요.
+ * 로그인 쿠키가 있는지로 봅니다.
  * @param {import('playwright').BrowserContext} context - Open browser.
  * @returns {Promise<boolean>} True when signed in.
  */
 export async function isLoggedIn(context) {
-  const page = context.pages()[0] ?? (await context.newPage());
+  const cookies = await context.cookies('https://www.naver.com').catch(() => []);
 
-  await page.goto('https://www.naver.com', { waitUntil: 'domcontentloaded' });
-
-  return page
-    .locator('.MyView-module__link_login___HpHMW')
-    .count()
-    .then((n) => n === 0);
+  return cookies.some((one) => one.name === 'NID_AUT' && one.value);
 }
 
 /**

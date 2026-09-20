@@ -1,3 +1,4 @@
+import { localProgram, localStatus, runOnLocal, stopLocal } from './local.js';
 import {
   cafeExtension,
   cafeStatus,
@@ -78,6 +79,8 @@ const state = {
   watching: false,
   catchSeen: null,
   catchOpen: false,
+  hasProgram: false,
+  runOn: '',
   keepSet: null,
   libQuery: '',
   libSort: 'recent',
@@ -631,6 +634,72 @@ function renderCatch(all) {
 }
 
 /**
+ * Keep asking the program how far it has got, and draw it.
+ * @param {boolean} dry - True when nothing is actually being posted.
+ */
+function followProgram(dry) {
+  const tick = async () => {
+    const now = await localStatus();
+
+    if (!now) {
+      toast('프로그램이 꺼졌어요');
+
+      return;
+    }
+
+    (now.log ?? []).forEach((one) => {
+      const step = state.runLog.find((x) => x.no === one.no);
+
+      if (one.type === 'doing' && step) {
+        state.runLog.forEach((x) => {
+          if (x.at === 'now') {
+            x.at = 'done';
+          }
+        });
+        step.at = 'now';
+      }
+
+      if (one.type === 'done-step' && step) {
+        step.at = 'done';
+      }
+
+      if (one.type === 'note') {
+        state.runNote = one.message ?? '';
+      }
+    });
+
+    if (now.done && !now.done.ok) {
+      const step = state.runLog.find((x) => x.no === now.done.no) ?? state.runLog[0];
+
+      if (step) {
+        step.at = 'stuck';
+        step.why = now.done.reason;
+      }
+
+      state.stuckSeen = now.done.seen ?? state.stuckSeen;
+      toast(now.done.reason ?? '멈췄어요');
+    }
+
+    if (now.done?.ok) {
+      state.runLog.forEach((step) => {
+        step.at = 'done';
+      });
+      toast(dry ? '연습이 끝났어요' : '다 올렸어요');
+    }
+
+    if (state.view === 'publish') {
+      renderRunLog(dry);
+    }
+
+    if (now.running) {
+      setTimeout(tick, 2000);
+    }
+  };
+
+  tick();
+}
+
+/**
  * Show how far the extension got, step by step.
  * @param {boolean} dry - True when nothing is actually being posted.
  */
@@ -680,7 +749,7 @@ function renderRunLog(dry) {
   );
 
   el('btn-run-stop').onclick = async () => {
-    await stopCafe();
+    await (state.runOn === 'program' ? stopLocal() : stopCafe());
     toast('이번 단계까지만 하고 멈춰요');
   };
 }
@@ -791,15 +860,17 @@ function renderDock() {
   } else if (state.view === 'publish' && state.pub) {
     const p = state.pub;
     const off = p.ready ? '' : ' disabled';
+    // 프로그램이든 확장이든, 여기서 바로 올릴 수 있으면 단추를 보여 줍니다.
+    const canRun = state.hasProgram || state.hasExtension;
 
-    const buttons = state.hasExtension
+    const buttons = canRun
       ? `<button class="btn" type="button" id="btn-dock-dry"${off}>연습으로</button>
          <button class="btn pri lg" type="button" id="btn-dock-run"${off}>업로드 시작</button>`
       : `<button class="btn pri lg" type="button" id="btn-dock-plan"${off}>업로드 파일 내려받기</button>`;
 
     inner.innerHTML = `<p>${p.ready ? `${esc(p.keyword)} · ${p.scope} · ${p.count}단계` : esc(p.missing)}</p>${buttons}`;
 
-    if (state.hasExtension) {
+    if (canRun) {
       el('btn-dock-dry').onclick = () => p.run(true);
       el('btn-dock-run').onclick = () => p.run(false);
     } else {
@@ -2868,6 +2939,24 @@ function renderPublish() {
       return;
     }
 
+    // 프로그램이 켜져 있으면 그쪽으로 바로 보냅니다. 파일을 받을 일이 없어요.
+    if (state.hasProgram) {
+      const said = await runOnLocal({ ...plan, accounts }, dry);
+
+      if (!said?.ok) {
+        toast(said?.reason ?? '프로그램이 대답을 안 해요. 켜져 있는지 봐주세요.');
+
+        return;
+      }
+
+      state.runOn = 'program';
+      state.runLog = plan.steps.map((step) => ({ ...step, at: 'wait' }));
+      renderRunLog(dry);
+      followProgram(dry);
+
+      return;
+    }
+
     // 확장은 이 브라우저에서 로그인을 갈아 끼우므로 계정 정보도 같이 넘겨요.
     const reply = await runInCafe({ ...plan, accounts, background: s.background !== false }, dry);
 
@@ -2894,6 +2983,38 @@ function renderPublish() {
 
   if (state.view === 'publish') {
     renderDock();
+  }
+
+  // ① 컴퓨터에서 도는 프로그램이 제일 좋아요. 창도 안 뜨고 파일도 안 받습니다.
+  if (state.hasProgram) {
+    el('auto-state').textContent = ready ? '프로그램에 연결됨' : '아래를 먼저 채워 주세요';
+    el('auto-state').className = ready ? 'chip ok' : 'chip';
+
+    el('auto-guide').innerHTML = `
+      <p class="desc" style="margin:0 0 14px">
+        이 컴퓨터에서 <b>카페 올리기 프로그램</b>이 돌고 있어요. 아래 단추만 누르시면
+        <b>창도 안 뜨고 파일도 안 받고</b> 바로 올라갑니다.
+        계정은 이 화면에 넣어 두신 걸 그대로 씁니다.
+        <b>먼저 연습부터</b> 해보세요. 글은 다 채우고 등록만 안 누릅니다.
+      </p>
+      <div class="pfoot" style="margin-top:0">
+        <button class="btn" type="button" id="btn-check"${s.cafeUrl ? '' : ' disabled'}>카페 화면 점검</button>
+        <button class="btn" type="button" id="btn-run-dry"${ready ? '' : ' disabled'}>연습으로 올려 보기</button>
+        <button class="btn pri" type="button" id="btn-run"${ready ? '' : ' disabled'}>업로드 시작</button>
+      </div>`;
+
+    el('btn-run-dry').onclick = () => runHere(true);
+    el('btn-run').onclick = () => runHere(false);
+
+    el('btn-check').onclick = async () => {
+      toast('점검은 확장이 있어야 해요. 연습으로 올려 보기로 확인해 주세요');
+    };
+
+    renderCheck(state.checked);
+    renderCatch(state.catchSeen);
+    saveAccountsOn(['btn-acct-file'], accounts);
+
+    return;
   }
 
   if (state.hasExtension) {
@@ -3370,6 +3491,9 @@ async function start() {
   if (store.settings.googleClientId) {
     preloadGis();
   }
+
+  // 컴퓨터에서 도는 프로그램이 켜져 있으면 그쪽이 제일 좋아요. 창이 안 뜨니까요.
+  state.hasProgram = await localProgram();
 
   // 확장이 깔려 있으면 업로드 화면이 단추로 바뀌어요.
   state.hasExtension = await cafeExtension();

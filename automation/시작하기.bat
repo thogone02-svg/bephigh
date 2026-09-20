@@ -33,6 +33,7 @@ echo   2. 연습으로 올려 보기   ^(등록은 안 눌러요^)
 echo   3. 진짜로 올리기        ^(창 없이 뒤에서^)
 echo   4. 진짜로 올리기        ^(창 띄워서 보면서^)
 echo   5. 계정 로그인해 두기   ^(비밀번호 안 적었을 때만^)
+echo   6. 작업실과 연결해 두기  ^(작업실 단추만으로 올리기^)
 echo   0. 닫기
 echo   ---------------------------------------------
 echo.
@@ -47,7 +48,16 @@ if "%pick%"=="2" goto dry
 if "%pick%"=="3" goto real
 if "%pick%"=="4" goto watch
 if "%pick%"=="5" goto login
+if "%pick%"=="6" goto serve
 if "%pick%"=="0" exit
+goto menu
+
+:serve
+echo.
+echo   작업실과 연결합니다. 이 창을 켜 두세요.
+echo.
+node server.mjs
+pause
 goto menu
 
 :accounts
