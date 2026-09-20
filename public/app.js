@@ -1412,7 +1412,7 @@ function libList(query, sort) {
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
-const NEEDS_EXT = '1.4.0';
+const NEEDS_EXT = '1.5.0';
 
 /**
  * Compare two version strings like `1.2.0`.

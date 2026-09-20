@@ -158,28 +158,104 @@ const anyoneSignedIn = async () =>
     await chrome.cookies.get({ url: 'https://www.naver.com', name: 'NID_AUT' }).catch(() => null),
   );
 
-/**
- * Switch to another naver account, using the saved id and password.
- * @param {number} tabId - Tab to work in.
- * @param {{ alias: string, id: string, pw: string }} account - Account to sign in as.
- * @returns {Promise<{ ok: boolean, reason?: string, note?: string }>} Result.
- */
-async function signIn(tabId, account) {
-  if (!account?.id || !account?.pw) {
-    if (await anyoneSignedIn()) {
-      return {
-        ok: true,
-        note: `「${account?.alias ?? '계정'}」은 비밀번호가 없어서, 지금 로그인된 계정으로 올려요.`,
-      };
-    }
+/** 네이버 로그인 화면. */
+const LOGIN_PAGE = 'https://nid.naver.com/nidlogin.login';
+/** 사람이 보안문자를 풀 때까지 기다리는 시간(분). */
+const PATIENCE = 3;
 
-    return {
-      ok: false,
-      reason: `「${account?.alias ?? '계정'}」으로 로그인해 주세요. 아이디와 비밀번호를 넣어 두시면 다음부터는 알아서 들어갑니다.`,
-    };
+/**
+ * Wait until the browser has left the login page.
+ * @param {number} tabId - Tab to watch.
+ * @param {number} seconds - How long to wait.
+ * @returns {Promise<boolean>} True once the login is done.
+ */
+async function leftLogin(tabId, seconds) {
+  const until = Date.now() + seconds * 1000;
+
+  while (Date.now() < until) {
+    // eslint-disable-next-line no-await-in-loop
+    await rest(1500);
+
+    // eslint-disable-next-line no-await-in-loop
+    const tab = await chrome.tabs.get(tabId).catch(() => null);
+
+    if (tab && !/nid\.naver\.com/.test(tab.url ?? '')) {
+      // eslint-disable-next-line no-await-in-loop
+      return Boolean(await anyoneSignedIn());
+    }
   }
 
-  await goTo(tabId, 'https://nid.naver.com/nidlogin.login');
+  return false;
+}
+
+/**
+ * Bring the window up and wait for the person to finish logging in.
+ *
+ * 창을 내려 둔 채로 「로그인해 주세요」 해봐야 안 보여요. 그래서 올려 줍니다.
+ * @param {{ tabId: number, windowId: number }} where - Where we are working.
+ * @param {{ alias: string }} account - Account we need.
+ * @param {(message: Record<string, any>) => void} tell - How to talk to the app.
+ * @param {string} why - What to say.
+ * @returns {Promise<{ ok: boolean, reason?: string, note?: string }>} Result.
+ */
+async function askPerson(where, account, tell, why) {
+  const alias = account?.alias ?? '계정';
+
+  await chrome.tabs.update(where.tabId, { url: LOGIN_PAGE }).catch(() => {});
+  await chrome.windows
+    .update(where.windowId, { state: 'normal', focused: true, drawAttention: true })
+    .catch(() => {});
+
+  tell({
+    type: 'note',
+    message: `${why} 방금 올라온 창에서 그 계정으로 로그인해 주세요. 끝내시면 알아서 이어서 갑니다. (${PATIENCE}분 기다려요)`,
+  });
+
+  if (!(await leftLogin(where.tabId, PATIENCE * 60))) {
+    return { ok: false, reason: `${why} 창에서 로그인을 끝내신 뒤에 다시 눌러 주세요.` };
+  }
+
+  await chrome.storage.local.set({ signedAs: alias });
+  await chrome.windows.update(where.windowId, { state: 'minimized' }).catch(() => {});
+
+  return { ok: true, note: `「${alias}」 로그인이 끝나서 이어서 올려요.` };
+}
+
+/**
+ * Switch to another naver account, using the saved id and password.
+ *
+ * 이미 그 계정으로 들어가 있으면 아무것도 안 합니다. 매번 다시 로그인하면
+ * 네이버가 보안문자를 띄워서, 오히려 사람 손이 더 자주 필요해져요.
+ * @param {{ tabId: number, windowId: number }} where - Where we are working.
+ * @param {{ alias: string, id: string, pw: string }} account - Account to sign in as.
+ * @param {(message: Record<string, any>) => void} tell - How to talk to the app.
+ * @returns {Promise<{ ok: boolean, reason?: string, note?: string }>} Result.
+ */
+async function signIn(where, account, tell) {
+  const { tabId } = where;
+  const alias = account?.alias ?? '계정';
+  const remembered = (await chrome.storage.local.get('signedAs')).signedAs ?? '';
+  const already = await anyoneSignedIn();
+
+  // ① 이미 그 계정으로 들어가 있으면 아무것도 안 해요. 매번 다시 로그인하면
+  //    네이버가 보안문자를 띄우거든요.
+  if (already && remembered === alias) {
+    return { ok: true };
+  }
+
+  // ② 비밀번호를 안 넣어 두셨으면 사람이 한 번 해줘야 해요.
+  if (!account?.id || !account?.pw) {
+    if (already && !remembered) {
+      await chrome.storage.local.set({ signedAs: alias });
+
+      return { ok: true, note: `「${alias}」은 비밀번호가 없어서, 지금 로그인된 계정으로 올려요.` };
+    }
+
+    return askPerson(where, account, tell, `「${alias}」으로 로그인해 주세요.`);
+  }
+
+  // ③ 아이디와 비밀번호가 있으면 대신 넣어 줍니다.
+  await goTo(tabId, LOGIN_PAGE);
   await rest(1200);
 
   await chrome.scripting
@@ -212,18 +288,19 @@ async function signIn(tabId, account) {
     })
     .catch(() => {});
 
-  await rest(5000);
+  if (await leftLogin(tabId, 15)) {
+    await chrome.storage.local.set({ signedAs: alias });
 
-  const tab = await chrome.tabs.get(tabId).catch(() => null);
-
-  if (/nid\.naver\.com/.test(tab?.url ?? '')) {
-    return {
-      ok: false,
-      reason: `「${account.alias}」 로그인이 안 끝났어요. 열린 창에서 직접 로그인해 주세요. (캡차나 새 기기 확인이 뜬 것 같아요)`,
-    };
+    return { ok: true };
   }
 
-  return { ok: true };
+  // ④ 여기까지 왔으면 보안문자나 새 기기 확인이 뜬 거예요. 사람이 해야 합니다.
+  return askPerson(
+    where,
+    account,
+    tell,
+    `「${alias}」 로그인에 확인이 필요해요. 보안문자나 새 기기 확인이 뜬 것 같습니다.`,
+  );
 }
 
 /**
@@ -271,8 +348,9 @@ async function postOne(run) {
   // ① 이 단계를 맡은 계정으로.
   if (run.signedAs !== step.profile) {
     const done = await signIn(
-      tabId,
+      { tabId, windowId: run.windowId },
       accounts.find((one) => one.alias === step.profile),
+      say,
     );
 
     if (!done.ok) {
