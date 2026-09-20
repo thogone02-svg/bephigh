@@ -468,6 +468,34 @@ function renderCheck(found) {
 }
 
 /**
+ * Wire up every «계정 파일 내려받기» button on the screen.
+ *
+ * 확장이 깔려 있으면 같은 단추가 위아래로 두 개 생겨요. 둘 다 되게 묶어 둡니다.
+ * @param {string[]} ids - Button ids to wire up.
+ * @param {Record<string, any>[]} accounts - Accounts to save.
+ */
+function saveAccountsOn(ids, accounts) {
+  ids.forEach((id) => {
+    const button = el(id);
+
+    if (!button) {
+      return;
+    }
+
+    button.onclick = () => {
+      if (!accounts.length) {
+        toast('계정을 먼저 추가해 주세요');
+
+        return;
+      }
+
+      download('accounts.json', JSON.stringify({ version: 1, accounts }, null, 2));
+      toast('automation 폴더에 넣어 주세요');
+    };
+  });
+}
+
+/**
  * Say whether we could read the board address.
  */
 function renderUrlNote() {
@@ -2899,7 +2927,7 @@ function renderPublish() {
         <button class="btn" type="button" id="btn-run-dry"${ready ? '' : ' disabled'}>연습으로 올려 보기</button>
         <button class="btn pri" type="button" id="btn-run"${ready ? '' : ' disabled'}>업로드 시작</button>
         <span class="grow"></span>
-        <button class="btn ghost" type="button" id="btn-acct-file">계정 파일 내려받기</button>
+        <button class="btn ghost" type="button" id="btn-acct-file-top">계정 파일 내려받기</button>
       </div>`;
 
     el('btn-check').onclick = async () => {
@@ -2921,16 +2949,7 @@ function renderPublish() {
     renderCheck(state.checked);
     renderCatch(state.catchSeen);
 
-    el('btn-acct-file').onclick = () => {
-      if (!accounts.length) {
-        toast('계정을 먼저 추가해 주세요');
-
-        return;
-      }
-
-      download('accounts.json', JSON.stringify({ version: 1, accounts }, null, 2));
-      toast('automation 폴더에 넣어 주세요');
-    };
+    saveAccountsOn(['btn-acct-file', 'btn-acct-file-top'], accounts);
 
     return;
   }
@@ -2997,16 +3016,7 @@ function renderPublish() {
     button.addEventListener('click', () => copy(button.dataset.copyCmd, '명령'));
   });
 
-  el('btn-acct-file').onclick = () => {
-    if (!accounts.length) {
-      toast('계정을 먼저 추가해 주세요');
-
-      return;
-    }
-
-    download('accounts.json', JSON.stringify({ version: 1, accounts }, null, 2));
-    toast('automation 폴더에 넣어 주세요');
-  };
+  saveAccountsOn(['btn-acct-file'], accounts);
 }
 
 /* ---------------- 설정 ---------------- */
