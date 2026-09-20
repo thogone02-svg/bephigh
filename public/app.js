@@ -2594,6 +2594,19 @@ function renderPublish() {
         .join('')
     : '<div class="empty" style="padding:14px">원고를 먼저 골라 주세요</div>';
 
+  // 비밀번호가 없는 계정은 그 차례에 사람이 로그인해 줘야 해요. 미리 알려줍니다.
+  const byHand = roles(v ?? {})
+    .filter((seat) => needed.has(seat.role))
+    .map((seat) => accounts.find((one) => one.alias === (s.assign ?? {})[seat.role]))
+    .filter((one) => one && (!one.id || !one.pw))
+    .map((one) => one.alias);
+
+  el('assign-note').innerHTML = byHand.length
+    ? `<b>${esc([...new Set(byHand)].join(', '))}</b> 은(는) 비밀번호가 없어요.
+       그 차례가 오면 창이 떠서 <b>직접 로그인</b>하셔야 이어서 올라갑니다.
+       계정을 추가할 때 비밀번호까지 넣어 두시면 손 안 대셔도 돼요.`
+    : '';
+
   document.querySelectorAll('[data-assign]').forEach((select) => {
     select.addEventListener('change', () => {
       store.settings.assign = { ...(store.settings.assign ?? {}) };
