@@ -924,6 +924,14 @@ function reserveForDock() {
  */
 function show(view) {
   state.view = view;
+
+  // 새로고침해도 보던 화면으로 돌아오게, 주소 끝에 적어 둬요.
+  try {
+    window.history.replaceState(null, '', `#${view}`);
+  } catch {
+    // 주소를 못 고쳐도 화면은 그대로 돌아갑니다.
+  }
+
   VIEWS.forEach((v) => {
     el(`view-${v.id}`).hidden = v.id !== view;
   });
@@ -3048,9 +3056,18 @@ function renderPublish() {
               <div>
                 <b>확장이 낡았어요 (지금 ${esc(state.hasExtension)}, 필요한 판 ${NEEDS_EXT})</b>
                 <p>
-                  ① 아래 <b>새로 받기</b> → ② 압축 풀어서 <b>extension</b> 폴더를 쓰던 것과 바꿔치기
-                  → ③ <code>chrome://extensions</code> 에서 이 확장의 <b>↻</b> 누르기
-                  → ④ 이 화면 새로고침. 낡은 판은 글쓰기 화면에서 멈출 수 있어요.
+                  <b>↻ 를 눌렀는데도 이 글이 계속 보이면</b>, 크롬이 <b>예전 폴더</b>를 보고 있는 거예요.
+                  새로 받으면 폴더 이름이 <code>bephigh-v${esc(state.build || '…')}</code> 처럼 달라지거든요.
+                  그럴 땐 <code>chrome://extensions</code> 에서 이 확장을 <b>지우고</b>,
+                  <b>압축해제된 확장 프로그램을 로드합니다</b> 로 <b>새 폴더 안의 extension</b> 을 다시 고르셔야 합니다.
+                </p>
+                <p style="margin-top:6px">
+                  ① 아래 <b>새로 받기</b> → ② 압축 풀기 → ③ <code>chrome://extensions</code> 에서
+                  이 확장 <b>지우기</b> → ④ <b>새 폴더의 extension</b> 로드 → ⑤ 이 화면 새로고침
+                </p>
+                <p style="margin-top:6px">
+                  이게 번거로우시면 <b>확장 대신 프로그램</b>을 쓰세요. 새 폴더의 <b>automation</b> 안에서
+                  <b>작업실과 연결하기</b> 를 켜 두시면 이 안내가 아예 안 뜹니다.
                 </p>
                 <div class="pfoot" style="margin-top:10px">
                   <a class="btn sm pri" href="${zipUrl()}">새로 받기${state.build ? ` (${state.build})` : ''}</a>
@@ -3753,7 +3770,12 @@ async function start() {
   renderSetZone();
   renderLibrary();
   renderSettings();
-  show(store.docs.length ? 'result' : 'write');
+
+  // 새로고침 전에 보던 화면이 있으면 그 화면으로. 없으면 하던 대로.
+  const asked = window.location.hash.replace('#', '');
+  const known = VIEWS.some((one) => one.id === asked);
+
+  show(known ? asked : (store.docs.length && 'result') || 'write');
 }
 
 start();
