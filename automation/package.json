@@ -8,7 +8,8 @@
     "login": "node login.mjs",
     "start": "node upload.mjs",
     "setup": "playwright install chromium",
-    "serve": "node server.mjs"
+    "serve": "node server.mjs",
+    "look": "node look.mjs"
   },
   "dependencies": {
     "playwright": "^1.49.0"

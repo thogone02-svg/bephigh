@@ -23,8 +23,11 @@ export async function openAs(alias, headless = false) {
 
   mkdirSync(dir, { recursive: true });
 
+  // 시험할 때는 창 없이 돌려요. 평소엔 부르는 쪽이 정합니다.
+  const hidden = process.env.NABI_HEADLESS === '1' || headless;
+
   const base = {
-    headless,
+    headless: hidden,
     viewport: { width: 1280, height: 900 },
     locale: 'ko-KR',
     timezoneId: 'Asia/Seoul',
@@ -40,7 +43,7 @@ export async function openAs(alias, headless = false) {
       ...base,
       executablePath: process.env.NABI_CHROME,
       headless: false,
-      args: [...base.args, ...(headless ? ['--headless=new'] : []), '--no-sandbox'],
+      args: [...base.args, ...(hidden ? ['--headless=new'] : []), '--no-sandbox'],
     });
   }
 

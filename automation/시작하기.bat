@@ -34,6 +34,7 @@ echo   3. 진짜로 올리기        ^(창 없이 뒤에서^)
 echo   4. 진짜로 올리기        ^(창 띄워서 보면서^)
 echo   5. 계정 로그인해 두기   ^(비밀번호 안 적었을 때만^)
 echo   6. 작업실과 연결해 두기  ^(작업실 단추만으로 올리기^)
+echo   7. 카페 살펴보기        ^(안 될 때 보낼 자료 만들기^)
 echo   0. 닫기
 echo   ---------------------------------------------
 echo.
@@ -49,7 +50,15 @@ if "%pick%"=="3" goto real
 if "%pick%"=="4" goto watch
 if "%pick%"=="5" goto login
 if "%pick%"=="6" goto serve
+if "%pick%"=="7" goto look
 if "%pick%"=="0" exit
+goto menu
+
+:look
+echo.
+node look.mjs
+echo.
+pause
 goto menu
 
 :serve
