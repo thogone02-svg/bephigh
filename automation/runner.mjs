@@ -181,52 +181,91 @@ export async function runPlan(plan, how = {}) {
    * @returns {Promise<Record<string, any>>} How it went.
    */
   async function typeInto(page, which, text) {
+    const want = String(text ?? '');
+
+    /**
+     * Check whether the words actually landed.
+     * @returns {Promise<boolean>} True when they are there.
+     */
+    const landed = async () => {
+      const back = await inPage(page, 'read', which);
+      const bit = want.replace(/\s+/g, '').slice(0, 10);
+
+      return Boolean(back.ok && bit && back.text.replace(/\s+/g, '').includes(bit));
+    };
+
+    /**
+     * Click the spot for real, the way a person would.
+     * @param {Record<string, any>} spot - What the page told us about the box.
+     */
+    const clickFor = async (spot) => {
+      if (spot.spot) {
+        // 플레이라이트가 직접 누르면 「사람이 누른 것」으로 칩니다. 화면도 알아서 맞춰요.
+        await page.click(spot.spot, { timeout: 8000 }).catch(() => {});
+      } else if (spot.at) {
+        await page.mouse.click(spot.at.x, spot.at.y).catch(() => {});
+      }
+
+      await page.waitForTimeout(500);
+    };
+
+    /**
+     * Type the text in, line by line.
+     * @param {boolean} slowly - True to press every key, false to push it in at once.
+     */
+    const put = async (slowly) => {
+      const lines = want.split('\n');
+
+      for (const [at, line] of lines.entries()) {
+        if (at > 0) {
+          // eslint-disable-next-line no-await-in-loop
+          await page.keyboard.press('Enter');
+          // eslint-disable-next-line no-await-in-loop
+          await page.waitForTimeout(80);
+        }
+
+        if (line) {
+          // eslint-disable-next-line no-await-in-loop
+          await (slowly ? page.keyboard.type(line, { delay: 12 }) : page.keyboard.insertText(line));
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        await page.waitForTimeout(80);
+      }
+
+      await page.waitForTimeout(600);
+    };
+
     const spot = await inPage(page, 'focus', which);
 
     if (!spot.ok) {
       return spot;
     }
 
-    // 눌러도 focus 가 안 잡히는 화면이 있어서, 그 자리를 마우스로 한 번 더 눌러요.
-    if (spot.at) {
-      await page.mouse.click(spot.at.x, spot.at.y).catch(() => {});
+    await clickFor(spot);
+    await put(false);
+
+    if (await landed()) {
+      return { ok: true };
     }
 
-    await page.waitForTimeout(400);
+    // 한 번에 밀어 넣는 게 안 먹는 화면이 있어요. 그때는 한 글자씩 칩니다.
+    say({ type: 'note', message: `${which} 에 한 글자씩 쳐 봅니다` });
+    await clickFor(await inPage(page, 'focus', which));
+    await put(true);
 
-    const lines = String(text ?? '').split('\n');
-
-    for (const [at, line] of lines.entries()) {
-      if (at > 0) {
-        // eslint-disable-next-line no-await-in-loop
-        await page.keyboard.press('Enter');
-      }
-
-      if (line) {
-        // eslint-disable-next-line no-await-in-loop
-        await page.keyboard.insertText(line);
-      }
-
-      // eslint-disable-next-line no-await-in-loop
-      await page.waitForTimeout(60);
+    if (await landed()) {
+      return { ok: true };
     }
-
-    await page.waitForTimeout(500);
 
     const back = await inPage(page, 'read', which);
+    const look = await inPage(page, 'look');
 
-    const want = String(text ?? '')
-      .replace(/\s+/g, '')
-      .slice(0, 12);
-
-    if (back.ok && want && !back.text.replace(/\s+/g, '').includes(want)) {
-      return {
-        ok: false,
-        reason: `${which} 에 글이 안 들어갔어요 (지금: ${back.text.slice(0, 40)})`,
-      };
-    }
-
-    return { ok: true };
+    return {
+      ok: false,
+      reason: `${which} 에 글이 안 들어갔어요 (지금: ${back.text ?? ''})`,
+      seen: [{ 눌렀던자리: spot, 지금들어있는것: back, 화면: look.seen ?? look }],
+    };
   }
 
   /**

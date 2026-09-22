@@ -343,10 +343,36 @@ export function act(job) {
     box.click();
     box.focus?.();
 
+    // 바깥에서 「진짜 마우스」로 다시 누를 수 있게 표를 달아 둬요.
+    document
+      .querySelectorAll('[data-nabi-spot]')
+      .forEach((one) => one.removeAttribute('data-nabi-spot'));
+    box.setAttribute('data-nabi-spot', '1');
+
+    // 스마트에디터는 화면 밖에 숨겨 둔 틀이 글자를 받아요. 거기로도 넘겨 봅니다.
+    let buffer = '';
+
+    const hidden = [...document.querySelectorAll('iframe')].find((one) =>
+      /input_buffer|스마트\s*에디터/.test(`${one.id} ${one.title}`),
+    );
+
+    if (hidden) {
+      try {
+        hidden.contentWindow.focus();
+        hidden.contentDocument?.body?.focus();
+        buffer = hidden.id || '(이름 없음)';
+      } catch {
+        buffer = '(못 들어감)';
+      }
+    }
+
     const at = box.getBoundingClientRect();
 
     return {
       ok: true,
+      spot: '[data-nabi-spot="1"]',
+      buffer,
+      landed: document.activeElement?.tagName ?? '',
       at: {
         x: Math.round(at.left + at.width / 2),
         y: Math.round(at.top + Math.min(at.height / 2, 40)),
