@@ -839,7 +839,7 @@ svg {
 
 .turn {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 9px;
   align-items: start;
   font-size: 14.5px;
@@ -1730,6 +1730,89 @@ th {
   color: var(--blue);
 }
 
+/* 복사한 줄은 초록으로 남겨서 어디까지 올렸는지 보이게 합니다. */
+.shotbtn.on {
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  color: var(--green);
+}
+
+/*
+ * 조각마다 붙는 복사 단추.
+ *
+ * 손으로 카페에 올릴 때는 제목·본문·댓글을 하나씩 따로 붙여넣어야 해요.
+ * 그래서 조각마다 복사 단추를 두고, 누른 것은 표시를 남겨서
+ * 어디까지 올렸는지 보이게 합니다.
+ */
+.copybtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--t600);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.copybtn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.copybtn.on {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  color: var(--green);
+}
+
+/* 제목 후보. 누르면 그 제목으로 바뀝니다. */
+.cands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.candhead {
+  flex: 1 0 100%;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t500);
+}
+
+.cand {
+  max-width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--t700);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cand:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.cand[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--blue-bg);
+  color: var(--blue);
+  font-weight: 700;
+}
+
 /* ---------- 원고를 다 본 뒤 ---------- */
 
 /*
@@ -1742,6 +1825,11 @@ th {
   border: 1px dashed var(--line);
   border-radius: var(--r-card);
   text-align: center;
+}
+
+.done strong {
+  font-weight: 700;
+  color: var(--t800);
 }
 
 .done b {

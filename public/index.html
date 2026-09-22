@@ -46,7 +46,10 @@
           <section class="view" id="view-write" hidden>
             <header>
               <h2>어떤 키워드로 쓸까요?</h2>
-              <p>키워드만 넣어도 돼요. 브랜드와 제품을 적으면 본문에 자연스럽게 넣어드려요.</p>
+              <p>
+                키워드만 넣어도 돼요. 브랜드·제품은 본문 중후반에 자연스럽게 넣고, 화자와 올릴 곳을
+                적으면 그 사람이 쓴 글처럼 씁니다.
+              </p>
             </header>
 
             <div id="draft-bar"></div>
@@ -86,6 +89,33 @@
                     />
                   </div>
                 </div>
+                <div class="two">
+                  <div class="field">
+                    <label class="label" for="f-speaker">누가 쓰는 글</label>
+                    <input
+                      id="f-speaker"
+                      class="input"
+                      type="text"
+                      placeholder="비우면 알아서 정해요"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="f-cafe">어디에 올릴 글</label>
+                    <input
+                      id="f-cafe"
+                      class="input"
+                      type="text"
+                      placeholder="비우면 알아서 정해요"
+                      autocomplete="off"
+                    />
+                  </div>
+                </div>
+                <p class="desc" style="margin: -4px 0 0">
+                  화자를 적으면 그 사람 말투로 끝까지 씁니다. (예: 30대 후반 직장인 엄마 · 20대
+                  자취생 · 자영업) 올릴 곳을 적으면 그 회원들이 쓰는 말로 씁니다. (예: 지역 맘카페 ·
+                  30~40대 여성 많음)
+                </p>
                 <div class="field">
                   <label class="label" for="f-request">요청사항</label>
                   <textarea

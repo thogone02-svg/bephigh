@@ -36,6 +36,7 @@ const ICON = {
   publish:
     '<path d="M7 18a4 4 0 0 1-.4-8A6 6 0 0 1 18 9.6 3.7 3.7 0 0 1 17.5 18H7Z"/><path d="M12 21v-7"/><path d="m9 16 3-3 3 3"/>',
   check: '<path d="m5 13 4 4L19 7"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>',
   lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
   image:
     '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m5 17 4.5-4.5L13 16l2.5-2.5L19 17"/>',
@@ -148,7 +149,13 @@ const wonDoc = (m) => Math.round(perDoc(m) * WON);
  * @param id
  */
 const model = (id) => state.models.find((m) => m.id === id) ?? state.models[0];
+/**
+ *
+ */
 const doc = () => store.docs.find((d) => d.id === state.docId) ?? null;
+/**
+ *
+ */
 const version = () => doc()?.versions[state.version] ?? null;
 
 /**
@@ -195,6 +202,9 @@ function applied(target, at) {
   };
 }
 
+/**
+ *
+ */
 const persist = () => save(store);
 
 /**
@@ -240,8 +250,13 @@ function toText(v, part = 'all') {
     return [...lines, ''];
   });
 
+  // 카페 글칸에 붙여넣을 때 「제목:」 줄이 같이 들어가면 안 돼요.
   if (part === 'body') {
-    return head.join('\n').trim();
+    return String(v.body ?? '').trim();
+  }
+
+  if (part === 'title') {
+    return String(v.title ?? '').trim();
   }
 
   if (part === 'comments') {
@@ -411,6 +426,9 @@ function renderCheck(found) {
     return;
   }
 
+  /**
+   * @param yes
+   */
   const mark = (yes) => {
     if (yes === null || yes === undefined) {
       return '<span class="chip">아직 못 봄</span>';
@@ -419,6 +437,11 @@ function renderCheck(found) {
     return yes ? '<span class="chip ok">찾음</span>' : '<span class="chip bad">못 찾음</span>';
   };
 
+  /**
+   * @param title
+   * @param what
+   * @param bits
+   */
   const part = (title, what, bits) => {
     const head = `<div class="row"><span class="txt"><b>${title}</b><span>${
       what.ok === false ? esc(what.reason ?? '못 봤어요') : esc(what.url ?? '')
@@ -468,6 +491,9 @@ function renderCheck(found) {
     <pre class="seen">${esc(raw)}</pre>
   </div>`;
 
+  /**
+   *
+   */
   el('btn-check-copy').onclick = () => copy(raw, '점검 결과');
 }
 
@@ -486,6 +512,9 @@ function saveAccountsOn(ids, accounts) {
       return;
     }
 
+    /**
+     *
+     */
     button.onclick = () => {
       if (!accounts.length) {
         toast('계정을 먼저 추가해 주세요');
@@ -554,6 +583,9 @@ function renderCatch(all) {
       </div>
     </div>`;
 
+    /**
+     *
+     */
     el('btn-catch-open').onclick = () => {
       state.catchOpen = true;
       renderCatch(state.catchSeen);
@@ -604,11 +636,17 @@ function renderCatch(all) {
     }
   </div>`;
 
+  /**
+   *
+   */
   el('btn-catch-close').onclick = () => {
     state.catchOpen = false;
     renderCatch(state.catchSeen);
   };
 
+  /**
+   *
+   */
   el('btn-watch').onclick = async () => {
     const next = !state.watching;
     const said = await watchCafe(next);
@@ -619,6 +657,9 @@ function renderCatch(all) {
     toast(state.watching ? '이제 카페에서 글을 하나 올려 보세요' : '그만 받아적어요');
   };
 
+  /**
+   *
+   */
   el('btn-caught').onclick = async () => {
     const seen = await caughtCafe();
 
@@ -630,6 +671,9 @@ function renderCatch(all) {
   const copier = el('btn-catch-copy');
 
   if (copier) {
+    /**
+     *
+     */
     copier.onclick = () => copy(raw, '받아적은 내용');
   }
 }
@@ -639,6 +683,9 @@ function renderCatch(all) {
  * @param {boolean} dry - True when nothing is actually being posted.
  */
 function followProgram(dry) {
+  /**
+   *
+   */
   const tick = async () => {
     const now = await localStatus();
 
@@ -749,6 +796,9 @@ function renderRunLog(dry) {
     copy(JSON.stringify(state.stuckSeen, null, 1), '화면 정보'),
   );
 
+  /**
+   *
+   */
   el('btn-run-stop').onclick = async () => {
     await (state.runOn === 'program' ? stopLocal() : stopCafe());
     toast('이번 단계까지만 하고 멈춰요');
@@ -872,7 +922,13 @@ function renderDock() {
     inner.innerHTML = `<p>${p.ready ? `${esc(p.keyword)} · ${p.scope} · ${p.count}단계` : esc(p.missing)}</p>${buttons}`;
 
     if (canRun) {
+      /**
+       *
+       */
       el('btn-dock-dry').onclick = () => p.run(true);
+      /**
+       *
+       */
       el('btn-dock-run').onclick = () => p.run(false);
     } else {
       el('btn-dock-plan').onclick = p.plan;
@@ -1026,7 +1082,11 @@ function renderModel() {
       </div>
       <div class="banner" style="margin-top:14px;background:var(--surface-2);color:var(--t700)">
         <span class="grow">원고 <b>1,000건</b>에 약 <b>${comma(total + (s.upgrade ? retry : 0))}원</b></span>
-      </div>`
+      </div>
+      <p class="desc" style="margin:10px 2px 0">
+        원고가 어색하면 프롬프트보다 <b>모델</b>을 먼저 바꿔 보세요. 같은 키워드로 비싼 모델에서
+        한 번 뽑아 두 개를 나란히 읽어 보시면 차이가 바로 보입니다. 원고 한 건 값 차이는 몇 원이에요.
+      </p>`
     : '';
 
   document.querySelectorAll('[name="model"]').forEach((radio) => {
@@ -1097,6 +1157,8 @@ function readForm() {
     product: el('f-product').value.trim(),
     request: el('f-request').value.trim(),
     avoid: el('f-avoid').value.trim(),
+    speaker: el('f-speaker').value.trim(),
+    cafe: el('f-cafe').value.trim(),
     tone: store.settings.tone,
     length: store.settings.length,
     commentCount: store.settings.commentCount,
@@ -1144,6 +1206,9 @@ async function generate() {
   renderDock();
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+  /**
+   *
+   */
   el('btn-stop').onclick = () => {
     state.stopped = true;
     el('stream-title').textContent = '여기서 멈췄어요';
@@ -1367,14 +1432,51 @@ function renderResult() {
   const edits = target.edits ?? {};
   const title = edits[`v${state.version}.title`] ?? v.title;
   const body = edits[`v${state.version}.body`] ?? v.body;
+  const took = target.copied ?? {};
+
+  /**
+   * 조각마다 붙는 복사 단추. 누른 것은 표시가 남아서 어디까지 올렸는지 보여요.
+   * @param {string} key - 조각 이름. `title`, `body`, `c1-0`.
+   * @param {string} what - 무엇을 복사하는지.
+   * @returns {string} 단추 markup.
+   */
+  const copyBtn = (key, what) =>
+    `<button class="copybtn${took[key] ? ' on' : ''}" type="button" data-copy-part="${key}"
+      aria-pressed="${Boolean(took[key])}" title="${what} 복사하기"
+      aria-label="${what} 복사하기">${icon('copy', 15)}<span>${took[key] ? '복사함' : '복사'}</span></button>`;
+
+  // 키워드가 본문에 몇 번 들어갔는지. 3~5번이 좋아요.
+  const hits = target.keyword ? body.split(target.keyword).length - 1 : 0;
+
+  // 제목 후보. 모델이 세 개를 내면 여기서 눌러 바꿉니다.
+  const picks = [v.title, ...(v.alts ?? [])].filter(
+    (one, at, all) => one && all.indexOf(one) === at,
+  );
 
   el('head-pieces').innerHTML = `
     <article class="piece">
       <div class="phead">
         <span class="chip blue">제목</span>
+        <span class="chip">${[...title].length}자</span>
         ${edits[`v${state.version}.title`] ? '<span class="chip warn">직접 고침</span>' : ''}
+        <span class="grow"></span>
+        ${copyBtn('title', '제목')}
       </div>
       <h3 class="ptitle" data-edit="title" title="두 번 누르면 고칠 수 있어요">${esc(title)}</h3>
+      ${
+        picks.length > 1
+          ? `<div class="cands">
+              <span class="candhead">다른 제목안 — 누르면 이걸로 바꿔요</span>
+              ${picks
+                .map(
+                  (one) =>
+                    `<button class="cand" type="button" data-title="${esc(one)}"
+                      aria-pressed="${one === title}">${esc(one)}</button>`,
+                )
+                .join('')}
+            </div>`
+          : ''
+      }
       <div class="pfoot">
         <input class="input" type="text" data-part="title" placeholder="제목에서 고칠 곳" />
       </div>
@@ -1384,7 +1486,10 @@ function renderResult() {
       <div class="phead">
         <span class="chip blue">본문</span>
         <span class="chip">${body.replace(/\s/g, '').length}자</span>
+        ${target.keyword ? `<span class="chip${hits >= 3 && hits <= 5 ? '' : ' warn'}">키워드 ${hits}번</span>` : ''}
         ${edits[`v${state.version}.body`] ? '<span class="chip warn">직접 고침</span>' : ''}
+        <span class="grow"></span>
+        ${copyBtn('body', '본문')}
       </div>
       <p class="ptext" data-edit="body" title="두 번 누르면 고칠 수 있어요">${esc(body)}</p>
       <div class="pfoot">
@@ -1411,6 +1516,7 @@ function renderResult() {
           const key = `c${n}-${position}`;
           const text = edits[`v${state.version}.${key}`] ?? turn.text;
           const shot = comment.photoAt === position;
+          const who = turn.by === 'author' ? `${AUTHOR} 답글` : label;
 
           return `<div class="turn ${turn.by === 'author' ? 'author' : ''}">
             <span class="tag">${turn.by === 'author' ? AUTHOR : label}</span>
@@ -1418,21 +1524,27 @@ function renderResult() {
             <button type="button" class="shotbtn" data-shot="${n}:${position}"
               aria-pressed="${shot}" title="${shot ? '사진 자리 빼기' : '이 줄에 사진 자리 넣기'}"
               aria-label="${label} ${position + 1}번째 줄에 사진 자리 ${shot ? '빼기' : '넣기'}">${icon('image', 17)}</button>
+            <button type="button" class="shotbtn${took[key] ? ' on' : ''}" data-copy-part="${key}"
+              aria-pressed="${Boolean(took[key])}" title="${who} 복사하기"
+              aria-label="${who} 복사하기">${icon('copy', 16)}</button>
           </div>
           ${shot ? `<div class="photo-slot">${icon('image', 16)}댓글 사진 여기에 첨부해주세요</div>` : ''}`;
         })
         .join('');
 
       const hand = Object.keys(edits).some((k) => k.startsWith(`v${state.version}.c${n}-`));
+      const turnCount = (comment.thread ?? []).length;
+      const done = (comment.thread ?? []).filter((one, at) => took[`c${n}-${at}`]).length;
 
       return `<article class="piece">
         <div class="phead">
           <span class="chip blue">${label}</span>
-          ${(comment.thread ?? []).length > 1 ? `<span class="chip">티키타카 ${comment.thread.length}턴</span>` : ''}
+          ${turnCount > 1 ? `<span class="chip">티키타카 ${turnCount}턴</span>` : ''}
           ${comment.locked ? `<span class="chip">가져온 댓글</span>` : ''}
           ${hand ? '<span class="chip warn">직접 고침</span>' : ''}
+          ${done ? `<span class="chip ok">${done}/${turnCount} 복사함</span>` : ''}
         </div>
-        ${index === 0 ? '<span class="shot-hint">사진을 넣을 줄에서 오른쪽 사진 단추를 눌러 주세요</span>' : ''}
+        ${index === 0 ? '<span class="shot-hint">줄마다 오른쪽에 사진 자리 단추와 복사 단추가 있어요. 복사한 줄은 표시가 남아요.</span>' : ''}
         <div class="thread">${thread}</div>
         <div class="pfoot">
           <input class="input" type="text" data-part="c${n}" placeholder="${label}에서 고칠 곳" />
@@ -1448,6 +1560,57 @@ function renderResult() {
       renderDock();
     });
   });
+  // 제목안을 누르면 그걸로 바꿉니다. 직접 고친 제목과 같은 자리를 씁니다.
+  document.querySelectorAll('[data-title]').forEach((button) => {
+    button.addEventListener('click', () => {
+      saveEdit('title', button.dataset.title === v.title ? '' : button.dataset.title);
+      renderResult();
+      toast('제목을 바꿨어요');
+    });
+  });
+
+  /**
+   * 조각 하나의 지금 글자.
+   * @param {string} key - `title`, `body`, `c1-0`.
+   * @returns {{ text: string, what: string }} 복사할 글자와 이름.
+   */
+  const piece = (key) => {
+    const saved = edits[`v${state.version}.${key}`];
+
+    if (key === 'title') {
+      return { text: saved ?? v.title, what: '제목' };
+    }
+
+    if (key === 'body') {
+      return { text: saved ?? v.body, what: '본문' };
+    }
+
+    const [tag, at] = key.slice(1).split('-');
+    const set = (v.comments ?? []).find((c, i) => (c.index ?? i + 1) === Number(tag));
+    const turn = set?.thread?.[Number(at)];
+
+    return {
+      text: saved ?? turn?.text ?? '',
+      what: turn?.by === 'author' ? `${AUTHOR} 답글` : `댓글${tag}`,
+    };
+  };
+
+  document.querySelectorAll('[data-copy-part]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.copyPart;
+      const { text, what } = piece(key);
+
+      if (!text) {
+        return;
+      }
+
+      copy(text, what);
+      target.copied = { ...(target.copied ?? {}), [key]: true };
+      persist();
+      renderResult();
+    });
+  });
+
   document.querySelectorAll('[data-shot]').forEach((button) => {
     button.addEventListener('click', () => {
       const [n, position] = button.dataset.shot.split(':').map(Number);
@@ -1461,6 +1624,9 @@ function renderResult() {
     });
   });
 
+  /**
+   *
+   */
   el('doc-pick').onchange = () => {
     const next = store.docs.find((d) => d.id === el('doc-pick').value);
 
@@ -1476,16 +1642,36 @@ function renderResult() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const anyCopied = Object.keys(target.copied ?? {}).length;
+
   el('result-done').innerHTML = `<div class="done">
     <b>이 원고는 여기까지예요</b>
-    <p>고칠 게 없으면 내보내거나, 다음 키워드로 새 원고를 시작하세요.</p>
+    <p>
+      카페에 올리실 때는 위에서 조각마다 <strong>복사</strong>를 눌러 가져가시면 돼요.
+      복사한 줄은 표시가 남아서 어디까지 올렸는지 보입니다.
+    </p>
     <div class="act">
+      <button class="btn pri" type="button" id="btn-copy-all">전체 복사</button>
+      <button class="btn" type="button" id="btn-copy-txt">txt로 저장</button>
       <button class="btn" type="button" data-go="export">내보내기</button>
-      <button class="btn" type="button" data-go="publish">카페에 올리기</button>
-      <button class="btn pri" type="button" id="btn-new">새 키워드로 시작</button>
+      <button class="btn" type="button" id="btn-new">새 키워드로 시작</button>
+      ${anyCopied ? '<button class="btn" type="button" id="btn-uncopy">복사 표시 지우기</button>' : ''}
     </div>
   </div>`;
   el('btn-new').addEventListener('click', startNew);
+  el('btn-copy-all').addEventListener('click', () =>
+    copy(toText(applied(target, state.version)), '원고 전체'),
+  );
+  el('btn-copy-txt').addEventListener('click', () => {
+    download(`${target.keyword || '원고'}.txt`, toText(applied(target, state.version)));
+    toast('txt로 저장했어요');
+  });
+  el('btn-uncopy')?.addEventListener('click', () => {
+    target.copied = {};
+    persist();
+    renderResult();
+    toast('복사 표시를 지웠어요');
+  });
 
   el('save-state').textContent = '저장됨';
 }
@@ -1777,6 +1963,9 @@ function renderMade() {
   });
 }
 
+/**
+ *
+ */
 function renderLibrary() {
   const list = libList(state.libQuery, state.libSort);
   const learning = store.library.filter((i) => i.learn).length;
@@ -2055,6 +2244,9 @@ function bindPicker(searchId) {
   }
 
   // 결과만 다시 그려요. 입력칸은 그대로 두어야 한글 조합이 안 끊깁니다.
+  /**
+   *
+   */
   const refresh = () => {
     state.pickQuery = search.value;
     el(`${searchId}-recs`).innerHTML = pickerRecs();
@@ -2323,10 +2515,14 @@ function renderExport() {
     zone.innerHTML = `
       <div class="pfoot" style="margin-top:0">
         <button class="btn" type="button" data-copy="all">전체</button>
+        <button class="btn" type="button" data-copy="title">제목만</button>
         <button class="btn" type="button" data-copy="body">본문만</button>
         <button class="btn" type="button" data-copy="comments">댓글만</button>
       </div>
-      <p class="desc" style="margin:10px 0 0">고른 원고 중 첫 번째를 복사해요. 사진 자리 표시도 같이 들어가요.</p>`;
+      <p class="desc" style="margin:10px 0 0">
+        고른 원고 중 첫 번째를 복사해요. 「본문만」에는 제목 줄이 안 들어가서 카페 글칸에 그대로
+        붙여넣을 수 있어요. 댓글을 하나씩 복사하시려면 결과 화면에서 줄마다 있는 복사 단추를 쓰세요.
+      </p>`;
   }
 
   const rich = el('btn-rich');
@@ -2353,7 +2549,7 @@ function renderExport() {
   document.querySelectorAll('[data-copy]').forEach((button) => {
     button.addEventListener('click', () => {
       const first = store.docs.find((d) => d.id === state.picks[0]);
-      const labels = { all: '전체', body: '본문', comments: '댓글' };
+      const labels = { all: '전체', title: '제목', body: '본문', comments: '댓글' };
 
       if (first) {
         copy(toText(applied(first), button.dataset.copy), labels[button.dataset.copy]);
@@ -2664,6 +2860,9 @@ function renderPublish() {
   renderUrlNote();
   el('p-bg').checked = s.background !== false;
 
+  /**
+   *
+   */
   el('p-bg').onchange = () => {
     store.settings.background = el('p-bg').checked;
     persist();
@@ -2844,6 +3043,9 @@ function renderPublish() {
     });
   });
 
+  /**
+   *
+   */
   el('btn-plan-help').onclick = () => {
     const box = el('plan-help');
 
@@ -2926,6 +3128,9 @@ function renderPublish() {
     };
   };
 
+  /**
+   *
+   */
   el('btn-plan').onclick = () => {
     const plan = buildPlan();
 
@@ -3003,6 +3208,9 @@ function renderPublish() {
     keyword: target?.keyword ?? '',
     missing: ready ? '' : whatIsMissing(v, s, accounts),
     run: runHere,
+    /**
+     *
+     */
     plan: () => el('btn-plan').click(),
   };
 
@@ -3035,9 +3243,18 @@ function renderPublish() {
         <button class="btn pri" type="button" id="btn-run"${ready ? '' : ' disabled'}>업로드 시작</button>
       </div>`;
 
+    /**
+     *
+     */
     el('btn-run-dry').onclick = () => runHere(true);
+    /**
+     *
+     */
     el('btn-run').onclick = () => runHere(false);
 
+    /**
+     *
+     */
     el('btn-check').onclick = async () => {
       toast('점검은 확장이 있어야 해요. 연습으로 올려 보기로 확인해 주세요');
     };
@@ -3098,6 +3315,9 @@ function renderPublish() {
         <button class="btn ghost" type="button" id="btn-acct-file-top">계정 파일 내려받기</button>
       </div>`;
 
+    /**
+     *
+     */
     el('btn-check').onclick = async () => {
       renderCheck({ checking: true });
 
@@ -3112,7 +3332,13 @@ function renderPublish() {
     };
 
     el('btn-ext-url')?.addEventListener('click', () => copy('chrome://extensions', '주소'));
+    /**
+     *
+     */
     el('btn-run-dry').onclick = () => runHere(true);
+    /**
+     *
+     */
     el('btn-run').onclick = () => runHere(false);
 
     renderCheck(state.checked);
@@ -3544,6 +3770,9 @@ async function start() {
     const now = await cafeStatus();
 
     if (now?.steps?.length) {
+      /**
+       * @param index
+       */
       const mark = (index) => {
         if (index < now.at) {
           return 'done';
@@ -3644,6 +3873,9 @@ async function start() {
   const s = store.settings;
 
   el('f-mobile').checked = s.mobileShape;
+  // 화자와 올릴 곳은 원고마다 바뀌지 않아요. 한 번 적으면 계속 씁니다.
+  el('f-speaker').value = s.speaker ?? '';
+  el('f-cafe').value = s.cafe ?? '';
   el('cnt-value').textContent = `${s.commentCount}개`;
   setSeg('tone', s.tone);
   setSeg('len', s.length);
@@ -3654,6 +3886,12 @@ async function start() {
   el('f-mobile').addEventListener('change', () => {
     store.settings.mobileShape = el('f-mobile').checked;
     persist();
+  });
+  ['speaker', 'cafe'].forEach((what) => {
+    el(`f-${what}`).addEventListener('change', () => {
+      store.settings[what] = el(`f-${what}`).value.trim();
+      persist();
+    });
   });
   el('btn-model').addEventListener('click', () => {
     state.modelOpen = !state.modelOpen;

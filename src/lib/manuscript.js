@@ -2,6 +2,10 @@
 export const AUTHOR = '작성자';
 
 const TITLE_PREFIX = /^\s*제목\s*[:：]\s*/;
+/** 첫 줄이 「제목1:」 로 오는 모델도 있어요. 번호가 붙어도 제목으로 읽습니다. */
+const ANY_TITLE = /^\s*제목\s*\d*\s*[:：]\s*/;
+/** 「제목2:」 「제목3:」 은 담당자가 골라 쓸 다른 제목안이에요. */
+const ALT_TITLE = /^\s*제목\s*\d+\s*[:：]\s*(\S.*)$/;
 const COMMENT_HEAD = /^\s*(?:댓글\s*(\d+)|(\d+)\s*[.)])\s*[:：]?\s*(.*)$/;
 const REPLY_HEAD = /^\s*[└ㄴ↳>-]\s*(.*)$/;
 const AUTHOR_LABEL = new RegExp(`^(?:${AUTHOR}|글쓴이|작성자님)\\s*[:：]?\\s*`);
@@ -43,7 +47,7 @@ const renumber = (comments) => {
  * Handles both `제목:` prefixed titles and files whose first line is the title,
  * and both `└` and `ㄴ` reply marks, inline or on their own line.
  * @param {string} raw - One manuscript.
- * @returns {{ title: string, body: string, comments: { index: number,
+ * @returns {{ title: string, alts: string[], body: string, comments: { index: number,
  *   thread: { by: 'commenter' | 'author', text: string }[] }[] }} Structured manuscript.
  */
 const parseOne = (raw) => {
@@ -55,6 +59,8 @@ const parseOne = (raw) => {
   const comments = [];
   /** @type {string[]} */
   const bodyLines = [];
+  /** @type {string[]} */
+  const alts = [];
   let title = '';
   let inComments = false;
   /** @type {{ by: 'commenter' | 'author', text: string } | null} */
@@ -79,9 +85,20 @@ const parseOne = (raw) => {
         return;
       }
 
-      title = TITLE_PREFIX.test(text) ? text.replace(TITLE_PREFIX, '').trim() : text;
+      title = ANY_TITLE.test(text) ? text.replace(ANY_TITLE, '').trim() : text;
 
       return;
+    }
+
+    // 제목 바로 아래에 붙은 다른 제목안. 본문이 시작되기 전까지만 봅니다.
+    if (!inComments && !bodyLines.some((earlier) => earlier.trim())) {
+      const another = text.match(ALT_TITLE);
+
+      if (another) {
+        alts.push(another[1].trim());
+
+        return;
+      }
     }
 
     const head = text.match(COMMENT_HEAD);
@@ -133,6 +150,7 @@ const parseOne = (raw) => {
 
   return {
     title,
+    alts,
     body: bodyLines
       .join('\n')
       .replace(/\n{3,}/g, '\n\n')

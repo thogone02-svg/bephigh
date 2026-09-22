@@ -25,10 +25,14 @@ words:
   - Astra
   - bephigh
   - bephighcafe
+  - cand
+  - candhead
+  - cands
   - checkline
   - clubid
   - cluburl
   - cooldown
+  - copybtn
   - costsub
   - Cpath
   - Csvg
@@ -53,6 +57,7 @@ words:
   - gsi
   - hostnames
   - iconbtn
+  - Josa
   - jsdoc
   - keychip
   - kyoshino
@@ -96,6 +101,7 @@ words:
   - Terra
   - thogone
   - topbar
+  - uncopy
   - undici
   - unrs
   - upmodel

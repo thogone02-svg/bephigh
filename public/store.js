@@ -9,6 +9,10 @@ const EMPTY = {
     upgradeModel: 'terra',
     mobileShape: true,
     tone: '후기형',
+    /** 누가 쓰는 글인지. 원고마다 바뀌지 않아서 여기 적어 둬요. */
+    speaker: '',
+    /** 어느 카페에 올릴 글인지. */
+    cafe: '',
     length: 'medium',
     commentCount: 4,
     googleClientId: '',
