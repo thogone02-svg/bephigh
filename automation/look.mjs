@@ -13,6 +13,7 @@
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readBoard } from '../extension/board.js';
@@ -55,6 +56,32 @@ function boardUrl() {
 }
 
 /**
+ * Read what is on the clipboard.
+ *
+ * 명령창은 Ctrl+V 가 안 먹어요. 그래서 복사만 해 두시면 여기서 가져옵니다.
+ * @returns {string} What was copied, or an empty string.
+ */
+function copied() {
+  const ways = {
+    win32: ['powershell', ['-NoProfile', '-Command', 'Get-Clipboard']],
+    darwin: ['pbpaste', []],
+    linux: ['xclip', ['-selection', 'clipboard', '-o']],
+  };
+
+  const how = ways[process.platform];
+
+  if (!how) {
+    return '';
+  }
+
+  try {
+    return execFileSync(how[0], how[1], { encoding: 'utf8', timeout: 5000 }).trim();
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Ask for the board address right here, when we could not find one.
  *
  * 파일을 찾아 오라고 하면 번거로워요. 그냥 물어보고 받습니다.
@@ -66,6 +93,10 @@ async function askForBoard() {
   console.log('  카페에서 그 게시판을 누른 뒤 주소창을 복사해서 붙여넣어 주세요.');
   console.log('  (예: https://cafe.naver.com/f-e/cafes/22014230/menus/31)');
   console.log('');
+  console.log('  ※ 이 까만 창에서는 Ctrl+V 가 안 먹어요. 마우스 오른쪽 클릭이 붙여넣기입니다.');
+  console.log('    그것도 안 되면 창을 닫고, 카페 주소를 복사한 다음 다시 눌러 주세요.');
+  console.log('    복사만 해 두시면 알아서 가져갑니다.');
+  console.log('');
 
   const asking = createInterface({ input: process.stdin, output: process.stdout });
   const typed = await asking.question('  주소: ');
@@ -75,7 +106,31 @@ async function askForBoard() {
   return typed.trim().replace(/^["']|["']$/g, '');
 }
 
-const url = boardUrl() || (await askForBoard());
+/**
+ * Work out which board to look at, asking as little as possible.
+ * @returns {Promise<string>} Board address.
+ */
+async function whichBoard() {
+  const fromFile = boardUrl();
+
+  if (fromFile) {
+    return fromFile;
+  }
+
+  // 복사해 두신 게 카페 주소면 그걸 씁니다.
+  const onClip = copied();
+
+  if (/^https?:\/\/[^\s]*cafe\.naver\.com/.test(onClip)) {
+    console.log('  복사해 두신 주소를 씁니다:');
+    console.log(`  ${onClip}`);
+
+    return onClip;
+  }
+
+  return askForBoard();
+}
+
+const url = await whichBoard();
 
 if (!/^https?:\/\//.test(url)) {
   console.error('\n✖ 주소가 아니에요. 「https://」 로 시작하는 주소를 넣어 주세요.');
