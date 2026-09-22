@@ -2,8 +2,8 @@
  * 게시판 주소를 읽어서 글쓰기 주소를 만드는 곳.
  *
  * 네이버 카페 주소는 모양이 여러 가지예요.
- *   새 카페   https://cafe.naver.com/f-e/cafes/22014230/menus/31
- *   새 카페2  https://cafe.naver.com/ca-fe/cafes/22014230/menus/31
+ *   새 카페   https://cafe.naver.com/ca-fe/cafes/22014230/menus/31   ← 지금 살아 있는 주소
+ *   옛 새카페 https://cafe.naver.com/f-e/cafes/22014230/menus/31    ← 이제 막혔어요
  *   옛 카페   https://cafe.naver.com/카페이름?iframe_url=/ArticleList.nhn%3Fsearch.clubid%3D...
  *   옛 카페2  https://cafe.naver.com/ArticleList.nhn?search.clubid=...&search.menuid=31
  *   짧은 주소 https://cafe.naver.com/카페이름
@@ -19,13 +19,15 @@ const MENU = /menuid[=:]"?(\d+)/i;
 
 /**
  * Build the write page address from the two numbers.
+ *
+ * 「ca-fe」 여야 합니다. 「f-e」 로 가면 네이버가 「서비스에 접속할 수 없습니다」를 줘요.
  * @param {string} clubId - Cafe number.
  * @param {string} menuId - Board number.
  * @param {string} [home] - Where the cafe lives. Only tests change this.
  * @returns {string} Address of the write page.
  */
 export const writeUrl = (clubId, menuId, home = 'https://cafe.naver.com') =>
-  `${home}/f-e/cafes/${clubId}/menus/${menuId}/articles/write`;
+  `${home}/ca-fe/cafes/${clubId}/menus/${menuId}/articles/write`;
 
 /**
  * Work out what kind of board address this is.
@@ -78,7 +80,7 @@ export function readBoard(url) {
  * @returns {string} Address.
  */
 export const articleUrl = (clubId, articleId, home = 'https://cafe.naver.com') =>
-  `${home}/f-e/cafes/${clubId}/articles/${articleId}`;
+  `${home}/ca-fe/cafes/${clubId}/articles/${articleId}`;
 
 /**
  * Pull the article number out of whatever address the browser ended up on.

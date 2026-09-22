@@ -16,8 +16,27 @@
 export function act(job) {
   const { what, text } = job ?? {};
 
-  const seen = (node) =>
-    Boolean(node) && (node.offsetParent !== null || node.getClientRects().length > 0);
+  // 화면에 진짜로 보이는 것만. 스마트에디터는 화면 밖(-9999px)에 글자를 받아
+  // 두는 숨은 칸을 두는데, 거기에 글을 넣으면 아무 데도 안 들어갑니다.
+  const seen = (node) => {
+    if (!node || node.getAttribute?.('aria-hidden') === 'true') {
+      return false;
+    }
+
+    const box = node.getBoundingClientRect?.();
+
+    if (!box) {
+      return node.offsetParent !== null;
+    }
+
+    if (box.width < 12 || box.height < 8) {
+      return false;
+    }
+
+    const wide = window.innerWidth || 1280;
+
+    return box.right > 0 && box.left < wide + 400;
+  };
 
   const words = (node) => (node.textContent ?? '').replace(/\s+/g, '');
 
@@ -107,6 +126,21 @@ export function act(job) {
   };
 
   const bodyBox = () => {
+    // 스마트에디터 본문은 contenteditable 이 아니에요. 글을 넣는 칸이 아니라
+    // 「글이 그려지는 자리」라서, 거기를 눌러 놓고 자판으로 쳐야 들어갑니다.
+    const smart = [
+      '.se-module-text',
+      '.se-section-text',
+      '[data-a11y-title="본문"] .se-component-content',
+      '.se-text-paragraph',
+    ]
+      .map((one) => [...document.querySelectorAll(one)].filter(seen)[0])
+      .find(Boolean);
+
+    if (smart) {
+      return smart;
+    }
+
     const rich = writable().filter((node) => node.isContentEditable);
     // 스마트에디터는 se- 로 시작하는 틀 안에 있어요.
     const editor = rich.find((node) => node.closest('.se-viewer, .se-container, .se-content'));
@@ -293,6 +327,46 @@ export function act(job) {
       .find((href) => /\/articles\/\d+/.test(href));
 
     return link ? { ok: true, url: link } : { ok: false, reason: '글 목록에서 글을 못 찾았어요' };
+  }
+
+  // 그 자리를 눌러서 글 칠 준비만 해요. 글자는 바깥에서 자판으로 칩니다.
+  // 스마트에디터는 값을 넣는 게 아니라 사람이 치는 걸 받아야 들어가거든요.
+  if (what === 'focus') {
+    const which = { title: titleBox, body: bodyBox, comment: commentBox }[text] ?? titleBox;
+    const box = which();
+
+    if (!box) {
+      return no(`${text} 칸을 못 찾았어요`);
+    }
+
+    box.scrollIntoView({ block: 'center' });
+    box.click();
+    box.focus?.();
+
+    const at = box.getBoundingClientRect();
+
+    return {
+      ok: true,
+      at: {
+        x: Math.round(at.left + at.width / 2),
+        y: Math.round(at.top + Math.min(at.height / 2, 40)),
+      },
+      tag: `${box.tagName.toLowerCase()}.${(box.className || '').split(' ')[0]}`,
+    };
+  }
+
+  // 그 칸에 지금 뭐가 들어 있나. 제대로 들어갔는지 확인하려고요.
+  if (what === 'read') {
+    const which = { title: titleBox, body: bodyBox, comment: commentBox }[text] ?? titleBox;
+    const box = which();
+
+    if (!box) {
+      return no(`${text} 칸을 못 찾았어요`);
+    }
+
+    const got = box.value ?? box.innerText ?? box.textContent ?? '';
+
+    return { ok: true, text: got.replace(/\s+/g, ' ').trim().slice(0, 120), long: got.length };
   }
 
   if (what === 'title') {

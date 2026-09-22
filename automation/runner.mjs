@@ -171,6 +171,65 @@ export async function runPlan(plan, how = {}) {
   }
 
   /**
+   * Put text in by actually typing it.
+   *
+   * 스마트에디터는 값을 밀어 넣으면 안 들어가요. 사람이 치는 걸 받아야 합니다.
+   * 그래서 그 자리를 눌러 놓고 진짜 자판으로 칩니다.
+   * @param {Record<string, any>} page - Open page.
+   * @param {string} which - `title`, `body` or `comment`.
+   * @param {string} text - What to type.
+   * @returns {Promise<Record<string, any>>} How it went.
+   */
+  async function typeInto(page, which, text) {
+    const spot = await inPage(page, 'focus', which);
+
+    if (!spot.ok) {
+      return spot;
+    }
+
+    // 눌러도 focus 가 안 잡히는 화면이 있어서, 그 자리를 마우스로 한 번 더 눌러요.
+    if (spot.at) {
+      await page.mouse.click(spot.at.x, spot.at.y).catch(() => {});
+    }
+
+    await page.waitForTimeout(400);
+
+    const lines = String(text ?? '').split('\n');
+
+    for (const [at, line] of lines.entries()) {
+      if (at > 0) {
+        // eslint-disable-next-line no-await-in-loop
+        await page.keyboard.press('Enter');
+      }
+
+      if (line) {
+        // eslint-disable-next-line no-await-in-loop
+        await page.keyboard.insertText(line);
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      await page.waitForTimeout(60);
+    }
+
+    await page.waitForTimeout(500);
+
+    const back = await inPage(page, 'read', which);
+
+    const want = String(text ?? '')
+      .replace(/\s+/g, '')
+      .slice(0, 12);
+
+    if (back.ok && want && !back.text.replace(/\s+/g, '').includes(want)) {
+      return {
+        ok: false,
+        reason: `${which} 에 글이 안 들어갔어요 (지금: ${back.text.slice(0, 40)})`,
+      };
+    }
+
+    return { ok: true };
+  }
+
+  /**
    * Keep asking until the page is ready.
    * @param {Record<string, any>} page - Open page.
    * @param {string} what - Question to ask.
@@ -287,14 +346,14 @@ export async function runPlan(plan, how = {}) {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        const title = await inPage(page, 'title', step.title ?? '');
+        const title = await typeInto(page, 'title', step.title ?? '');
 
         if (!title.ok) {
           return { ok: false, no: step.no, reason: title.reason, seen: title.seen };
         }
 
         // eslint-disable-next-line no-await-in-loop
-        const body = await inPage(page, 'body', step.text ?? '');
+        const body = await typeInto(page, 'body', step.text ?? '');
 
         if (!body.ok) {
           return { ok: false, no: step.no, reason: body.reason, seen: body.seen };
@@ -328,7 +387,7 @@ export async function runPlan(plan, how = {}) {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        const filled = await inPage(page, 'comment', step.text ?? '');
+        const filled = await typeInto(page, 'comment', step.text ?? '');
 
         if (!filled.ok) {
           return { ok: false, no: step.no, reason: filled.reason, seen: filled.seen };
