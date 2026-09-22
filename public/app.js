@@ -1589,7 +1589,7 @@ function libList(query, sort) {
 /** 한 쪽에 보여줄 개수. 스크롤이 끝없이 길어지지 않게 끊어요. */
 const PER_PAGE = 10;
 /** 이 화면이 기대하는 확장 판. 이보다 낮으면 새로 받아야 해요. */
-const NEEDS_EXT = '1.7.0';
+const NEEDS_EXT = '1.8.0';
 
 /**
  * 눌러서 바로 받는 주소.
@@ -2946,6 +2946,13 @@ function renderPublish() {
         `${SCOPE_LABEL[scope]} · ${plan.steps.length}단계를 실제로 카페에 올려요. 올린 글은 카페에서 직접 지워야 합니다. 시작할까요?`,
       )
     ) {
+      return;
+    }
+
+    // 낡은 확장으로 올리면 엉뚱한 데서 멈춰요. 그냥 막고 새로 받으라고 합니다.
+    if (!state.hasProgram && state.hasExtension && olderThan(state.hasExtension, NEEDS_EXT)) {
+      toast(`확장이 낡았어요 (지금 ${state.hasExtension}). 위에서 새로 받고 ↻ 를 눌러 주세요`);
+
       return;
     }
 

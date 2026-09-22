@@ -53,6 +53,20 @@ export function act(job) {
       ),
     ].filter(seen);
 
+  // 칸 바로 옆에 적힌 안내말. 새 카페는 안내말을 칸 속성이 아니라
+  // 옆에 글자로 그려 둬서, 그것도 같이 봐야 해요.
+  const nearby = (node) => {
+    let zone = node.parentElement;
+    let words2 = '';
+
+    for (let up = 0; up < 3 && zone; up += 1) {
+      words2 += ` ${zone.textContent ?? ''}`.slice(0, 200);
+      zone = zone.parentElement;
+    }
+
+    return words2;
+  };
+
   const dump = () => ({
     url: window.location.href,
     frame: window.top === window ? '맨 위' : '안쪽 틀',
@@ -62,7 +76,7 @@ export function act(job) {
         (node) =>
           `${node.tagName.toLowerCase()}${node.isContentEditable ? '(글판)' : ''}[${
             label(node) || named(node).trim() || '이름 없음'
-          }]`,
+          }]{${nearby(node).replace(/\s+/g, ' ').trim().slice(0, 40)}}`,
       )
       .slice(0, 12),
     buttons: clickable()
@@ -79,13 +93,15 @@ export function act(job) {
     }) ?? null;
 
   const titleBox = () => {
-    const flat = writable().filter(
-      (node) => node.tagName === 'TEXTAREA' || node.tagName === 'INPUT',
+    // 본문 편집기 안쪽은 제목이 아니에요.
+    const outside = writable().filter(
+      (node) => !node.closest('.se-viewer, .se-container, .se-content, .se-module-text'),
     );
 
     return (
-      flat.find((node) => /제목/.test(label(node))) ??
-      flat.find((node) => /textarea_input|subject|title/i.test(named(node))) ??
+      outside.find((node) => /제목/.test(label(node))) ??
+      outside.find((node) => /제목을?\s*입력/.test(nearby(node))) ??
+      outside.find((node) => /textarea_input|subject|title/i.test(named(node))) ??
       null
     );
   };
