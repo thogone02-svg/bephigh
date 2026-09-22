@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -7,6 +7,52 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 /** Where each account's logged-in browser profile lives. */
 export const PROFILES = join(HERE, 'profiles');
+
+/**
+ * Where one account's browser folder lives.
+ * @param {string} alias - Account alias or id.
+ * @returns {string} Folder path.
+ */
+export const profileDir = (alias) => join(PROFILES, String(alias).replace(/[\\/:*?"<>|]/g, '_'));
+
+/**
+ * Remember which account this folder is actually signed in as.
+ *
+ * 쿠키만 보고 「로그인돼 있네」 하면 틀립니다. 로그인이 반쯤 되다 만 적이 있으면
+ * 쿠키는 남아 있는데 실제로는 안 들어가 있어요. 그러면 프로그램이 로그인을
+ * 건너뛰고 그냥 카페로 가버려서, 사장님 눈에는 「로그인을 왜 안 누르지」로 보입니다.
+ * 그래서 우리가 누구로 들어갔는지 직접 적어 둡니다.
+ * @param {string} alias - Account alias or id (the folder).
+ * @param {string} id - Naver id we signed in as.
+ */
+export function markSignedIn(alias, id) {
+  try {
+    writeFileSync(join(profileDir(alias), '누구.txt'), String(id ?? ''), 'utf8');
+  } catch {
+    // 못 적어도 큰일은 아니에요. 다음에 한 번 더 로그인할 뿐입니다.
+  }
+}
+
+/**
+ * Forget that this folder was signed in, so we log in again next time.
+ * @param {string} alias - Account alias or id (the folder).
+ */
+export function forgetSignedIn(alias) {
+  rmSync(join(profileDir(alias), '누구.txt'), { force: true });
+}
+
+/**
+ * Read who this folder last signed in as.
+ * @param {string} alias - Account alias or id (the folder).
+ * @returns {string} Naver id, or an empty string.
+ */
+export function signedInAs(alias) {
+  try {
+    return readFileSync(join(profileDir(alias), '누구.txt'), 'utf8').trim();
+  } catch {
+    return '';
+  }
+}
 
 /**
  * Open the browser as one saved account.
@@ -19,7 +65,7 @@ export const PROFILES = join(HERE, 'profiles');
  * @returns {Promise<import('playwright').BrowserContext>} A browser logged in as that account.
  */
 export async function openAs(alias, headless = false) {
-  const dir = join(PROFILES, alias.replace(/[\\/:*?"<>|]/g, '_'));
+  const dir = profileDir(alias);
 
   mkdirSync(dir, { recursive: true });
 
@@ -65,17 +111,37 @@ export async function openAs(alias, headless = false) {
 }
 
 /**
- * Check whether a profile is still signed in to Naver.
+ * Check whether a profile is really signed in to Naver as the account we want.
  *
  * 화면에 뭐가 보이는지로 판단하면 네이버가 디자인을 바꿀 때마다 틀려요.
- * 로그인 쿠키가 있는지로 봅니다.
+ * 그래서 ① 로그인 쿠키 두 개가 다 있고 ② 우리가 적어 둔 「누구」가 이 계정일 때만
+ * 로그인돼 있다고 봅니다. 하나라도 어긋나면 다시 로그인합니다.
  * @param {import('playwright').BrowserContext} context - Open browser.
- * @returns {Promise<boolean>} True when signed in.
+ * @param {{ alias?: string, id?: string }} [who] - Which account should be in there.
+ * @returns {Promise<boolean>} True when signed in as that account.
  */
-export async function isLoggedIn(context) {
+export async function isLoggedIn(context, who = {}) {
   const cookies = await context.cookies('https://www.naver.com').catch(() => []);
+  /**
+   * @param name
+   */
+  const has = (name) => cookies.some((one) => one.name === name && one.value);
 
-  return cookies.some((one) => one.name === 'NID_AUT' && one.value);
+  if (!has('NID_AUT') || !has('NID_SES')) {
+    return false;
+  }
+
+  const folder = who.alias || who.id;
+
+  // 누구로 들어갔는지 모르겠으면, 쿠키만 믿지 않고 다시 로그인합니다.
+  if (!folder || !who.id) {
+    return true;
+  }
+
+  const mark = signedInAs(folder);
+
+  // 「*」 는 사장님이 그 창에서 손으로 로그인해 두신 자리예요. 그건 그대로 믿습니다.
+  return mark === who.id || mark === '*';
 }
 
 /**

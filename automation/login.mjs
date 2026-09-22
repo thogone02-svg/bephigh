@@ -1,4 +1,4 @@
-import { openAs } from './profile.mjs';
+import { openAs, isLoggedIn, markSignedIn } from './profile.mjs';
 import { findAccount, fillLogin } from './accounts.mjs';
 
 const alias = process.argv.slice(2).join(' ').trim();
@@ -25,9 +25,33 @@ if (account?.id && account?.pw) {
   await page.goto('https://nid.naver.com/nidlogin.login', { waitUntil: 'domcontentloaded' });
 }
 
-// The window stays open until the person closes it themselves.
+// 창은 사장님이 닫을 때까지 열려 있습니다. 그동안 로그인이 됐는지 지켜보다가,
+// 되는 순간 「이 자리는 손으로 로그인해 뒀다」고 적어 둡니다. 그래야 나중에
+// 업로드할 때 이 자리를 건너뛰지 않고 그대로 씁니다.
+let saved = false;
+
+const watching = setInterval(async () => {
+  if (saved) {
+    return;
+  }
+
+  const inside = await isLoggedIn(context).catch(() => false);
+
+  if (inside) {
+    saved = true;
+    markSignedIn(alias, account?.id || '*');
+    console.log('  로그인됐어요. 이제 창을 닫으셔도 됩니다.');
+  }
+}, 2000);
+
 await new Promise((done) => {
   context.on('close', done);
 });
 
-console.log(`「${alias}」 로그인 기록을 저장했어요. 이제 자동 업로드에 쓸 수 있습니다.`);
+clearInterval(watching);
+
+if (saved) {
+  console.log(`「${alias}」 로그인 기록을 저장했어요. 이제 자동 업로드에 쓸 수 있습니다.`);
+} else {
+  console.log(`「${alias}」 로그인이 안 된 것 같아요. 한 번 더 5번을 눌러 주세요.`);
+}

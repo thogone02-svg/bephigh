@@ -90,6 +90,8 @@ export function act(job) {
     url: window.location.href,
     frame: window.top === window ? '맨 위' : '안쪽 틀',
     page: document.title,
+    // 화면에 뭐라고 쓰여 있는지 앞부분만. 「접속할 수 없습니다」 같은 말을 잡으려고요.
+    said: (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim().slice(0, 160),
     boxes: writable()
       .map(
         (node) =>

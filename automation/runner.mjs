@@ -9,7 +9,7 @@
 
 import { readBoard, writeUrl, articleUrl, articleIdFrom } from '../extension/board.js';
 import { act } from '../extension/page.js';
-import { openAs, isLoggedIn } from './profile.mjs';
+import { openAs, isLoggedIn, markSignedIn, forgetSignedIn } from './profile.mjs';
 import { fillLogin } from './accounts.mjs';
 
 /**
@@ -21,6 +21,19 @@ const rest = (ms) =>
   new Promise((go) => {
     setTimeout(go, ms);
   });
+
+/**
+ * Did Naver refuse to show us the page?
+ *
+ * 로그인이 풀렸거나 그 게시판에 쓸 수 없는 계정이면 네이버가 화면을 안 줍니다.
+ * 제목만 보면 놓쳐요. 화면에 쓰인 말까지 같이 봅니다.
+ * @param {Record<string, any>} look - What our eyes saw.
+ * @returns {boolean} True when Naver turned us away.
+ */
+const wasBlocked = (look) =>
+  /접속할 수 없|권한이 없|로그인|가입|이용할 수 없|없는 게시판/.test(
+    `${look?.page ?? ''} ${look?.said ?? ''}`,
+  );
 
 /**
  * Decide which account sits in which seat.
@@ -92,46 +105,78 @@ export async function runPlan(plan, how = {}) {
   say({ type: 'seats', seats: seats.map((seat) => [seat, sitting.get(seat)?.id ?? '']) });
 
   /**
-   * Get the browser for one seat, logging in the first time.
+   * Get the browser for one seat, logging in when it is not signed in.
+   *
+   * 자리마다 자기 크롬 폴더를 따로 씁니다. 그래야 계정이 섞이지 않아요.
+   * 그래서 사장님이 평소 쓰는 크롬에서 로그인해 두신 것은 여기로 안 넘어옵니다.
+   * 카페에서 준 권한(어드민)도 계정에 붙는 것이라, 로그인은 따로 해야 해요.
    * @param {string} seat - Seat name.
+   * @param {boolean} [again] - Throw away what we had and log in from scratch.
    * @returns {Promise<Record<string, any>>} A page, or why we could not get one.
    */
-  async function pageFor(seat) {
-    if (browsers.has(seat)) {
+  async function pageFor(seat, again = false) {
+    if (browsers.has(seat) && !again) {
       return { ok: true, page: browsers.get(seat) };
     }
 
     const account = sitting.get(seat) ?? null;
-    const context = await openAs(account?.id || seat, !show);
+    const folder = account?.id || seat;
+
+    if (again) {
+      const had = browsers.get(seat);
+
+      browsers.delete(seat);
+      await had
+        ?.context()
+        .close()
+        .catch(() => {});
+      // 반쯤 된 로그인 기록은 버립니다. 그래야 이번에 진짜로 눌러 봅니다.
+      forgetSignedIn(folder);
+    }
+
+    const context = await openAs(folder, !show);
     const page = context.pages()[0] ?? (await context.newPage());
 
-    if (naver && !(await isLoggedIn(context))) {
-      if (!account?.id || !account?.pw) {
+    if (naver) {
+      const inside = await isLoggedIn(context, { alias: folder, id: account?.id ?? '' });
+
+      if (inside) {
+        say({ type: 'note', message: `${seat} 이미 로그인돼 있어요 (${account?.id ?? folder})` });
+      } else if (!account?.id || !account?.pw) {
         await context.close();
 
         return {
           ok: false,
-          reason: `「${seat}」 자리의 계정이 로그인돼 있지 않아요. 계정.txt 에 비밀번호까지 적어 두시거나, 시작하기 5번으로 한 번 로그인해 주세요.`,
+          reason: `「${seat}」 자리의 계정이 로그인돼 있지 않아요. 작업실에 비밀번호까지 넣어 주시거나, 시작하기 5번으로 한 번 로그인해 주세요.`,
         };
-      }
+      } else {
+        say({ type: 'note', message: `${seat} 「${account.id}」 로그인하는 중…` });
 
-      say({ type: 'note', message: `${seat} 로그인하는 중…` });
+        const typed = await fillLogin(page, account);
 
-      const typed = await fillLogin(page, account);
+        if (!typed.ok) {
+          forgetSignedIn(folder);
+          await context.close();
 
-      if (!typed.ok) {
-        return { ok: false, reason: `「${seat}」 ${typed.reason}` };
-      }
+          return { ok: false, reason: `「${seat}」 ${typed.reason}` };
+        }
 
-      await page
-        .waitForURL((url) => !/nid\.naver\.com/.test(url.href), { timeout: 120000 })
-        .catch(() => {});
+        await page
+          .waitForURL((url) => !/nid\.naver\.com/.test(url.href), { timeout: 120000 })
+          .catch(() => {});
 
-      if (/nid\.naver\.com/.test(page.url())) {
-        return {
-          ok: false,
-          reason: `「${seat}」 로그인이 안 끝났어요. 보안문자나 새 기기 확인이 뜬 것 같습니다. 시작하기 5번으로 직접 로그인해 두고 다시 눌러 주세요.`,
-        };
+        if (/nid\.naver\.com/.test(page.url())) {
+          forgetSignedIn(folder);
+          await context.close();
+
+          return {
+            ok: false,
+            reason: `「${seat}」 로그인이 안 끝났어요. 보안문자나 새 기기 확인이 뜬 것 같습니다. 시작하기 5번으로 직접 로그인해 두고 다시 눌러 주세요.`,
+          };
+        }
+
+        markSignedIn(folder, account.id);
+        say({ type: 'note', message: `${seat} 로그인했어요 — ${typed.how} 들어갔습니다` });
       }
     }
 
@@ -311,6 +356,8 @@ export async function runPlan(plan, how = {}) {
 
   let article = plan.article ?? '';
   let clock = 0;
+  /** 로그인이 풀려서 다시 로그인한 자리. 자리마다 한 번만 다시 해봅니다. */
+  const relogged = new Set();
 
   try {
     for (const step of plan.steps) {
@@ -332,7 +379,7 @@ export async function runPlan(plan, how = {}) {
         return { ok: false, reason: got.reason, no: step.no };
       }
 
-      const { page } = got;
+      let { page } = got;
 
       if (step.kind === 'post') {
         let where = board.write;
@@ -367,12 +414,41 @@ export async function runPlan(plan, how = {}) {
         await page.goto(where, { waitUntil: 'domcontentloaded' });
 
         // eslint-disable-next-line no-await-in-loop
-        const form = await waitFor(page, 'form?', 25);
+        let form = await waitFor(page, 'form?', 25);
 
         if (!form.ok) {
           // eslint-disable-next-line no-await-in-loop
           const look = await inPage(page, 'look');
-          const blocked = /접속할 수 없|권한이 없|로그인/.test(look.page ?? '');
+          const blocked = wasBlocked(look);
+
+          // 로그인이 풀린 채로 들어간 것일 수 있어요. 그러면 한 번은 다시 로그인해 봅니다.
+          // (쿠키만 남아 있어서 「로그인돼 있네」 하고 건너뛴 경우가 여기예요.)
+          if (blocked && sitting.get(step.profile)?.pw && !relogged.has(step.profile)) {
+            relogged.add(step.profile);
+            say({
+              type: 'note',
+              message: `${step.profile} 로그인이 풀린 것 같아요. 다시 로그인하고 한 번 더 해볼게요.`,
+            });
+
+            // eslint-disable-next-line no-await-in-loop
+            const fresh = await pageFor(step.profile, true);
+
+            if (!fresh.ok) {
+              return { ok: false, reason: fresh.reason, no: step.no };
+            }
+
+            page = fresh.page;
+            // eslint-disable-next-line no-await-in-loop
+            await page.goto(where, { waitUntil: 'domcontentloaded' });
+            // eslint-disable-next-line no-await-in-loop
+            form = await waitFor(page, 'form?', 25);
+          }
+        }
+
+        if (!form.ok) {
+          // eslint-disable-next-line no-await-in-loop
+          const look = await inPage(page, 'look');
+          const blocked = wasBlocked(look);
 
           return {
             ok: false,
@@ -398,8 +474,33 @@ export async function runPlan(plan, how = {}) {
           return { ok: false, no: step.no, reason: body.reason, seen: body.seen };
         }
       } else {
+        const here = article || plan.cafeUrl;
+
         // eslint-disable-next-line no-await-in-loop
-        await page.goto(article || plan.cafeUrl, { waitUntil: 'domcontentloaded' });
+        await page.goto(here, { waitUntil: 'domcontentloaded' });
+
+        // 글이 안 보이면 이 자리도 로그인이 풀린 걸 수 있어요. 한 번 다시 해봅니다.
+        // eslint-disable-next-line no-await-in-loop
+        const shown = await inPage(page, 'look');
+
+        if (wasBlocked(shown) && sitting.get(step.profile)?.pw && !relogged.has(step.profile)) {
+          relogged.add(step.profile);
+          say({
+            type: 'note',
+            message: `${step.profile} 로그인이 풀린 것 같아요. 다시 로그인하고 한 번 더 해볼게요.`,
+          });
+
+          // eslint-disable-next-line no-await-in-loop
+          const fresh = await pageFor(step.profile, true);
+
+          if (!fresh.ok) {
+            return { ok: false, reason: fresh.reason, no: step.no };
+          }
+
+          page = fresh.page;
+          // eslint-disable-next-line no-await-in-loop
+          await page.goto(here, { waitUntil: 'domcontentloaded' });
+        }
 
         if (step.kind === 'reply') {
           // eslint-disable-next-line no-await-in-loop
@@ -420,7 +521,8 @@ export async function runPlan(plan, how = {}) {
           return {
             ok: false,
             no: step.no,
-            reason: '댓글 칸이 안 보여요. 그 카페에서 댓글을 쓸 수 있는 계정인지 봐주세요.',
+            reason:
+              '댓글 칸이 안 보여요. 그 카페에 가입돼 있고 댓글을 쓸 수 있는 계정인지 봐주세요.',
             seen: ready.seen,
           };
         }

@@ -18,7 +18,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readBoard } from '../extension/board.js';
 import { act } from '../extension/page.js';
-import { openAs, isLoggedIn } from './profile.mjs';
+import { openAs, isLoggedIn, markSignedIn } from './profile.mjs';
 import { readAccounts } from './accounts.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -162,6 +162,12 @@ if (naver && !(await isLoggedIn(context))) {
   await page
     .waitForURL((where) => !/nid\.naver\.com/.test(where.href), { timeout: 300000 })
     .catch(() => {});
+
+  // 손으로 로그인해 두신 걸 기억해 둡니다. 나중에 올릴 때 이 자리를 그대로 씁니다.
+  if (await isLoggedIn(context)) {
+    markSignedIn(account?.id || '살펴보기', account?.id || '*');
+  }
+
   console.log('  이어서 갑니다.\n');
 }
 
