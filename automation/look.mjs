@@ -12,6 +12,7 @@
  */
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+import { createInterface } from 'node:readline/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readBoard } from '../extension/board.js';
@@ -53,12 +54,31 @@ function boardUrl() {
   return '';
 }
 
-const url = boardUrl();
+/**
+ * Ask for the board address right here, when we could not find one.
+ *
+ * 파일을 찾아 오라고 하면 번거로워요. 그냥 물어보고 받습니다.
+ * @returns {Promise<string>} What was typed.
+ */
+async function askForBoard() {
+  console.log('');
+  console.log('  어느 게시판을 볼까요?');
+  console.log('  카페에서 그 게시판을 누른 뒤 주소창을 복사해서 붙여넣어 주세요.');
+  console.log('  (예: https://cafe.naver.com/f-e/cafes/22014230/menus/31)');
+  console.log('');
 
-if (!url) {
-  console.error('\n✖ 어느 게시판을 볼지 모르겠어요.');
-  console.error('  작업실에서 「자동 업로드 파일 내려받기」로 받은 파일을 이 폴더에 넣거나,');
-  console.error('  이 프로그램에 게시판 주소를 붙여서 실행해 주세요.');
+  const asking = createInterface({ input: process.stdin, output: process.stdout });
+  const typed = await asking.question('  주소: ');
+
+  asking.close();
+
+  return typed.trim().replace(/^["']|["']$/g, '');
+}
+
+const url = boardUrl() || (await askForBoard());
+
+if (!/^https?:\/\//.test(url)) {
+  console.error('\n✖ 주소가 아니에요. 「https://」 로 시작하는 주소를 넣어 주세요.');
   process.exit(1);
 }
 
