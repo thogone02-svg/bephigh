@@ -116,7 +116,13 @@ export async function runPlan(plan, how = {}) {
       }
 
       say({ type: 'note', message: `${seat} 로그인하는 중…` });
-      await fillLogin(page, account);
+
+      const typed = await fillLogin(page, account);
+
+      if (!typed.ok) {
+        return { ok: false, reason: `「${seat}」 ${typed.reason}` };
+      }
+
       await page
         .waitForURL((url) => !/nid\.naver\.com/.test(url.href), { timeout: 120000 })
         .catch(() => {});

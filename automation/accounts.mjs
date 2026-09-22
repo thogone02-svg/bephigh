@@ -78,22 +78,74 @@ export function findAccount(alias) {
 /**
  * Fill in the Naver login form and submit it.
  *
- * 네이버가 캡차를 띄우면 사람이 풀어야 해요. 그때는 창을 열어 둔 채로 기다립니다.
+ * 네이버는 로그인 화면을 자주 바꿔요. 그래서 단추 이름에 기대지 않습니다.
+ * 칸을 채우고 <엔터>를 치면 어떤 화면이든 들어가집니다. 단추가 보이면 눌러도 보고요.
+ * 캡차가 뜨면 사람이 풀어야 해요. 그때는 창을 열어 둔 채로 기다립니다.
  * @param {import('playwright').Page} page - Page on the login screen.
  * @param {{ id: string, pw: string }} account - Account to sign in as.
- * @returns {Promise<void>} Resolves once submitted.
+ * @returns {Promise<{ ok: boolean, reason?: string }>} Whether we could fill it in.
  */
 export async function fillLogin(page, account) {
   await page.goto('https://nid.naver.com/nidlogin.login', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(800);
 
-  // 붙여넣기로 넣어야 네이버가 자동 입력으로 안 보고 덜 막아요.
-  await page.locator('#id').click();
-  await page.locator('#id').fill(account.id);
+  const idBox = page.locator('#id, input[name="id"], input[type="text"]').first();
+  const pwBox = page.locator('#pw, input[name="pw"], input[type="password"]').first();
+
+  try {
+    await idBox.waitFor({ state: 'visible', timeout: 15000 });
+    await pwBox.waitFor({ state: 'visible', timeout: 5000 });
+  } catch {
+    return {
+      ok: false,
+      reason: '로그인 화면에서 아이디·비밀번호 칸을 못 찾았어요. 창을 열어서 직접 로그인해 주세요.',
+    };
+  }
+
+  await idBox.click();
+  await idBox.fill(account.id);
   await page.waitForTimeout(400);
-  await page.locator('#pw').click();
-  await page.locator('#pw').fill(account.pw);
+  await pwBox.click();
+  await pwBox.fill(account.pw);
   await page.waitForTimeout(400);
-  await page.locator('#log\\.login, .btn_login').first().click();
-  await page.waitForTimeout(4000);
+
+  // 글자가 「로그인」인 단추를 먼저 찾아보고, 없으면 엔터를 칩니다.
+  const button = page
+    .locator('#log\\.login, .btn_login, button[type="submit"], button:has-text("로그인")')
+    .first();
+
+  const pressed = await button
+    .click({ timeout: 4000 })
+    .then(() => true)
+    .catch(() => false);
+
+  if (!pressed) {
+    await pwBox.press('Enter');
+    await page.waitForTimeout(1500);
+  }
+
+  // 그래도 그 자리면, 화면 안에서 직접 보내 봅니다.
+  if (/nid\.naver\.com/.test(page.url())) {
+    await page
+      .evaluate(() => {
+        const words = (node) => (node.textContent ?? '').replace(/\s+/g, '');
+
+        const hit = [
+          ...document.querySelectorAll('button, a, span[role="button"], input[type="submit"]'),
+        ].find((node) => /^로그인$/.test(words(node) || node.value || ''));
+
+        if (hit) {
+          hit.click();
+
+          return;
+        }
+
+        document.querySelector('form')?.requestSubmit?.();
+      })
+      .catch(() => {});
+  }
+
+  await page.waitForTimeout(3000);
+
+  return { ok: true };
 }
